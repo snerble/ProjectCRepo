@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="stylesheet.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <!-- <link rel="shortcut icon" type="image/ico" href="img/favicon.ico"/> -->
+    <script>
+        function goBack() {
+            window.history.back()
+        }
+    </script>
+    <body>
+        <div class="sidenav">
+            <p>Ingelogd als: [user] <a href="#">Log uit</a></p>
+            <br>
+            <a href="home.html">Home</a>
+            <a href="task_list.html">Takenlijst</a>
+            <a href="new_task.html">Nieuwe taak</a>
+        </div>
+
+        <div class="main">
+            <h1>[title]</h1>
+            <button id="btn" onclick="goBack()">Terug</button>
+        </div> 
+    </body>
+</html>

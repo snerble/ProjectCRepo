@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="stylesheet.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <!-- <link rel="shortcut icon" type="image/ico" href="img/favicon.ico"/> -->
+    <body>
+        <div class="sidenav">
+            <p>Ingelogd als: [user] <a href="#">Log uit</a></p>
+            <br>
+            <a href="home.html">Home</a>
+            <a href="#">Takenlijst</a>
+            <a href="new_task.html">Nieuwe taak</a>
+        </div>
+
+        <div class="main">
+            <h1>Takenlijst</h1>
+            Sorteren
+            <select name="order" style="margin-left:20px;margin-bottom:40px;">
+                <option value="date_asc">Oud-nieuw</option>
+                <option value="date_des">Nieuw-oud</option>
+                <option value="name_asc">Titel A-Z</option>
+                <option value="name_des">Titel Z-A</option>
+                <option value="pr_asc">Prioriteit hoog</option>
+                <option value="pr_des">Prioriteit laag</option>
+            </select>
+            <div class="task_list">
+                <div class="task">
+                    <h5>[priority] [title] <a href="task.html">Details</a></h5>
+                </div>
+                <div class="task">
+                    <h5>[priority] [title] <a href="task.html">Details</a></h5>
+                </div>
+                <div class="task">
+                    <h5>[priority] [title] <a href="task.html">Details</a></h5>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
