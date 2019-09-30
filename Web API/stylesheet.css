@@ -93,9 +93,10 @@ input[type=radio] {
     font-size: 16px;
 }
 
-#submit_btn:hover {
+#btn:hover {
     background: #bab093;
     text-decoration: none;
+	cursor: pointer;
 }
 /* Hier eindigt de opmaak van het formulier. */
 
