@@ -8,6 +8,12 @@ h1, h2, h3, h4, h5, h6 {
     color: #ebaca2;
 }
 
+.main p {
+	font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    color: #111;
+}
+
 /* Hier begint de opmaak van het menu aan de linker kant van de webapp (de sidenav). */
 .sidenav {
     height: 100%;
@@ -129,9 +135,15 @@ input[type=radio] {
 	float: left;
 }
 
-
-
 .priority {
 	float: right;
 	padding: 20px;
+}
+
+.task_img {
+	margin-bottom: 20px;
+}
+
+.task_img img{
+	width: 30%;
 }
