@@ -5,7 +5,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    color: #ebaca2;
+    color: #af5166;
 }
 
 .main p {
@@ -22,7 +22,7 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 1;
     top: 0;
     left: 0;
-    background-color: #0c537a;
+    background-color: #1f006e;
     overflow-x: hidden;
     padding-top: 20px;
 }
@@ -36,7 +36,7 @@ h1, h2, h3, h4, h5, h6 {
 }
   
 .sidenav a:hover {
-    color: #ebaca2;
+    color: #af5166;
 }
 
 .sidenav p {
@@ -72,7 +72,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Hier begint de opmaak van het formulier voor een nieuwe taak. */
 form label {
-    color: #ebaca2;
+    color: #af5166;
 }
 
 form input, select, textarea {
@@ -86,8 +86,11 @@ input[type=radio] {
     font-size: 16px;
 }
 
-#btn {
+input[type=submit] {
 	margin-left: 350px;
+}
+
+#btn {
     -webkit-border-radius: 5;
     -moz-border-radius: 5;
     border-radius: 5px;
@@ -101,16 +104,31 @@ input[type=radio] {
 }
 
 #btn:hover {
-    background: #bab093;
+    background: #af5166;
     text-decoration: none;
 	cursor: pointer;
 }
+
+.split {
+	display: table;
+	clear: both;
+	width: 100%;
+}
+
+.split_part {
+  float: left;
+  width: 48%;
+  padding: 10px;
+}
+
 /* Hier eindigt de opmaak van het formulier. */
 
 .task {
+	background-color: #f7eef0;
 	width: 600px;
 	height: 130px;
-    border: 2px #0c537a solid;
+    /*border: 2px #1f006e solid;*/
+	box-shadow: 5px 5px 5px grey;
     border-radius: 5px;
     width: 50%;
     padding-left: 20px;
@@ -120,12 +138,12 @@ input[type=radio] {
 }
 
 .task:hover {
-	background-color: #cccccc;
+	background-color: #e7cbd1;
 }
 
 .task #title {
 	font-size: 20px;
-	color: #ebaca2;
+	color: #af5166;
 	padding-bottom: none;
 }
 .task p {
@@ -161,8 +179,8 @@ input[type=radio] {
 	height: 50px;
 	color: #ffffff;
 	font-size: 30px;
-	background-color: #ebaca2;
-	border: 2px #ebaca2 solid;
+	background-color: #af5166;
+	border: 2px #af5166 solid;
     border-radius: 30px;
 	cursor: pointer;
 	margin: 0;
