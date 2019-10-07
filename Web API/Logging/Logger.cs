@@ -9,7 +9,6 @@ using System.Threading;
 
 namespace Logging
 {
-
 	/// <summary>
 	/// General purpose logging class, influenced largely by the logging class in Python.
 	/// <para>
@@ -17,7 +16,7 @@ namespace Logging
 	/// where one parent logger passes its log messages to any child loggers.
 	/// </para>
 	/// </summary>
-	class Logger : IDisposable
+	public class Logger : IDisposable
 	{
 		/// <summary>
 		/// The name of this logger object

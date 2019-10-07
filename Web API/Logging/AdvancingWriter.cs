@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Logging
 {
-	class AdvancingWriter : TextWriter
+	public class AdvancingWriter : TextWriter
 	{
 		public override Encoding Encoding => Encoding.UTF8;
 
