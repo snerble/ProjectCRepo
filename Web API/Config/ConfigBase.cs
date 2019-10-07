@@ -84,10 +84,7 @@ namespace Config
 			}
 			// Add value to JObject
 			if (typeof(T).IsSubclassOf(typeof(JToken))) // If value is already a JToken instance, add it directly
-			{
 				json.Add(key, value as JToken);
-				//json.Add(key, (JToken)Convert.ChangeType(value, typeof(JToken)));
-			}
 			else json.Add(key, new JValue(value)); // Add a generic JValue to the json dict
 		}
 	}
