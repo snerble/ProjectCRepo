@@ -8,6 +8,7 @@
     <StartupObject>API.Program</StartupObject>
     <ApplicationManifest>App.manifest</ApplicationManifest>
     <AssemblyName>API</AssemblyName>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
