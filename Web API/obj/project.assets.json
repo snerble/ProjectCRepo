@@ -4731,30 +4731,28 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\conor\\.nuget\\packages\\": {},
+    "C:\\Users\\amyno\\.nuget\\packages\\": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\conor\\Documents\\ProjectCRepo\\Web API\\Web API.csproj",
+      "projectUniqueName": "C:\\Users\\amyno\\Source\\Repos\\ProjectCRepo\\Web API\\Web API.csproj",
       "projectName": "API",
-      "projectPath": "C:\\Users\\conor\\Documents\\ProjectCRepo\\Web API\\Web API.csproj",
-      "packagesPath": "C:\\Users\\conor\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\conor\\Documents\\ProjectCRepo\\Web API\\obj\\",
+      "projectPath": "C:\\Users\\amyno\\Source\\Repos\\ProjectCRepo\\Web API\\Web API.csproj",
+      "packagesPath": "C:\\Users\\amyno\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\amyno\\Source\\Repos\\ProjectCRepo\\Web API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\conor\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\amyno\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp2.1"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -4772,7 +4770,6 @@
       "netcoreapp2.1": {
         "dependencies": {
           "Microsoft.NETCore.App": {
-            "suppressParent": "All",
             "target": "Package",
             "version": "[2.1.0, )",
             "autoReferenced": true
