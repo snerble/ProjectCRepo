@@ -26,18 +26,23 @@ namespace Config
 		/// <summary>
 		/// The raw JSON data of this <see cref="ConfigBase"/>.
 		/// </summary>
-		private JObject Content { get; }
+		protected JObject Content { get; }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="ConfigBase"/>.
 		/// </summary>
 		public ConfigBase(string file)
 		{
+			// Parse file argument
 			if (Path.GetExtension(file).ToLower() != ".json")
 				throw new ArgumentException($"Invalid file extension. Expected .json, not {Path.GetExtension(file)}.");
 			ConfigFile = file;
-			if (File.Exists(file))
-				Content = (JObject)JsonConvert.DeserializeObject(File.ReadAllText(file));
+
+			// Set JObject content
+			if (File.Exists(file)) Content = (JObject)JsonConvert.DeserializeObject(File.ReadAllText(file));
+			else Content = new JObject();
+			
+			// Run content setup
 			Setup();
 		}
 
@@ -51,7 +56,8 @@ namespace Config
 		/// </summary>
 		public void Save()
 		{
-			using JsonTextWriter writer = new JsonTextWriter(File.CreateText(ConfigFile));
+			using StreamWriter writer = File.CreateText(ConfigFile);
+			writer.Write(JsonConvert.SerializeObject(Content, Formatting.Indented));
 		}
 
 		/// <summary>
@@ -68,10 +74,10 @@ namespace Config
 			{
 				try
 				{
-					// Get and cast the value that is already in the JObject
-					JToken _value = json.GetValue(key);
+					// Try to cast the value that is already in the JObject
+					json.GetValue(key).Value<T>();
 					return;
-				} catch (Exception) // If it couldn't cast the value to T, remove it and add it again (below).
+				} catch (Exception) // If it couldn't cast the value to T, remove it and let it be replaced with `value`.
 				{
 					json.Remove(key);
 				}
@@ -79,7 +85,8 @@ namespace Config
 			// Add value to JObject
 			if (typeof(T).IsSubclassOf(typeof(JToken))) // If value is already a JToken instance, add it directly
 			{
-				json.Add(key, (JToken)Convert.ChangeType(value, typeof(JToken)));
+				json.Add(key, value as JToken);
+				//json.Add(key, (JToken)Convert.ChangeType(value, typeof(JToken)));
 			}
 			else json.Add(key, new JValue(value)); // Add a generic JValue to the json dict
 		}
