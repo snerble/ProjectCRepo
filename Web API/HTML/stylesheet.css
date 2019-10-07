@@ -1,0 +1,187 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    color: #111;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #af5166;
+}
+
+.main p {
+	font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    color: #111;
+}
+
+/* Hier begint de opmaak van het menu aan de linker kant van de webapp (de sidenav). */
+.sidenav {
+    height: 100%;
+    width: 300px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #1f006e;
+    overflow-x: hidden;
+    padding-top: 20px;
+}
+  
+.sidenav a {
+    padding: 6px 8px 6px 16px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #f4edeb;
+    display: block;
+}
+  
+.sidenav a:hover {
+    color: #af5166;
+}
+
+.sidenav p {
+    padding: 6px 8px 6px 16px;
+    text-decoration: none;
+    font-size: 16px;
+    color: #f4edeb;
+    display: block;
+}
+
+.sidenav p a {
+    padding: 0px;
+    text-decoration: none;
+    font-size: 16px;
+    color: #f4edeb;
+}
+/* Hier eindigt de opmaak van de sidenav. */
+
+
+/* Alles wat niet in de sidenav zit moet dus rechts komen te staan; de rest van de inhoud komt in de div met de class "main" te staan. */
+.main {
+    margin-left: 350px; /* Same as the width of the sidenav */
+    font-size: 28px; /* Increased text to enable scrolling */
+    padding: 0px 10px;
+    margin-bottom: 40px;
+}
+  
+@media screen and (max-height: 450px) {
+    .sidenav {padding-top: 15px;}
+    .sidenav a {font-size: 18px;}
+}
+
+
+/* Hier begint de opmaak van het formulier voor een nieuwe taak. */
+form label {
+    color: #af5166;
+}
+
+form input, select, textarea {
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    color: #111;
+}
+
+input[type=radio] {
+    color: #111;
+    font-size: 16px;
+}
+
+input[type=submit] {
+	margin-left: 350px;
+}
+
+#btn {
+    -webkit-border-radius: 5;
+    -moz-border-radius: 5;
+    border-radius: 5px;
+    color: #ffffff;
+    background: #7ea8bf;
+    padding: 10px 20px 10px 20px;
+    border: none;
+    text-decoration: none;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+}
+
+#btn:hover {
+    background: #af5166;
+    text-decoration: none;
+	cursor: pointer;
+}
+
+.split {
+	display: table;
+	clear: both;
+	width: 100%;
+}
+
+.split_part {
+  float: left;
+  width: 48%;
+  padding: 10px;
+}
+
+/* Hier eindigt de opmaak van het formulier. */
+
+.task {
+	background-color: #f7eef0;
+	width: 600px;
+	height: 130px;
+    /*border: 2px #1f006e solid;*/
+	box-shadow: 5px 5px 5px grey;
+    border-radius: 5px;
+    width: 50%;
+    padding-left: 20px;
+	padding-bottom: none;
+	padding-top: none;
+    margin-bottom: 20px;
+}
+
+.task:hover {
+	background-color: #e7cbd1;
+}
+
+.task #title {
+	font-size: 20px;
+	color: #af5166;
+	padding-bottom: none;
+}
+.task p {
+	font-size: 14px;
+}
+
+.info {
+	float: left;
+}
+
+.priority {
+	float: right;
+	padding: 20px;
+}
+
+.task_img {
+	margin-bottom: 20px;
+}
+
+.task_img img{
+	width: 30%;
+}
+
+.add_img {
+	display: inline;
+	width: 50px;
+	height: 50px;
+	margin-right: 0;
+}
+
+.add_img button {
+	width: 50px;
+	height: 50px;
+	color: #ffffff;
+	font-size: 30px;
+	background-color: #af5166;
+	border: 2px #af5166 solid;
+    border-radius: 30px;
+	cursor: pointer;
+	margin: 0;
+}
