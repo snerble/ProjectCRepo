@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-    <title>Login</title>
+    <title>Register</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- <link rel="stylesheet" href="stylesheet.css">
@@ -96,51 +96,26 @@
 			border: 1px solid #8c4051;
 		}
 	</style>
-	<script>
-		var attempt = 3; // Variable to count number of attempts.
-
-		// Below function Executes on click of login button.
-		function validate() {
-			var username = document.getElementById("username").value;
-			var password = document.getElementById("password").value;
-
-			if (username == "vp" && password == "vp"){
-				window.location = "home_vp.html";
-				return false;
-			}
-
-			else if (username == "ts" && password == "ts") {
-				window.location = "home_ts.html";
-				return false;
-			}
-
-			else if (username == "mg" && password == "mg") {
-				window.location = "home_mg.html";
-				return false;
-			}
-
-			else {
-				alert("Verkeerde gegevens");
-			}
-		}
-	</script>
     <body>
 		<div class="main">
-			<h2>Login</h2>
+			<h2>Registreren</h2>
 			<form id="form_id" method="post" name="myform">
-			<label>Username:</label>
+			<label>Voornaam:</label>
+			<input type="text" name="firstname" id="firstname"/>
+			<label>Achternaam:</label>
+			<input type="text" name="lastname" id="lastname"/>
+			<label>Functie:</label><br>
+			<select name="function">
+				<option value="vp">Vloerpersoneel</option>
+				<option value="ts">Technische staff</option>
+				<option value="mg">Manager</option>
+			</select><br><br>
+			<label>Email:</label>
 			<input type="text" name="username" id="username"/>
 			<label>Wachtwoord:</label>
 			<input type="password" name="password" id="password"/>
-			<input type="button" value="Login" id="submit" onclick="validate()"/>
+			<input type="button" value="Registreer" id="submit" onclick="validate()"/>
 			</form>
-			<br>
-			<span>
-				<b class="valid"><a href="register.html">Registreren</a></b><br><br>
-				<b class="valid">Vloerpersoneel: vp<br/>Wachtwoord: vp</b><br><br>
-				<b class="valid">Technische staff: ts<br/>Wachtwoord: ts</b><br><br>
-				<b class="valid">Manager: mg<br/>Wachtwoord: mg</b><br>
-			</span>
 		</div>
     </body>
 </html>
