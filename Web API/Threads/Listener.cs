@@ -36,8 +36,9 @@ namespace API.Threads {
 		public void Run()
 		{
 			// Wait for request
-			Queue.Add(listener.GetContext());
-			Log.Fine("Received and enqueued a request.");
+			var context = listener.GetContext();
+			Queue.Add(context);
+			Log.Fine($"Received and enqueued a request for url '{context.Request.RawUrl}'.");
 		}
 
 		#region Thread control

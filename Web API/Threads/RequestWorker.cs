@@ -53,9 +53,38 @@ namespace API.Threads
 			// Send a HTTP 415 UnsupportedMediaType if the content type isn't a json
 			if (request.ContentType != "application/json")
 			{
-				int size = SendHTMLError(context, "If at first you don't succeed, fail 5 more times.", HttpStatusCode.UnsupportedMediaType);
-				timer.Stop();
-				Log.Fine(GetTimedMessage(timer, $"Recieved non-JSON request. Sent 'UnsupportedMediaType' error with {size} bytes."));
+				// Add temporary html support
+				string rawUrl = request.RawUrl;
+				// Replace url with index if empty
+				if (request.RawUrl == "/" || request.RawUrl.Length == 0) rawUrl = "/index.html";
+				// Build path to find html file in repo
+				string path = Path.GetFullPath(".").Substring(0, Path.GetFullPath(".").IndexOf("Web API") + 7) + "/HTML" + rawUrl;
+
+				if (!rawUrl.Contains("..") && File.Exists(path))
+				{
+					string outFile = File.ReadAllText(path);
+
+					if (request.AcceptTypes.Contains("image/*"))
+					{
+						//SendMessage(context, outFile, HttpStatusCode.OK, (r) => r.ContentType = "image/" + Path.GetExtension(path).Substring(1));
+						HttpListenerResponse r = context.Response;
+						r.StatusCode = (int)HttpStatusCode.OK;
+						// Write message
+						byte[] buffer = File.ReadAllBytes(path);
+						Stream output = r.OutputStream;
+						output.Write(buffer, 0, buffer.Length);
+						output.Close();
+					}
+					else SendMessage(context, outFile);
+					timer.Stop();
+					Log.Trace(GetTimedMessage(timer, $"Sent file {request.RawUrl} " +
+						$"with {outFile.Length} bytes."));
+				} else
+				{
+					int size = SendHTMLError(context, "If at first you don't succeed, fail 5 more times.", HttpStatusCode.UnsupportedMediaType);
+					timer.Stop();
+					//Log.Fine(GetTimedMessage(timer, $"Recieved non-JSON request. Sent 'UnsupportedMediaType' error with {size} bytes."));
+				}
 				return;
 			}
 
@@ -187,9 +216,10 @@ namespace API.Threads
 		/// <param name="message">The message to send back.</param>
 		/// <param name="statusCode">The respones status code. Defaults to <see cref="HttpStatusCode.OK"/>.</param>
 		/// <returns></returns>
-		private static int SendMessage(HttpListenerContext context, string message, HttpStatusCode statusCode = HttpStatusCode.OK) {
+		private static int SendMessage(HttpListenerContext context, string message, HttpStatusCode statusCode = HttpStatusCode.OK, Action<HttpListenerResponse> func = null) {
 			// Get response
 			HttpListenerResponse response = context.Response;
+			if (func != null) func(response);
 			response.StatusCode = (int)statusCode;
 			// Write message
 			byte[] buffer = Encoding.UTF8.GetBytes(message);
