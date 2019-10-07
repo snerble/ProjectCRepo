@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-    <title>Register</title>
+    <title>Geregistreerd</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- <link rel="stylesheet" href="stylesheet.css">
@@ -20,18 +20,12 @@
 			border-radius: 10px 10px 0 0;
 		}
 
-		hr {
-			margin: 10px -50px;
-			border: 0;
-			border-top: 1px solid #ccc;
-			margin-bottom: 40px;
-		}
-
 		div.main {
 			position: absolute;
 			left: 37%;
 			margin-left: -50px;
 			font-family: 'Roboto', sans-serif;
+			text-align: center;
 			margin: 0 auto;
 			background-color: #ffffff;
 			width: 300px;
@@ -42,40 +36,9 @@
 			float:left;
 			margin-top:50px;
 		}
-		
-		input[type=text],input[type=password] {
-			width: 95%;
-			height: 40px;
-			padding-left: 10px;
-			margin-bottom: 25px;
-			margin-top: 5px;
-			border: 2px solid #7ea8bf;
-			color: #4f4f4f;
-			font-size: 16px;
-			border-radius: 5px;
-		}
-
-		label {
-			color: #af5166;
-			font-size: 14px;
-			font-weight: bold;
-		}
 
 		center {
 			font-size:32px;
-		}	
-
-		.valid {
-			color: #7ea8bf;
-		}
-
-		.back {
-			text-decoration: none;
-			border: 1px solid rgb(0, 143, 255);
-			background-color: rgb(0, 214, 255);
-			padding: 3px 20px;
-			border-radius: 2px;
-			color: black;
 		}
 
 		input[type=button] {
@@ -99,22 +62,9 @@
     <body>
 		<div class="main">
 			<h2>Registreren</h2>
-			<form id="form_id" method="post" name="myform">
-			<label>Voornaam:</label>
-			<input type="text" name="firstname" id="firstname"/>
-			<label>Achternaam:</label>
-			<input type="text" name="lastname" id="lastname"/>
-			<label>Functie:</label><br>
-			<select name="function">
-				<option value="vp">Vloerpersoneel</option>
-				<option value="ts">Technische staff</option>
-				<option value="mg">Manager</option>
-			</select><br><br>
-			<label>Email:</label>
-			<input type="text" name="username" id="username"/>
-			<label>Wachtwoord:</label>
-			<input type="password" name="password" id="password"/>
-			<input type="button" value="Registreer" id="submit" onclick="location.href='registered.html';"/>
+			<p>Je bent geregistreerd.</p>
+			<br>
+			<input type="button" value="Ga naar login" id="submit" onclick="location.href = 'login.html';"/>
 			</form>
 		</div>
     </body>
