@@ -61,10 +61,10 @@ namespace Config
 		}
 
 		/// <summary>
-		/// Tries to add an item to the <see cref="JObject"/>. If it already exists, a typecheck will be done to see if it matches type T.
+		/// Tries to add a key and value to a <see cref="JObject"/>. If it already exists, a typecheck will be done to see if it matches type T.
 		/// If it does not match type T, then it will be replaced.
 		/// </summary>
-		/// <typeparam name="T">Generic type extending object.</typeparam>
+		/// <typeparam name="T">Generic type. Instances of <see cref="JToken"/> are added as-is.</typeparam>
 		/// <param name="json">The <see cref="JObject"/> to alter.</param>
 		/// <param name="key">The key of the value to add.</param>
 		/// <param name="value">The value to add to the JObject.</param>
@@ -87,5 +87,7 @@ namespace Config
 				json.Add(key, value as JToken);
 			else json.Add(key, new JValue(value)); // Add a generic JValue to the json dict
 		}
+
+		public override string ToString() => Content.ToString();
 	}
 }

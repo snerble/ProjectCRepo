@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Logging;
+using API.Config;
 
 namespace API
 {
@@ -21,14 +18,11 @@ namespace API
 			;
 
 		public static Logger Log = new Logger(Level.ALL, Console.Out);
-		public static Config Settings;
+		public static AppConfig Config = new AppConfig("config.json");
 
 		static void Main(string[] args)
 		{
 			Log.Info("Starting server");
-
-			Log.Info("Loading configurations");
-			Settings = new Config("config.json");
 
 			Log.Info("Terminating...");
 		}
