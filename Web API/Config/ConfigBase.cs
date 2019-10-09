@@ -61,14 +61,15 @@ namespace Config
 		}
 
 		/// <summary>
-		/// Tries to add a key and value to a <see cref="JObject"/>. If it already exists, a typecheck will be done to see if it matches type T.
-		/// If it does not match type T, then it will be replaced.
+		/// Tries to add a key and value to a <see cref="JObject"/> if the value doesn't already exist.
 		/// </summary>
 		/// <typeparam name="T">Generic type. Instances of <see cref="JToken"/> are added as-is.</typeparam>
 		/// <param name="json">The <see cref="JObject"/> to alter.</param>
 		/// <param name="key">The key of the value to add.</param>
 		/// <param name="value">The value to add to the JObject.</param>
-		protected static void TryAddItem<T>(JObject json, string key, T value)
+		/// <param name="repair">If true, this function will replace incorrect types with <paramref name="value"/>.</param>
+		/// <returns>True if the value was added or already exists. False if the existing value's type is not <typeparamref name="T"/>.</returns>
+		protected static bool TryAddItem<T>(JObject json, string key, T value)
 		{
 			if (json.ContainsKey(key)) // Start typechecking
 			{
@@ -76,16 +77,18 @@ namespace Config
 				{
 					// Try to cast the value that is already in the JObject
 					json.GetValue(key).Value<T>();
-					return;
-				} catch (Exception) // If it couldn't cast the value to T, remove it and let it be replaced with `value`.
+					return true;
+				} catch (Exception)
 				{
-					json.Remove(key);
+					// If it couldn't cast the value to T, return false
+					return false;
 				}
 			}
 			// Add value to JObject
 			if (typeof(T).IsSubclassOf(typeof(JToken))) // If value is already a JToken instance, add it directly
 				json.Add(key, value as JToken);
 			else json.Add(key, new JValue(value)); // Add a generic JValue to the json dict
+			return true;
 		}
 
 		public override string ToString() => Content.ToString();
