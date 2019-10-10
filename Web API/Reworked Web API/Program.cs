@@ -1,7 +1,7 @@
-﻿using System;
-using Logging;
-using API.Config;
+﻿using API.Config;
 using Config.Exceptions;
+using Logging;
+using System;
 
 namespace API
 {

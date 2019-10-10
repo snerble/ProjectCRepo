@@ -1,7 +1,6 @@
 ﻿using Config;
 using Config.Exceptions;
 using Logging;
-using System.IO;
 using Newtonsoft.Json.Linq;
 
 namespace API.Config
