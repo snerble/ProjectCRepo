@@ -89,7 +89,7 @@ namespace Logging
 				archiveFormat = value;
 				_archive = null;
 				if (!System.IO.File.Exists(archiveFormat))
-					System.IO.File.Create(Archive);
+					System.IO.File.Create(Archive).Dispose();
 			}
 		}
 		private string archiveFormat;
