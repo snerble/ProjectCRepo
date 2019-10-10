@@ -88,5 +88,15 @@ namespace Logging
 		/// Returns a string representing this object.
 		/// </summary>
 		public override string ToString() => Name;
+
+		/// <summary>
+		/// Returns a <see cref="Level"/> object with the same name.
+		/// </summary>
+		public static Level GetLevel(string name)
+		{
+			if (DefaultLevels.ContainsKey(name)) return DefaultLevels[name];
+			if (CustomLevels.ContainsKey(name)) return CustomLevels[name];
+			return null;
+		}
 	}
 }
