@@ -107,7 +107,6 @@ namespace Logging
 				OutputStreams.Add(stream);
 			Name = name ?? $"{GetType().Name}@{GetHashCode().ToString("x")}";
 			Format = format ?? Format;
-			Fine("Started log");
 		}
 
 		#region Default Logging Methods
@@ -249,7 +248,6 @@ namespace Logging
 				_children.Remove(logger);
 				foreach (var parent in Parents) parent.Detach(this);
 			}
-			Fine("Closing log...");
 			foreach (var stream in OutputStreams) stream.Close();
 		}
 
@@ -341,7 +339,6 @@ namespace Logging
 					// New list copy because otherwise we are changing the list we are iterating through
 					foreach (var logger in new List<Logger>(Children))
 						logger.Dispose();
-					Fine("Disposing log...");
 					foreach (var stream in OutputStreams)
 						stream.Dispose();
 					// Same reason for new list as previous
