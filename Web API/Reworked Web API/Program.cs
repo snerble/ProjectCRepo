@@ -2,6 +2,9 @@
 using Config.Exceptions;
 using Logging;
 using System;
+using System.IO;
+using API.HTTP;
+using System.Collections.Generic;
 
 namespace API
 {
@@ -21,10 +24,11 @@ namespace API
 		public static Logger Log = new Logger(Level.ALL, Console.Out);
 		public static AppConfig Config;
 
+		private static readonly List<Server> Servers = new List<Server>();
+
 		static void Main()
 		{
-			Log.Info("Starting server");
-
+			Log.Info(DEBUG ? "Starting server in DEBUG mode" : "Starting server");
 			Log.Info("Loading configurations");
 			try { Config = new AppConfig("config.json"); }
 			catch(ConfigException e)
@@ -38,12 +42,71 @@ namespace API
 				Terminate(1);
 			}
 
+			#region Apply AppSettings
+			dynamic appSettings = Config["appSettings"];
+
+			Log.Config($"Setting log level to '{appSettings.logLevel}'");
+			Log.LogLevel = Level.GetLevel((string)appSettings.logLevel);
+
+			// Create log files in release mode only
+			if (!DEBUG)
+			{
+				Log.Config("Creating log file");
+				string log = appSettings.logDir;
+				// Create the directory if it doesn't exist
+				try
+				{
+					if (!Directory.Exists(log)) Directory.CreateDirectory(log);
+				}
+				catch (Exception e)
+				{
+					Log.Fatal($"{e.GetType().Name}: {e.Message}", e, false);
+					Terminate(14001);
+				}
+				log += "/latest.log";
+				// Delete the file if it already exists
+				if (File.Exists(log)) File.Delete(log);
+				Log.OutputStreams.Add(File.CreateText(log));
+			}
+			#endregion
+
+			#region Setup Server
+			dynamic serverSettings = Config["serverSettings"];
+			dynamic performance = Config["performance"];
+
+			Log.Config("Creating listener...");
+			var listener = new Listener(serverSettings.serverAddresses.ToObject<string[]>());
+
+			for (int i = 0; i < (int)performance.apiThreads; i++)
+			{
+				var server = new JsonServer(listener.Queue);
+				Servers.Add(server);
+				server.Start();
+			}
+			for (int i = 0; i < (int)performance.htmlThreads; i++)
+			{
+				// TODO create HtmlServer instances
+			}
+			for (int i = 0; i < (int)performance.resourceThreads; i++)
+			{
+				// TODO create ResourceServer instances
+			}
+
+			listener.Start();
+			#endregion
+
+			Console.ReadKey();
 			Terminate(0);
 		}
 
 		static void Terminate(int exitCode = -1)
 		{
+			foreach (var server in Servers)
+				server.Interrupt();
+			foreach (var server in Servers)
+				server.Join();
 			Log.Info("Terminating...");
+			Log.Dispose();
 			Environment.Exit(exitCode);
 		}
 	}
