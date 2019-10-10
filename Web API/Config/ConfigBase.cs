@@ -14,9 +14,9 @@ namespace Config
 		/// </summary>
 		/// <param name="key"></param>
 		/// <returns>A JObject with a key equal to <paramref name="key"/>.</returns>
-		public JToken this[string key]
+		public JObject this[string key]
 		{
-			get { return Content[key]; }
+			get { return Content[key] as JObject; }
 			set { Content[key] = value; }
 		}
 
