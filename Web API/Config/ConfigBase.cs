@@ -99,6 +99,8 @@ namespace Config
 			else json.Add(key, new JValue(value)); // Add a generic JValue to the json dict
 		}
 
+		public static explicit operator JObject(ConfigBase config) => new JObject(config.Content);
+
 		public override string ToString() => Content.ToString();
 	}
 }
