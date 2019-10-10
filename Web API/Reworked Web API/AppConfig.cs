@@ -1,6 +1,7 @@
 ﻿using Config;
 using Config.Exceptions;
 using Logging;
+using System.IO;
 using Newtonsoft.Json.Linq;
 
 namespace API.Config
@@ -45,8 +46,14 @@ namespace API.Config
 
 			// Build application settings
 			TryAddItem(Content, "appSettings", new JObject());
-			TryAddItem(Content["appSettings"], "logLevel", Program.DEBUG ? Level.DEBUG.Name : Level.INFO.Name);
+			TryAddItem(Content["appSettings"], "logLevel", Program.DEBUG ? Level.ALL.Name : Level.INFO.Name);
 			TryAddItem(Content["appSettings"], "logDir", "Logs");
+
+			// Build server settings
+			TryAddItem(Content, "serverSettings", new JObject());
+			TryAddItem(Content["serverSettings"], "htmlSourceDir", "../../../../Web API/HTML");
+			TryAddItem(Content["serverSettings"], "resourceDir", "../../../../Web API/HTML");
+			TryAddItem(Content["serverSettings"], "serverAddresses", new JArray() { "localhost" });
 
 			Save();
 			Verify();
@@ -67,10 +74,16 @@ namespace API.Config
 			if (Content["performance"]["apiThreads"].Value<int>() < 1) throw new ConfigException("Value 'performance['apiThreads']' may not be less than 1.");
 			if (Content["performance"]["htmlThreads"].Value<int>() < 1) throw new ConfigException("Value 'performance['htmlThreads']' may not be less than 1.");
 			if (Content["performance"]["resourceThreads"].Value<int>() < 1) throw new ConfigException("Value 'performance['resourceThreads']' may not be less than 1.");
-
+			
 			// Verify application settings
 			if (Level.GetLevel(Content["appSettings"]["logLevel"].Value<string>()) == null)
 				throw new ConfigException("Invalid log level specified at 'appSettings['logLevel']'.");
+
+			// Verify server settings
+			if (!Directory.Exists(Content["serverSettings"]["htmlSourceDir"].Value<string>()))
+				throw new ConfigException("No such directory specified at 'serverSettings['htmlSourceDir']'.");
+			if (!Directory.Exists(Content["serverSettings"]["resourceDir"].Value<string>()))
+				throw new ConfigException("No such directory specified at 'serverSettings['resourceDir']'.");
 		}
 
 		// Example of a property that refers directly to a config setting. The setter is optional.
