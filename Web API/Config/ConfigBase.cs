@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Config.Exceptions;
 
 namespace Config
 {
@@ -40,7 +41,7 @@ namespace Config
 
 			// Set JObject content
 			if (File.Exists(file)) Content = (JObject)JsonConvert.DeserializeObject(File.ReadAllText(file));
-			else Content = new JObject();
+			if (Content == null) Content = new JObject();
 			
 			// Run content setup
 			Setup();
@@ -56,9 +57,17 @@ namespace Config
 		/// </summary>
 		public void Save()
 		{
+			var outJson = new JObject(Content.Properties().OrderBy(x => x.Name));
 			using StreamWriter writer = File.CreateText(ConfigFile);
-			writer.Write(JsonConvert.SerializeObject(Content, Formatting.Indented));
+			writer.Write(JsonConvert.SerializeObject(outJson, Formatting.Indented));
 		}
+
+		/// <summary>
+		/// Convenience method that automatically converts <paramref name="json"/> to a <see cref="JObject"/>.
+		/// Equivalent to calling <see cref="TryAddItem{T}(JObject, string, T)"/> like so:
+		/// <code>TryAddItem((<see cref="JObject"/>)<paramref name="json"/>, <paramref name="key"/>, <paramref name="value"/>);</code>
+		/// </summary>
+		protected static void TryAddItem<T>(JToken json, string key, T value) => TryAddItem(json as JObject, key, value);
 
 		/// <summary>
 		/// Tries to add a key and value to a <see cref="JObject"/> if the value doesn't already exist.
@@ -67,9 +76,8 @@ namespace Config
 		/// <param name="json">The <see cref="JObject"/> to alter.</param>
 		/// <param name="key">The key of the value to add.</param>
 		/// <param name="value">The value to add to the JObject.</param>
-		/// <param name="repair">If true, this function will replace incorrect types with <paramref name="value"/>.</param>
-		/// <returns>True if the value was added or already exists. False if the existing value's type is not <typeparamref name="T"/>.</returns>
-		protected static bool TryAddItem<T>(JObject json, string key, T value)
+		/// <exception cref="TypeMismatchException">Thrown when the existing value's type is not equal to <typeparamref name="T"/>.</exception>
+		protected static void TryAddItem<T>(JObject json, string key, T value)
 		{
 			if (json.ContainsKey(key)) // Start typechecking
 			{
@@ -77,18 +85,18 @@ namespace Config
 				{
 					// Try to cast the value that is already in the JObject
 					json.GetValue(key).Value<T>();
-					return true;
+					return;
 				} catch (Exception)
 				{
-					// If it couldn't cast the value to T, return false
-					return false;
+					// Throw exception if the value could not be cast to T
+					string path = json.Path + (json.Path.Length == 0 ? key : $"['{key}']");
+					throw new TypeMismatchException($"Incorrect type for value '{path}'. Expected {typeof(T).Name} instead of {json.GetValue(key).Type}.");
 				}
 			}
 			// Add value to JObject
 			if (typeof(T).IsSubclassOf(typeof(JToken))) // If value is already a JToken instance, add it directly
 				json.Add(key, value as JToken);
 			else json.Add(key, new JValue(value)); // Add a generic JValue to the json dict
-			return true;
 		}
 
 		public override string ToString() => Content.ToString();
