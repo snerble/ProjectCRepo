@@ -1,11 +1,10 @@
-﻿using System.Collections.Concurrent;
-using System.Net;
-using System.Threading;
-using System.Text;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
+using System.Collections.Concurrent;
 using System.IO;
-using System;
+using System.Net;
+using System.Text;
+using System.Threading;
 
 namespace API.HTTP
 {
@@ -37,6 +36,7 @@ namespace API.HTTP
 			this.thread = new Thread(Run);
 			thread.Name = GetType().Name + "::" + thread.ManagedThreadId;
 			this.queue = queue;
+			Program.Log.Config($"Created server {Name}");
 		}
 
 		/// <summary>
@@ -50,6 +50,14 @@ namespace API.HTTP
 				while (!queue.IsCompleted)
 				{
 					var context = queue.Take();
+
+					// Always deny requests with invalid urls
+					if (context.Request.RawUrl.Split('?')[0].Contains(".."))
+					{
+						SendError(context.Response, HttpStatusCode.Forbidden);
+						continue;
+					}
+
 					Main(context.Request, context.Response);
 				}
 			}
