@@ -23,10 +23,10 @@ namespace API.HTTP
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
 			// Seperate the raw url into url and tokens
-			string[] _ = request.RawUrl.Split('?');
-			string url = _[0];
+			string[] urlParts = request.RawUrl.Split('?');
+			string url = urlParts[0];
 			string[] tokens;
-			if (_.Length >= 2) tokens = _[1].Split('&');
+			if (urlParts.Length >= 2) tokens = urlParts[1].Split('&');
 			// emtpy urls default to index.html
 			if (url == "/") url = "/index.html";
 

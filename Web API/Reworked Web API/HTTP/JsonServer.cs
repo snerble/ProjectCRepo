@@ -23,7 +23,7 @@ namespace API.HTTP
 
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
-			SendJSON(response, (JObject)Program.Config);
+			SendJSON(response, new JObject() { { "yeet", "lol" } });
 		}
 	}
 }
