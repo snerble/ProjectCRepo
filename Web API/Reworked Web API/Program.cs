@@ -5,6 +5,7 @@ using Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace API
 {
@@ -81,24 +82,26 @@ namespace API
 			var listener = new Listener(serverSettings.serverAddresses.ToObject<string[]>());
 
 			// Get custom queues
-			var JSONQueue = listener.GetCustomQueue(x => x.Request.ContentType?.ToLower() == "application/json");
-			var ResourceQueue = listener.GetCustomQueue(x => x.Request.ContentType != null);
+			var JSONQueue = listener.GetCustomQueue(x => x.Request.ContentType == "application/json");
+			var HTMLQueue = listener.GetCustomQueue(x => x.Request.AcceptTypes.Contains("text/html"));
 
 			for (int i = 0; i < (int)performance.apiThreads; i++)
 			{
-				var server = new JsonServer(JSONQueue); // json servers only get requests with the json content type
+				var server = new JsonServer(JSONQueue);
 				Servers.Add(server);
 				server.Start();
 			}
 			for (int i = 0; i < (int)performance.htmlThreads; i++)
 			{
-				var server = new HTMLServer(listener.Queue); // Give the html servers the rest of the requests
+				var server = new HTMLServer(HTMLQueue);
 				Servers.Add(server);
 				server.Start();
 			}
 			for (int i = 0; i < (int)performance.resourceThreads; i++)
 			{
-				// TODO create ResourceServer instances
+				var server = new ResourceServer(listener.Queue);
+				Servers.Add(server);
+				server.Start();
 			}
 
 			listener.Start();
