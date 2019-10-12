@@ -1,6 +1,10 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
+using System.Reflection;
+using API.HTTP.Endpoints;
 
 namespace API.HTTP
 {
@@ -22,9 +26,19 @@ namespace API.HTTP
 			string url = request.Url.AbsolutePath;
 			if (url == "/") url = "/index.html";
 
-			if (false)
+			Assembly asm = Assembly.GetExecutingAssembly();
+			foreach (Type type in asm.GetTypes())
 			{
-				// TODO implement code endpoints
+				if (type.IsSubclassOf(typeof(JsonEndpoint)))
+				{
+					var attribute = type.GetCustomAttribute(typeof(EndpointUrl)) as EndpointUrl;
+					if (attribute?.Url == url)
+					{
+						JsonEndpoint endpoint = (JsonEndpoint)Activator.CreateInstance(type, request, response);
+						endpoint.Invoke();
+						return;
+					}
+				}
 			}
 
 			// Try to find a file endpoint
