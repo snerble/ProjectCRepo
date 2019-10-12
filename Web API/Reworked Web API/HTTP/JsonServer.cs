@@ -1,9 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Net;
-using System.Text;
-using Newtonsoft.Json.Linq;
 
 namespace API.HTTP
 {
@@ -16,10 +13,7 @@ namespace API.HTTP
 		/// Creates a new instance of <see cref="JsonServer"/>.
 		/// </summary>
 		/// <param name="queue">The source of requests for this <see cref="JsonServer"/>.</param>
-		public JsonServer(BlockingCollection<HttpListenerContext> queue) : base(queue)
-		{
-			Program.Log.Config($"Created server {Name}");
-		}
+		public JsonServer(BlockingCollection<HttpListenerContext> queue) : base(queue) { }
 
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{

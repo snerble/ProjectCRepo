@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
+﻿using System.Collections.Concurrent;
 using System.IO;
+using System.Net;
 
 namespace API.HTTP
 {
@@ -18,19 +15,25 @@ namespace API.HTTP
 		/// Creates a new instance of <see cref="ResourceServer"/>.
 		/// </summary>
 		/// <param name="queue">The source of requests for this <see cref="ResourceServer"/>.</param>
-		public ResourceServer(BlockingCollection<HttpListenerContext> queue) : base(queue)
-		{
-			Program.Log.Config($"Created server {Name}");
-		}
+		public ResourceServer(BlockingCollection<HttpListenerContext> queue) : base(queue) { }
 
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
 			string url = request.RawUrl.Split('?')[0];
+			Program.Log.Debug(url);
+			if (url == "/favicon.ico")
+			{
+				Program.Log.Info("request for favicon");
+			}
 
 			// Try to find the resource and send it
 			string file = ResourceDir + url;
 			if (File.Exists(file))
 			{
+				//if (request.AcceptTypes.Contains("image/*"))
+				//{
+				//	response.ContentType = "image/apng";
+				//}
 				Send(response, File.ReadAllBytes(file));
 				return;
 			}

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
-using System.Net;
 using System.IO;
+using System.Net;
 
 namespace API.HTTP
 {
@@ -15,10 +15,7 @@ namespace API.HTTP
 		/// Creates a new instance of <see cref="HTMLServer"/>.
 		/// </summary>
 		/// <param name="queue">The source of requests for this <see cref="HTMLServer"/>.</param>
-		public HTMLServer(BlockingCollection<HttpListenerContext> queue) : base(queue)
-		{
-			Program.Log.Config($"Created server {Name}");
-		}
+		public HTMLServer(BlockingCollection<HttpListenerContext> queue) : base(queue) { }
 
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
@@ -29,9 +26,6 @@ namespace API.HTTP
 			if (urlParts.Length >= 2) tokens = urlParts[1].Split('&');
 			// emtpy urls default to index.html
 			if (url == "/") url = "/index.html";
-
-			// Deny any request trying to reach an endpoint outside of the HTML source folder
-			if (url.Contains("..")) SendError(response, HttpStatusCode.Forbidden);
 
 			if (false)
 			{
