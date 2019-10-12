@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 
 namespace API
 {
@@ -80,7 +82,10 @@ namespace API
 			dynamic performance = Config["performance"];
 
 			Log.Config("Creating listener...");
-			listener = new Listener(serverSettings.serverAddresses.ToObject<string[]>());
+			string[] addresses = serverSettings.serverAddresses.ToObject<string[]>();
+			addresses = addresses.Length == 0 ? new string[] { GetLocalIP(), "localhost" } : addresses;
+			listener = new Listener(addresses);
+			Log.Info("Listening on: " + string.Join(", ", addresses));
 
 			// Get custom queues
 			var JSONQueue = listener.GetCustomQueue(x => x.Request.ContentType == "application/json");
@@ -105,23 +110,39 @@ namespace API
 				server.Start();
 			}
 
+			Log.Config("Starting listener...");
 			listener.Start();
 			#endregion
 
-			Console.ReadKey();
+			Console.ReadLine();
 			Terminate(0);
 		}
 
+		/// <summary>
+		/// Returns the IP address of this device.
+		/// </summary>
+		static string GetLocalIP()
+		{
+			// Open a socket and connect to google's DNS
+			using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
+			socket.Connect("8.8.8.8", 65530);
+			// Get the local endpoint and return it's address
+			IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+			return endPoint.Address.ToString();
+		}
+
+		/// <summary>
+		/// Ends the program with the specified exit code.
+		/// </summary>
 		static void Terminate(int exitCode = -1)
 		{
+			Log.Info("Terminating...");
 			listener.Stop();
-			listener.Join();
 			foreach (var server in Servers)
 			{
 				server.Interrupt();
 				server.Join();
 			}
-			Log.Info("Terminating...");
 			Log.Dispose();
 			Environment.Exit(exitCode);
 		}
