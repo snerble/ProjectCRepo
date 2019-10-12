@@ -80,10 +80,11 @@ namespace API.HTTP
 		/// <summary>
 		/// Stops this <see cref="Listener"/>'s underlying <see cref="HttpListener"/>.
 		/// </summary>
-		/// <remarks>
-		/// <see cref="thread"/> stops automatically when the <see cref="HttpListener"/> is stopped.
-		/// </remarks>
-		public void Stop() => listener.Stop();
+		public void Stop()
+		{
+			listener.Stop();
+			thread.Interrupt();
+		}
 		/// <summary>
 		/// Blocks the current thread untill the underlying thread has terminated.
 		/// </summary>
@@ -94,25 +95,29 @@ namespace API.HTTP
 		/// </summary>
 		private void Run()
 		{
-			while (listener.IsListening)
+			try
 			{
-				var context = listener.GetContext();
-				// Loop through custom queues and check if the predicate returns true
-				bool foundQueue = false;
-				foreach (var customQueue in customQueues)
+				while (listener.IsListening)
 				{
-					// If the predicate is satisfied, add the context to the queue.
-					if (customQueue.Item1(context))
+					var context = listener.GetContext();
+					// Loop through custom queues and check if the predicate returns true
+					bool foundQueue = false;
+					foreach (var customQueue in customQueues)
 					{
-						foundQueue = true;
-						customQueue.Item2.Add(context);
-						break;
+						// If the predicate is satisfied, add the context to the queue.
+						if (customQueue.Item1(context))
+						{
+							foundQueue = true;
+							customQueue.Item2.Add(context);
+							break;
+						}
 					}
+					// Add to the default queue if no custom queue was satisfied
+					if (!foundQueue) Queue.Add(context);
+					Program.Log.Info("Received and enqueued a request.");
 				}
-				// Add to the default queue if no custom queue was satisfied
-				if (!foundQueue) Queue.Add(context);
-				Program.Log.Info("Received and enqueued a request.");
 			}
+			catch (ThreadInterruptedException) { }
 		}
 	}
 }
