@@ -90,7 +90,7 @@ namespace API.HTTP
 		/// <param name="response">The <see cref="HttpListenerResponse"/> to send data to.</param>
 		/// <param name="buffer">The array of bytes to send.</param>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
-		protected static void Send(HttpListenerResponse response, byte[] buffer, HttpStatusCode statusCode = HttpStatusCode.OK)
+		public static void Send(HttpListenerResponse response, byte[] buffer, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
 			response.StatusCode = (int)statusCode;
 			using var outStream = response.OutputStream;
@@ -103,7 +103,7 @@ namespace API.HTTP
 		/// <param name="text">The string of text to send.</param>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
 		/// <param name="encoding">The encoding of the text. <see cref="Encoding.UTF8"/> by default.</param>
-		protected static void SendText(HttpListenerResponse response, string text, HttpStatusCode statusCode = HttpStatusCode.OK, Encoding encoding = null)
+		public static void SendText(HttpListenerResponse response, string text, HttpStatusCode statusCode = HttpStatusCode.OK, Encoding encoding = null)
 			=> Send(response, (encoding ?? Encoding.UTF8).GetBytes(text), statusCode);
 		/// <summary>
 		/// Writes a <see cref="JObject"/> to the specified <see cref="HttpListenerResponse"/>.
@@ -111,7 +111,7 @@ namespace API.HTTP
 		/// <param name="response">The <see cref="HttpListenerResponse"/> to send data to.</param>
 		/// <param name="json">The <see cref="JObject"/> to send to the client.</param>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
-		protected static void SendJSON(HttpListenerResponse response, JObject json, HttpStatusCode statusCode = HttpStatusCode.OK)
+		public static void SendJSON(HttpListenerResponse response, JObject json, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
 			response.ContentType = "application/json";
 			response.StatusCode = (int)statusCode;
@@ -126,7 +126,7 @@ namespace API.HTTP
 		/// </remarks>
 		/// <param name="response">The <see cref="HttpListenerResponse"/> to send the errorcode to.</param>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to specify.</param>
-		protected static void SendError(HttpListenerResponse response, HttpStatusCode statusCode)
+		public static void SendError(HttpListenerResponse response, HttpStatusCode statusCode)
 		{
 			response.StatusCode = (int)statusCode;
 			response.OutputStream.Close();
