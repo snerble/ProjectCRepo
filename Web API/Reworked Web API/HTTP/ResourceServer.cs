@@ -20,20 +20,11 @@ namespace API.HTTP
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
 			string url = request.RawUrl.Split('?')[0];
-			Program.Log.Debug(url);
-			if (url == "/favicon.ico")
-			{
-				Program.Log.Info("request for favicon");
-			}
 
 			// Try to find the resource and send it
 			string file = ResourceDir + url;
 			if (File.Exists(file))
 			{
-				//if (request.AcceptTypes.Contains("image/*"))
-				//{
-				//	response.ContentType = "image/apng";
-				//}
 				Send(response, File.ReadAllBytes(file));
 				return;
 			}
