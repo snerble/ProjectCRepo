@@ -19,7 +19,7 @@ namespace API.HTTP
 
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
-			string url = request.RawUrl.Split('?')[0];
+			string url = request.Url.AbsolutePath;
 
 			// Try to find the resource and send it
 			string file = ResourceDir + url;

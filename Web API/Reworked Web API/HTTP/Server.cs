@@ -52,7 +52,7 @@ namespace API.HTTP
 					var context = queue.Take();
 
 					// Always deny requests with invalid urls
-					if (context.Request.RawUrl.Split('?')[0].Contains(".."))
+					if (context.Request.Url.AbsolutePath.Contains(".."))
 					{
 						SendError(context.Response, HttpStatusCode.Forbidden);
 						continue;

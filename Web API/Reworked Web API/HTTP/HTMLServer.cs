@@ -19,11 +19,7 @@ namespace API.HTTP
 
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
-			// Seperate the raw url into url and tokens
-			string[] urlParts = request.RawUrl.Split('?');
-			string url = urlParts[0];
-			string[] tokens;
-			if (urlParts.Length >= 2) tokens = urlParts[1].Split('&');
+			string url = request.Url.AbsolutePath;
 			if (url == "/") url = "/index.html";
 
 			if (false)
