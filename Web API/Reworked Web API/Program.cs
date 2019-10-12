@@ -1,10 +1,10 @@
 ﻿using API.Config;
+using API.HTTP;
 using Config.Exceptions;
 using Logging;
 using System;
-using System.IO;
-using API.HTTP;
 using System.Collections.Generic;
+using System.IO;
 
 namespace API
 {
@@ -30,7 +30,10 @@ namespace API
 		{
 			Log.Info(DEBUG ? "Starting server in DEBUG mode" : "Starting server");
 			Log.Info("Loading configurations");
-			try { Config = new AppConfig("config.json"); }
+			try
+			{
+				Config = new AppConfig("config.json");
+			}
 			catch(ConfigException e)
 			{
 				Log.Fatal($"{e.GetType().Name}: {e.Message}", e, false);
@@ -77,15 +80,21 @@ namespace API
 			Log.Config("Creating listener...");
 			var listener = new Listener(serverSettings.serverAddresses.ToObject<string[]>());
 
+			// Get custom queues
+			var JSONQueue = listener.GetCustomQueue(x => x.Request.ContentType?.ToLower() == "application/json");
+			var ResourceQueue = listener.GetCustomQueue(x => x.Request.ContentType != null);
+
 			for (int i = 0; i < (int)performance.apiThreads; i++)
 			{
-				var server = new JsonServer(listener.Queue);
+				var server = new JsonServer(JSONQueue); // json servers only get requests with the json content type
 				Servers.Add(server);
 				server.Start();
 			}
 			for (int i = 0; i < (int)performance.htmlThreads; i++)
 			{
-				// TODO create HtmlServer instances
+				var server = new HTMLServer(listener.Queue); // Give the html servers the rest of the requests
+				Servers.Add(server);
+				server.Start();
 			}
 			for (int i = 0; i < (int)performance.resourceThreads; i++)
 			{

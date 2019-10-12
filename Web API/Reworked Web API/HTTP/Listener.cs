@@ -16,9 +16,35 @@ namespace API.HTTP
 		private readonly Thread thread;
 
 		/// <summary>
+		/// A list containing tuples with a predicate function and a unique queue.
+		/// </summary>
+		private List<(Func<HttpListenerContext, bool>, BlockingCollection<HttpListenerContext>)> customQueues = new List<(Func<HttpListenerContext, bool>, BlockingCollection<HttpListenerContext>)>();
+
+		/// <summary>
 		/// Gets the <see cref="BlockingCollection{T}"/> that gets filled with requests that this <see cref="Listener"/> receives.
 		/// </summary>
+		/// <remarks>
+		/// If a custom queue has been made with <see cref="GetCustomQueue(Func{HttpListenerContext, bool})"/>, then this
+		/// queue will contain all contexts that have not been sorted in any custom queues.
+		/// </remarks>
 		public BlockingCollection<HttpListenerContext> Queue { get; } = new BlockingCollection<HttpListenerContext>();
+
+		/// <summary>
+		/// Returns a <see cref="BlockingCollection{T}"/> that contains only elements that satisfy a specific condition.
+		/// </summary>
+		/// <remarks>
+		/// Predicates of older queues override newer queues since a context can only enter one queue.
+		/// Contexts that fail the predicates of all custom queues end up in <see cref="Queue"/>. These should also be handled.
+		/// </remarks>
+		/// <param name="predicate">A function to test each new element.</param>
+		public BlockingCollection<HttpListenerContext> GetCustomQueue(Func<HttpListenerContext, bool> predicate)
+		{
+			if (predicate == null) throw new ArgumentNullException("predicate");
+			if (customQueues.Exists((x) => x.Item1 == predicate)) throw new ArgumentException("This predicate is already registered for a custom queue.");
+			var queue = new BlockingCollection<HttpListenerContext>();
+			customQueues.Add((predicate, queue));
+			return queue;
+		}
 
 		private Listener()
 		{
@@ -62,7 +88,21 @@ namespace API.HTTP
 		{
 			while (true)
 			{
-				Queue.Add(listener.GetContext());
+				var context = listener.GetContext();
+				// Loop through custom queues and check if the predicate returns true
+				bool foundQueue = false;
+				foreach (var customQueue in customQueues)
+				{
+					// If the predicate is satisfied, add the context to the queue.
+					if (customQueue.Item1(context))
+					{
+						foundQueue = true;
+						customQueue.Item2.Add(context);
+						break;
+					}
+				}
+				// Add to the default queue if no custom queue was satisfied
+				if (!foundQueue) Queue.Add(context);
 				Program.Log.Info("Received and enqueued a request.");
 			}
 		}
