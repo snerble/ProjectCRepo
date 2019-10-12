@@ -5,6 +5,7 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.IO;
+using System;
 
 namespace API.HTTP
 {
@@ -34,7 +35,7 @@ namespace API.HTTP
 		public Server(BlockingCollection<HttpListenerContext> queue)
 		{
 			this.thread = new Thread(Run);
-			thread.Name = GetType().Name + "#" + thread.ManagedThreadId;
+			thread.Name = GetType().Name + "::" + thread.ManagedThreadId;
 			this.queue = queue;
 		}
 
@@ -109,6 +110,19 @@ namespace API.HTTP
 			response.StatusCode = (int)statusCode;
 			using var writer = new JsonTextWriter(new StreamWriter(response.OutputStream));
 			json.WriteTo(writer);
+		}
+		/// <summary>
+		/// Sends just a <see cref="HttpStatusCode"/> to the client.
+		/// </summary>
+		/// <remarks>
+		/// Simply sets the statuscode of the response and closes it's outputstream.
+		/// </remarks>
+		/// <param name="response">The <see cref="HttpListenerResponse"/> to send the errorcode to.</param>
+		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to specify.</param>
+		protected static void SendError(HttpListenerResponse response, HttpStatusCode statusCode)
+		{
+			response.StatusCode = (int)statusCode;
+			response.OutputStream.Close();
 		}
 	}
 }
