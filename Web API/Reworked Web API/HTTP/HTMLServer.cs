@@ -24,7 +24,6 @@ namespace API.HTTP
 			string url = urlParts[0];
 			string[] tokens;
 			if (urlParts.Length >= 2) tokens = urlParts[1].Split('&');
-			// emtpy urls default to index.html
 			if (url == "/") url = "/index.html";
 
 			if (false)
@@ -40,7 +39,7 @@ namespace API.HTTP
 				return;
 			}
 
-			// If no file endpoint was found, send 404
+			// Send 404 if no endpoint is found
 			SendError(response, HttpStatusCode.NotFound);
 		}
 	}

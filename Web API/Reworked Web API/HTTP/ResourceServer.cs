@@ -29,7 +29,7 @@ namespace API.HTTP
 				return;
 			}
 
-			// Send 404 if nothing is found
+			// Send 404 if no endpoint is found
 			SendError(response, HttpStatusCode.NotFound);
 		}
 	}

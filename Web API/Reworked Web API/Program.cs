@@ -26,6 +26,7 @@ namespace API
 		public static AppConfig Config;
 
 		private static readonly List<Server> Servers = new List<Server>();
+		private static Listener listener;
 
 		static void Main()
 		{
@@ -79,7 +80,7 @@ namespace API
 			dynamic performance = Config["performance"];
 
 			Log.Config("Creating listener...");
-			var listener = new Listener(serverSettings.serverAddresses.ToObject<string[]>());
+			listener = new Listener(serverSettings.serverAddresses.ToObject<string[]>());
 
 			// Get custom queues
 			var JSONQueue = listener.GetCustomQueue(x => x.Request.ContentType == "application/json");
@@ -113,10 +114,13 @@ namespace API
 
 		static void Terminate(int exitCode = -1)
 		{
+			listener.Stop();
+			listener.Join();
 			foreach (var server in Servers)
+			{
 				server.Interrupt();
-			foreach (var server in Servers)
 				server.Join();
+			}
 			Log.Info("Terminating...");
 			Log.Dispose();
 			Environment.Exit(exitCode);

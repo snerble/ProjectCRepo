@@ -69,23 +69,32 @@ namespace API.HTTP
 				listener.Prefixes.Add($"http://{address}/");
 		}
 
+		/// <summary>
+		/// Starts this <see cref="Listener"/>'s thread and underlying <see cref="HttpListener"/>.
+		/// </summary>
 		public void Start()
 		{
 			listener.Start();
 			thread.Start();
 		}
-		public void Interrupt()
-		{
-			thread.Interrupt();
-			listener.Stop();
-		}
+		/// <summary>
+		/// Stops this <see cref="Listener"/>'s underlying <see cref="HttpListener"/>.
+		/// </summary>
+		/// <remarks>
+		/// <see cref="thread"/> stops automatically when the <see cref="HttpListener"/> is stopped.
+		/// </remarks>
+		public void Stop() => listener.Stop();
+		/// <summary>
+		/// Blocks the current thread untill the underlying thread has terminated.
+		/// </summary>
+		public void Join() => thread.Join();
 
 		/// <summary>
 		/// Main loop for <see cref="thread"/>.
 		/// </summary>
 		private void Run()
 		{
-			while (true)
+			while (listener.IsListening)
 			{
 				var context = listener.GetContext();
 				// Loop through custom queues and check if the predicate returns true

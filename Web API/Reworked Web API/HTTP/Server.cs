@@ -76,8 +76,7 @@ namespace API.HTTP
 		/// </summary>
 		public void Start() => thread.Start();
 		/// <summary>
-		/// Blocks the calling thread until the thread represented by this instance terminates, while continuing to
-		/// perform standard COM and SendMessage pumping.
+		/// Blocks the current thread untill the underlying thread has terminated.
 		/// </summary>
 		public void Join() => thread.Join();
 		/// <summary>
