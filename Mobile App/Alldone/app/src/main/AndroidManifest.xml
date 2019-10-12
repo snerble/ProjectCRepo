@@ -9,7 +9,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Groepen"></activity>
+        <activity android:name=".MaakTaak"></activity>
+        <activity android:name=".Profiel" />
+        <activity android:name=".TakenDetails" />
+        <activity android:name=".Groepen" />
         <activity android:name=".Register" />
         <activity android:name=".Takenlijst" />
         <activity android:name=".MainActivity">
