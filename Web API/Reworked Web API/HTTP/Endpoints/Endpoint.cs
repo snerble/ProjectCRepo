@@ -19,7 +19,7 @@ namespace API.HTTP.Endpoints
 		protected HttpListenerResponse Response { get; }
 
 		/// <summary>
-		/// Initializes a new instance of <see cref="Endpoint"/>.
+		/// Initializes a new instance of <see cref="Endpoint"/> and immediately calls the right http method function.
 		/// </summary>
 		/// <param name="request">The <see cref="HttpListenerRequest"/> object to pass to this endpoint.</param>
 		/// <param name="response">The <see cref="HttpListenerResponse"/> object to pass to this endpoint.</param>
@@ -28,11 +28,6 @@ namespace API.HTTP.Endpoints
 			Request = request;
 			Response = response;
 		}
-
-		/// <summary>
-		/// Invokes this <see cref="Endpoint"/>.
-		/// </summary>
-		public abstract void Invoke();
 
 		/// <summary>
 		/// Splits a url query into a dictionary.
