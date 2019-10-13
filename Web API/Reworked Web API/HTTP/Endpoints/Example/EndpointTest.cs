@@ -8,27 +8,25 @@ using System.Linq;
 namespace API.HTTP.Endpoints
 {
 	/// <summary>
-	/// Test subclass of <see cref="JsonEndpoint"/>. Will be removed later.
+	/// Test subclass of <see cref="HTMLEndpoint"/>. Will be removed later.
 	/// </summary>
-	[EndpointUrl("/test.json")]
-	public sealed class EndpointTest : JsonEndpoint
+	[EndpointUrl("/")]
+	public sealed class EndpointTest : HTMLEndpoint
 	{
 		public EndpointTest(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
 
-		protected override void GET(JObject json, Dictionary<string, string> parameters)
+		public override void GET(Dictionary<string, string> parameters)
 		{
 			if (parameters.Count == 0)
 			{
 				Server.SendError(Response, HttpStatusCode.OK);
 				return;
 			}
-			string outtext = "<html>";
+			string outtext = "";
 			int max = parameters.Max(x => x.Key.Length);
 			foreach (var item in parameters)
-			{
-				outtext += $"{item.Key}:{new string(' ', max - item.Key.Length)}   {item.Value}<br>";
-			}
-			Server.SendText(Response, outtext + "</html>");
+				outtext += $"{item.Key}:{new string(' ', max - item.Key.Length)} {item.Value}\n";
+			Server.SendText(Response, outtext);
 		}
 	}
 }
