@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using API.HTTP.Endpoints;
+using System.Linq;
 
 namespace API.HTTP
 {
@@ -24,23 +25,30 @@ namespace API.HTTP
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
 			string url = request.Url.AbsolutePath;
-			if (url == "/") url = "/index.html";
 
+			// Get current assembly and loop through all of it's types/classes
 			Assembly asm = Assembly.GetExecutingAssembly();
 			foreach (Type type in asm.GetTypes())
 			{
-				if (type.IsSubclassOf(typeof(JsonEndpoint)))
+				// Find all subclasses of HTMLEndpoint
+				if (type.IsSubclassOf(typeof(HTMLEndpoint)))
 				{
-					var attribute = type.GetCustomAttribute(typeof(EndpointUrl)) as EndpointUrl;
-					if (attribute?.Url == url)
+					// Check if any of it's EndpointUrl attributes match the requested url
+					var attributes = type.GetCustomAttributes(typeof(EndpointUrl)).Select(x => x as EndpointUrl);
+					if (attributes.Any(x => x.Url == url))
 					{
-						JsonEndpoint endpoint = (JsonEndpoint)Activator.CreateInstance(type, request, response);
-						endpoint.Invoke();
+						// Create an instance of the endpoint that was found
+						Activator.CreateInstance(type, request, response);
+						// Close the stream if it wasn't closed by the endpoint
+						if (response.OutputStream.CanWrite)
+							response.OutputStream.Close();
 						return;
 					}
 				}
 			}
 
+			// Replace blank url with index.html
+			if (url == "/") url = "/index.html";
 			// Try to find a file endpoint
 			var file = HTMLFileDir + url;
 			if (File.Exists(file))
