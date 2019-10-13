@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
@@ -58,7 +59,17 @@ namespace API.HTTP
 						continue;
 					}
 
-					Main(context.Request, context.Response);
+					// Try to execute main function
+					try
+					{
+						Main(context.Request, context.Response);
+					}
+					catch (Exception e)
+					{
+						// Send internal server error on exception
+						SendError(context.Response, HttpStatusCode.InternalServerError);
+						Program.Log.Error($"{e.GetType().Name} in {GetType().Name}.Main(): {e.Message}", e, true);
+					}
 				}
 			}
 			catch (ThreadInterruptedException) { }
