@@ -37,7 +37,7 @@ namespace API.HTTP.Endpoints
 
 			// Get all files that contain the strings in the image parameter. delimited with ,
 			if (parameters.ContainsKey("image"))
-				images = images.Where(x => parameters["image"].ToLower().Split(',').Any(y => x.Contains(y))).ToArray();
+				images = images.Where(x => parameters["image"].ToLower().Split(',').Any(y => x.ToLower().Contains(y))).ToArray();
 
 			// filter out all non-image or video files
 			string[] imageAndVideoExtensions = new string[] { ".webm", ".ogg", ".mp4", ".apng", ".bmp", ".gif", ".ico", ".cur", ".jpeg", ".jpg", ".jfif", ".pjpeg", ".pjp", ".png", ".svg", ".tif", ".tiff", ".webp" };
