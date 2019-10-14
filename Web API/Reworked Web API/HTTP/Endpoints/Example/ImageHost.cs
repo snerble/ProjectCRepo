@@ -147,6 +147,10 @@ img, video {{
 	width: -webkit-fill-available;
 	bottom: 0;
 	left: 0;
+	word-break: break-word;
+	overflow-y: hidden;
+	overflow-x: hidden;
+	max-height: 95%;
 	opacity: 0;
 	-webkit-transition: opacity 0.25s;
 	font-weight: bold;
@@ -171,7 +175,7 @@ img, video {{
 						$"<video title=\"{Path.GetFileName(image)}\" controls>" +
 							$"<source src=\"{Uri.EscapeDataString(image)}\" type=\"video/{Path.GetExtension(image).ToLower()[1..]}\">" +
 						$"</video>";
-				} // Otherwise just create an image label
+				} // Otherwise just create an image label with a description div
 				else
 				{
 					outtext += $"<image src=\"{Uri.EscapeDataString(image)}\"/>";
