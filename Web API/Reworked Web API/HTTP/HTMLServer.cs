@@ -70,13 +70,14 @@ namespace API.HTTP
 			// Try to find a file endpoint
 			// Using simple string concatination for a rather effective path injection blocker
 			// TODO implement a system that checks if the resource is actually pointing to something inside the designated folders.
-			string file = HTMLFileDir + Uri.UnescapeDataString(url)[1..];
+			string file = HTMLFileDir + Uri.UnescapeDataString(url);
+			Program.Log.Debug(file);
 			if (File.Exists(file))
 			{
 				Send(response, File.ReadAllBytes(file));
 				return;
 			}
-			file = ResourceDir + Uri.UnescapeDataString(url)[1..];
+			file = ResourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file))
 			{
 				Send(response, File.ReadAllBytes(file));

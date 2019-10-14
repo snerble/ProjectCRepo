@@ -32,7 +32,7 @@ namespace API.HTTP
 			string url = request.Url.AbsolutePath;
 
 			// Try to find the resource and send it
-			string file = ResourceDir + Uri.UnescapeDataString(url)[1..];
+			string file = ResourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file))
 			{
 				Send(response, File.ReadAllBytes(file));
