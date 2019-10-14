@@ -13,7 +13,26 @@ namespace API.HTTP
 	/// </summary>
 	public sealed class HTMLServer : Server
 	{
-		private string HTMLFileDir => Program.Config["serverSettings"]["htmlSourceDir"].ToObject<string>();
+		private string HTMLFileDir
+		{
+			get
+			{
+				return Path.GetFullPath(Path.Combine(
+					Directory.GetCurrentDirectory(),
+					Program.Config["serverSettings"]["htmlSourceDir"].ToObject<string>()
+				));
+			}
+		}
+		private string ResourceDir
+		{
+			get
+			{
+				return Path.GetFullPath(Path.Combine(
+					Directory.GetCurrentDirectory(),
+					Program.Config["serverSettings"]["resourceDir"].ToObject<string>()
+				));
+			}
+		}
 
 		/// <summary>
 		/// Creates a new instance of <see cref="HTMLServer"/>.
@@ -49,12 +68,21 @@ namespace API.HTTP
 			// Replace blank url with index.html
 			if (url == "/") url = "/index.html";
 			// Try to find a file endpoint
-			var file = HTMLFileDir + url;
+			// Using simple string concatination for a rather effective path injection blocker
+			// TODO implement a system that checks if the resource is actually pointing to something inside the designated folders.
+			string file = HTMLFileDir + Uri.UnescapeDataString(url)[1..];
 			if (File.Exists(file))
 			{
 				Send(response, File.ReadAllBytes(file));
 				return;
 			}
+			file = ResourceDir + Uri.UnescapeDataString(url)[1..];
+			if (File.Exists(file))
+			{
+				Send(response, File.ReadAllBytes(file));
+				return;
+			}
+
 
 			// Send 404 if no endpoint is found
 			SendError(response, HttpStatusCode.NotFound);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
 
@@ -9,7 +10,16 @@ namespace API.HTTP
 	/// </summary>
 	public sealed class ResourceServer : Server
 	{
-		private string ResourceDir => Program.Config["serverSettings"]["resourceDir"].ToObject<string>();
+		private string ResourceDir
+		{
+			get
+			{
+				return Path.GetFullPath(Path.Combine(
+					Directory.GetCurrentDirectory(),
+					Program.Config["serverSettings"]["resourceDir"].ToObject<string>()
+				));
+			}
+		}
 
 		/// <summary>
 		/// Creates a new instance of <see cref="ResourceServer"/>.
@@ -22,7 +32,7 @@ namespace API.HTTP
 			string url = request.Url.AbsolutePath;
 
 			// Try to find the resource and send it
-			string file = ResourceDir + url;
+			string file = ResourceDir + Uri.UnescapeDataString(url)[1..];
 			if (File.Exists(file))
 			{
 				Send(response, File.ReadAllBytes(file));
