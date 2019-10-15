@@ -174,7 +174,7 @@ img, video {{
 					outtext +=
 						$"<video title=\"{Path.GetFileName(image)}\" controls>" +
 							$"<source src=\"{Uri.EscapeDataString(image)}\" type=\"video/{Path.GetExtension(image).ToLower()[1..]}\">" +
-						$"</video>";
+						$"</video>";	
 				} // Otherwise just create an image label with a description div
 				else
 				{
