@@ -10,6 +10,7 @@ namespace API.HTTP
 	/// </summary>
 	public sealed class ResourceServer : Server
 	{
+		private long PartialDataLimit => Program.Config["serverSettings"]["partialDataLimit"].ToObject<long>();
 		private string ResourceDir
 		{
 			get
@@ -29,12 +30,42 @@ namespace API.HTTP
 
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
+			// Add bytes accept range header to advertise partial request support.
+			response.AddHeader("Accept-Ranges", $"bytes");
+
 			string url = request.Url.AbsolutePath;
 
 			// Try to find the resource and send it
 			string file = ResourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file))
 			{
+				// If a range was specified, create and send a partial response
+				if (request.Headers.Get("Range") != null)
+				{
+					string rangeStr = request.Headers.Get("Range");
+					string[] range = rangeStr.Replace("bytes=", "").Split('-');
+
+					var fs = File.OpenRead(file);
+					int filesize = (int)fs.Length;
+
+					// Prepare range values
+					int start = int.Parse(range[0]);
+					int end = -1;
+					if (range[1].Trim().Length > 0) int.TryParse(range[1], out end);
+					if (end == -1) end = filesize-1;
+					end += 1; // the end byte value is inclusive, so increment by one
+
+					// Limit buffer size to data limit
+					byte[] buffer = new byte[end - start > PartialDataLimit ? PartialDataLimit : end - start];
+					fs.Position = start;
+					int read = fs.Read(buffer, 0, buffer.Length);
+					fs.Dispose();
+
+					response.AddHeader("Content-Range", $"bytes {start}-{start+read-1}/{filesize}");
+					Send(response, buffer, HttpStatusCode.PartialContent);
+					return;
+				}
+
 				Send(response, File.ReadAllBytes(file));
 				return;
 			}
