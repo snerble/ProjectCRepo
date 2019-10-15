@@ -27,8 +27,13 @@ namespace API.HTTP.Endpoints
 			JObject content;
 			try
 			{
-				using var streamReader = new StreamReader(Request.InputStream, Request.ContentEncoding);
-				content = JObject.Parse(streamReader.ReadToEnd());
+				// If content length is 0 (no content) then use blank JObject
+				if (request.ContentLength64 == 0) content = new JObject();
+				else
+				{
+					using var streamReader = new StreamReader(Request.InputStream, Request.ContentEncoding);
+					content = JObject.Parse(streamReader.ReadToEnd());
+				}
 			}
 			catch (Exception)
 			{
