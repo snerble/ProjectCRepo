@@ -58,8 +58,6 @@ namespace API.HTTP
 						// Create an instance of the endpoint that was found
 						Activator.CreateInstance(type, request, response);
 						// Close the stream if it wasn't closed by the endpoint
-						if (response.OutputStream.CanWrite)
-							response.OutputStream.Close();
 						return;
 					}
 				}
@@ -71,7 +69,6 @@ namespace API.HTTP
 			// Using simple string concatination for a rather effective path injection blocker
 			// TODO implement a system that checks if the resource is actually pointing to something inside the designated folders.
 			string file = HTMLFileDir + Uri.UnescapeDataString(url);
-			Program.Log.Debug(file);
 			if (File.Exists(file))
 			{
 				Send(response, File.ReadAllBytes(file));
@@ -83,7 +80,6 @@ namespace API.HTTP
 				Send(response, File.ReadAllBytes(file));
 				return;
 			}
-
 
 			// Send 404 if no endpoint is found
 			SendError(response, HttpStatusCode.NotFound);

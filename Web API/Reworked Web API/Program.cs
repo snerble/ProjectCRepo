@@ -89,7 +89,7 @@ namespace API
 
 			// Get custom queues
 			var JSONQueue = listener.GetCustomQueue(x => x.Request.ContentType == "application/json");
-			var HTMLQueue = listener.GetCustomQueue(x => x.Request.AcceptTypes.Contains("text/html"));
+			var HTMLQueue = listener.GetCustomQueue(x => x.Request.AcceptTypes != null && x.Request.AcceptTypes.Contains("text/html"));
 
 			for (int i = 0; i < (int)performance.apiThreads; i++)
 			{

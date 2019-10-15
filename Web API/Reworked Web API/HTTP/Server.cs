@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using API.HTTP.Endpoints;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
@@ -68,7 +69,7 @@ namespace API.HTTP
 					{
 						// Send internal server error on exception
 						SendError(context.Response, HttpStatusCode.InternalServerError);
-						Program.Log.Error($"{e.GetType().Name} in {GetType().Name}.Main(): {e.Message}", e, true);
+						Program.Log.Error($"{e.GetType().Name} in {GetType().Name}.Main(): {e.Message}", e, false);
 					}
 				}
 			}
@@ -104,6 +105,8 @@ namespace API.HTTP
 		public static void Send(HttpListenerResponse response, byte[] buffer, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
 			response.StatusCode = (int)statusCode;
+			response.ContentLength64 = buffer.Length;
+			response.AddHeader("Accept-Ranges", "bytes");
 			using var outStream = response.OutputStream;
 			outStream.Write(buffer, 0, buffer.Length);
 		}
@@ -126,6 +129,7 @@ namespace API.HTTP
 		{
 			response.ContentType = "application/json";
 			response.StatusCode = (int)statusCode;
+			response.AddHeader("Accept-Ranges", "bytes");
 			using var writer = new JsonTextWriter(new StreamWriter(response.OutputStream));
 			json.WriteTo(writer);
 		}
@@ -139,8 +143,17 @@ namespace API.HTTP
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to specify.</param>
 		public static void SendError(HttpListenerResponse response, HttpStatusCode statusCode)
 		{
+			response.AddHeader("Accept-Ranges", "bytes");
 			response.StatusCode = (int)statusCode;
-			response.OutputStream.Close();
+			response.Close();
 		}
+		/// <summary>
+		/// Adds a cookie to the response object.
+		/// </summary>
+		/// <param name="response">The response object to add a cookie to.</param>
+		/// <param name="name">The name of the cookie.</param>
+		/// <param name="value">The value of the cookie.</param>
+		public static void AddCookie(HttpListenerResponse response, string name, object value)
+			=> response.Headers.Add("Set-Cookie", $"{name}={value}");
 	}
 }
