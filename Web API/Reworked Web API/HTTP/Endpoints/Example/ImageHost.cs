@@ -101,8 +101,8 @@ namespace API.HTTP.Endpoints
 			if (limit > 0)
 			{
 				outtext += "<div style=\"position: sticky; text-align: center; top: 5px; margin: 1% auto 1% auto; z-index: 100; " +
-					"width: fit-content; background-color: white; border: 2px solid #d4d4d4; border-radius: 5px; padding: 3px\">";
-				for (int i = 0; i <= (imageCount / limit); i++)
+					"width: fit-content; display: table; background-color: white; border: 2px solid #d4d4d4; border-radius: 5px; padding: 3px\">";
+				for (int i = 0; i <= ((imageCount-1) / limit); i++)
 				{
 					if (i == page)
 					{
@@ -172,7 +172,7 @@ img, video {{
 				if (new string[] { ".webm", ".mp4", ".ogg" }.Contains(Path.GetExtension(image).ToLower()))
 				{
 					outtext +=
-						$"<video title=\"{Path.GetFileName(image)}\" controls>" +
+						$"<video autoplay controls muted loop title=\"{Path.GetFileName(image)}\">" +
 							$"<source src=\"{Uri.EscapeDataString(image)}\" type=\"video/{Path.GetExtension(image).ToLower()[1..]}\">" +
 						$"</video>";	
 				} // Otherwise just create an image label with a description div
