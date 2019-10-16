@@ -41,14 +41,13 @@ namespace API.Config
 			}
 			catch (Exception e)
 			{
+				Program.Log.Error($"Reload failed: {e.Message}", e, false);
+				Program.Log.Error($"Restoring previous config...");
 				Content = oldContent;
 				Save();
-				Program.Log.Error("Could not reload config:");
-				Program.Log.Error($"{e.GetType().Name}: {e.Message}", e, false);
-				Program.Log.Error($"Restored previous config.");
 				return;
 			}
-			Program.Log.Config("Reloaded configurations.");
+			Program.Log.Info("Reloaded config.");
 		}
 
 		/// <summary>
