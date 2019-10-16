@@ -38,29 +38,11 @@ namespace Config
 		/// <summary>
 		/// The raw JSON data of this <see cref="ConfigBase"/>.
 		/// </summary>
-		protected JObject Content { get; private set; }
-
+		protected JObject Content { get; set; }
 		/// <summary>
 		/// Gets whether this <see cref="ConfigBase"/> instance will reload it's contents when it's file is updated.
 		/// </summary>
 		protected abstract bool AutoReload { get; }
-		private void OnChanged(object source, FileSystemEventArgs e)
-		{
-			ConfigWatcher.EnableRaisingEvents = false;
-			if (e.FullPath != Path.GetFullPath(ConfigFile)) return;
-
-			// Try to read the file because it is often still in use.
-			for (int i = 0; i < 10; i++)
-			{
-				// TODO see if Stream.Lock helps
-				try { Content = (JObject)JsonConvert.DeserializeObject(File.ReadAllText(ConfigFile)); }
-				catch (IOException) { Thread.Sleep(50); }
-			}
-
-			OnReload(source, e);
-			ConfigWatcher.EnableRaisingEvents = true;
-		}
-		protected virtual void OnReload(object source, FileSystemEventArgs e) { }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="ConfigBase"/>.
@@ -87,6 +69,34 @@ namespace Config
 		}
 
 		/// <summary>
+		/// Called whenever the <see cref="ConfigWatcher.Changed"/> event is raised.
+		/// </summary>
+		private void OnChanged(object source, FileSystemEventArgs e)
+		{
+			if (!AutoReload) return;
+			if (e.FullPath != Path.GetFullPath(ConfigFile)) return;
+
+			// Stop if the file can't be read (and hope for another event)
+			JObject newContent;
+			try
+			{
+				using var reader = File.OpenText(ConfigFile);
+				newContent = (JObject)JsonConvert.DeserializeObject(reader.ReadToEnd());
+				if (newContent == null) return;
+			}
+			catch (IOException) { return; }
+			OnReload(newContent);
+		}
+		/// <summary>
+		/// The function that is called when the config file has been edited by another process.
+		/// </summary>
+		/// <param name="newContent">The content of the new config.</param>
+		/// <remarks>
+		/// The new content is raw and may not satisfy the requirements of <see cref="Setup"/>.
+		/// </remarks>
+		protected virtual void OnReload(JObject newContent) { }
+
+		/// <summary>
 		/// Fills and typechecks the config immediately after loading.
 		/// </summary>
 		protected abstract void Setup();
@@ -103,6 +113,13 @@ namespace Config
 			writer.Dispose();
 			ConfigWatcher.EnableRaisingEvents = true;
 		}
+
+		/// <summary>
+		/// Returns an indented JSON representation of this <see cref="ConfigBase"/>'s content.
+		/// </summary>
+		public override string ToString() => Content.ToString();
+
+		public static explicit operator JObject(ConfigBase config) => new JObject(config.Content);
 
 		/// <summary>
 		/// Convenience method that automatically converts <paramref name="json"/> to a <see cref="JObject"/>.
@@ -139,9 +156,5 @@ namespace Config
 				json.Add(key, value as JToken);
 			else json.Add(key, new JValue(value)); // Add a generic JValue to the json dict
 		}
-
-		public override string ToString() => Content.ToString();
-
-		public static explicit operator JObject(ConfigBase config) => new JObject(config.Content);
 	}
 }

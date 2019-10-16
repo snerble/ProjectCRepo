@@ -3,6 +3,7 @@ using Config.Exceptions;
 using Logging;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using System;
 
 namespace API.Config
 {
@@ -23,9 +24,31 @@ namespace API.Config
 		/// <param name="file">The path to the config JSON file. The file extension must be '.json'.</param>
 		public AppConfig(string file) : base(file) { }
 
-		protected override void OnReload(object source, FileSystemEventArgs e)
+		/// <summary>
+		/// The function that is called when the config file has been edited by another process.
+		/// </summary>
+		/// <param name="newContent">The content of the new config.</param>
+		/// <remarks>
+		/// The new content is raw and may not satisfy the requirements of <see cref="Setup"/>.
+		/// </remarks>
+		protected override void OnReload(JObject newContent)
 		{
-			Program.Log.Fine("Reloaded configurations...");
+			JObject oldContent = Content;
+			try
+			{
+				Content = newContent;
+				Setup();
+			}
+			catch (Exception e)
+			{
+				Content = oldContent;
+				Save();
+				Program.Log.Error("Could not reload config:");
+				Program.Log.Error($"{e.GetType().Name}: {e.Message}", e, false);
+				Program.Log.Error($"Restored previous config.");
+				return;
+			}
+			Program.Log.Config("Reloaded configurations.");
 		}
 
 		/// <summary>
@@ -37,7 +60,6 @@ namespace API.Config
 		/// </remarks>
 		protected override void Setup()
 		{
-			// TODO find a way to collect all exceptions and put them in one big exception so all problems can be displayed at once.
 			// Build database settings
 			TryAddItem(Content, "dbSettings", new JObject());
 			TryAddItem(Content["dbSettings"], "serverAddress", (string)null);
