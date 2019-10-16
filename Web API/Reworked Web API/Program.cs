@@ -137,7 +137,7 @@ namespace API
 		static void Terminate(int exitCode = -1)
 		{
 			Log.Info("Terminating...");
-			listener.Stop();
+			listener?.Stop();
 			foreach (var server in Servers)
 			{
 				server.Interrupt();
