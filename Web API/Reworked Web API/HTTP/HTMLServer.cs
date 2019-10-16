@@ -74,15 +74,35 @@ namespace API.HTTP
 				Send(response, File.ReadAllBytes(file));
 				return;
 			}
+
+			// Try to serve a custom page if an image was requested
 			file = ResourceDir + Uri.UnescapeDataString(url);
-			if (File.Exists(file))
-			{
-				Send(response, File.ReadAllBytes(file));
+			if (File.Exists(file) && request.AcceptTypes.Any(x => x.Contains("image/")) && ServeImage(request, response, url))
 				return;
-			}
 
 			// Send 404 if no endpoint is found
 			SendError(response, HttpStatusCode.NotFound);
+		}
+
+		/// <summary>
+		/// Custom function that sends a custom page for image requests.
+		/// </summary>
+		/// <param name="response"></param>
+		private bool ServeImage(HttpListenerRequest request, HttpListenerResponse response, string file)
+		{
+			if (new string[] { ".webm", ".mp4", ".ogg" }.Contains(Path.GetExtension(file)))
+			{
+				response.AddHeader("Accept-Ranges", "bytes");
+				SendText(response, "<html style=\"text-align: center\">" +
+					"<body style=\"background-color: black; margin: 0; padding: 0;\">" +
+					"<video controls style=\"width: 100%; max-height: 100vh;\">" +
+					$"<source src=\"{file}\" type=\"video/{Path.GetExtension(file)[1..]}\">" +
+					"</video>" +
+					"</body>" +
+					"</html>");
+				return true;
+			}
+			return false;
 		}
 	}
 }
