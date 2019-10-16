@@ -4,16 +4,23 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace Config
 {
+	/// <summary>
+	/// Abstract class for a flexible JSON configuration file.
+	/// </summary>
+	/// <remarks>
+	/// If the target config file is edited, the data of the <see cref="ConfigBase"/> object is updated.
+	/// Any changes made in the object before saving are discarded.
+	/// </remarks>
 	public abstract class ConfigBase
 	{
 		/// <summary>
 		/// Gets or sets a section from the config with the given key.
 		/// </summary>
-		/// <param name="key"></param>
-		/// <returns>A JObject with a key equal to <paramref name="key"/>.</returns>
+		/// <param name="key">The key of the value to get or set.</param>
 		public JObject this[string key]
 		{
 			get { return Content[key] as JObject; }
@@ -25,9 +32,35 @@ namespace Config
 		/// </summary>
 		public string ConfigFile { get; }
 		/// <summary>
+		/// Gets or sets the <see cref="FileInfo"/> object associated with the <see cref="ConfigFile"/>.
+		/// </summary>
+		private FileSystemWatcher ConfigWatcher { get; set; } = null;
+		/// <summary>
 		/// The raw JSON data of this <see cref="ConfigBase"/>.
 		/// </summary>
-		protected JObject Content { get; }
+		protected JObject Content { get; private set; }
+
+		/// <summary>
+		/// Gets whether this <see cref="ConfigBase"/> instance will reload it's contents when it's file is updated.
+		/// </summary>
+		protected abstract bool AutoReload { get; }
+		private void OnChanged(object source, FileSystemEventArgs e)
+		{
+			ConfigWatcher.EnableRaisingEvents = false;
+			if (e.FullPath != Path.GetFullPath(ConfigFile)) return;
+
+			// Try to read the file because it is often still in use.
+			for (int i = 0; i < 10; i++)
+			{
+				// TODO see if Stream.Lock helps
+				try { Content = (JObject)JsonConvert.DeserializeObject(File.ReadAllText(ConfigFile)); }
+				catch (IOException) { Thread.Sleep(50); }
+			}
+
+			OnReload(source, e);
+			ConfigWatcher.EnableRaisingEvents = true;
+		}
+		protected virtual void OnReload(object source, FileSystemEventArgs e) { }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="ConfigBase"/>.
@@ -40,11 +73,17 @@ namespace Config
 			ConfigFile = file;
 
 			// Set JObject content
-			if (File.Exists(file)) Content = (JObject)JsonConvert.DeserializeObject(File.ReadAllText(file));
+			if (File.Exists(file))
+			{
+				Content = (JObject)JsonConvert.DeserializeObject(File.ReadAllText(file));
+				ConfigWatcher = new FileSystemWatcher(Path.GetDirectoryName(Path.GetFullPath(file)));
+				ConfigWatcher.Changed += OnChanged;
+			}
 			if (Content == null) Content = new JObject();
 			
 			// Run content setup
 			Setup();
+			ConfigWatcher.EnableRaisingEvents = true;
 		}
 
 		/// <summary>
@@ -57,9 +96,12 @@ namespace Config
 		/// </summary>
 		public void Save()
 		{
+			ConfigWatcher.EnableRaisingEvents = false;
 			var outJson = new JObject(Content.Properties().OrderBy(x => x.Name));
-			using StreamWriter writer = File.CreateText(ConfigFile);
+			StreamWriter writer = File.CreateText(ConfigFile);
 			writer.Write(JsonConvert.SerializeObject(outJson, Formatting.Indented));
+			writer.Dispose();
+			ConfigWatcher.EnableRaisingEvents = true;
 		}
 
 		/// <summary>
@@ -68,7 +110,6 @@ namespace Config
 		/// <code>TryAddItem((<see cref="JObject"/>)<paramref name="json"/>, <paramref name="key"/>, <paramref name="value"/>);</code>
 		/// </summary>
 		protected static void TryAddItem<T>(JToken json, string key, T value) => TryAddItem(json as JObject, key, value);
-
 		/// <summary>
 		/// Tries to add a key and value to a <see cref="JObject"/> if the value doesn't already exist.
 		/// </summary>
@@ -99,8 +140,8 @@ namespace Config
 			else json.Add(key, new JValue(value)); // Add a generic JValue to the json dict
 		}
 
-		public static explicit operator JObject(ConfigBase config) => new JObject(config.Content);
-
 		public override string ToString() => Content.ToString();
+
+		public static explicit operator JObject(ConfigBase config) => new JObject(config.Content);
 	}
 }

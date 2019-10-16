@@ -13,10 +13,20 @@ namespace API.Config
 	sealed class AppConfig : ConfigBase
 	{
 		/// <summary>
+		/// Gets whether this <see cref="AppConfig"/> instance reloads it's content when it's file is changed.
+		/// </summary>
+		protected override bool AutoReload { get; } = true;
+
+		/// <summary>
 		/// Creates a new instance of <see cref="AppConfig"/>.
 		/// </summary>
 		/// <param name="file">The path to the config JSON file. The file extension must be '.json'.</param>
 		public AppConfig(string file) : base(file) { }
+
+		protected override void OnReload(object source, FileSystemEventArgs e)
+		{
+			Program.Log.Fine("Reloaded configurations...");
+		}
 
 		/// <summary>
 		/// Sets up the JSON file associated with this <see cref="AppConfig"/>.
