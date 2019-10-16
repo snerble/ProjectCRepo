@@ -11,8 +11,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-//test
-
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -28,8 +26,12 @@ public class MainActivity extends AppCompatActivity {
          @Override
          public void onClick(View v) {
             if(username.getText().toString().equals("admin") && password.getText().toString().equals("admin")) {
-                Toast.makeText(getApplicationContext(), "Doorsturen...",Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(MainActivity.this, Takenlijst.class));
+                Toast.makeText(getApplicationContext(), "Je bent ingelogd",Toast.LENGTH_SHORT).show();
+                Intent intent0 = new Intent(getApplicationContext(), Takenlijst.class);
+                intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+                startActivity(intent0);
             }
             else {
                 Toast.makeText(getApplicationContext(), "Verkeerde gebruikersnaam en/of wachtwoord",Toast.LENGTH_SHORT).show();
