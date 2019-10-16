@@ -106,7 +106,6 @@ namespace API.HTTP
 		{
 			response.StatusCode = (int)statusCode;
 			response.ContentLength64 = buffer.Length;
-			response.AddHeader("Accept-Ranges", "bytes");
 			using var outStream = response.OutputStream;
 			outStream.Write(buffer, 0, buffer.Length);
 		}
@@ -129,7 +128,6 @@ namespace API.HTTP
 		{
 			response.ContentType = "application/json";
 			response.StatusCode = (int)statusCode;
-			response.AddHeader("Accept-Ranges", "bytes");
 			using var writer = new JsonTextWriter(new StreamWriter(response.OutputStream));
 			json.WriteTo(writer);
 		}
@@ -143,7 +141,6 @@ namespace API.HTTP
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to specify.</param>
 		public static void SendError(HttpListenerResponse response, HttpStatusCode statusCode)
 		{
-			response.AddHeader("Accept-Ranges", "bytes");
 			response.StatusCode = (int)statusCode;
 			response.Close();
 		}
