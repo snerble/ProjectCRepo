@@ -61,7 +61,7 @@ namespace API.HTTP.Endpoints
 				{
 					// Get all EndpointUrl attributes and see if they match the given url
 					var attributes = type.GetCustomAttributes(typeof(EndpointUrl)).Cast<EndpointUrl>();
-					if (!asRegex && attributes.Any(x => x.Url == url)) return type;
+					if (!asRegex && attributes.Any(x => x.Url == url.ToLower())) return type;
 					else if (attributes.Any(x => Regex.IsMatch(x.Url, url))) return type;
 				}
 			}
