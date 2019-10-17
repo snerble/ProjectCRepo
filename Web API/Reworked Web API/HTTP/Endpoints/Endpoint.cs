@@ -36,6 +36,14 @@ namespace API.HTTP.Endpoints
 		/// Returns the type of an <see cref="Endpoint"/> subclass whose <see cref="EndpointUrl"/> attribute
 		/// matches the specified <paramref name="url"/>, or null if none were found.
 		/// </summary>
+		/// <param name="url">The url of the endpoint.</param>
+		/// <param name="asRegex">If true, interprets <paramref name="url"/> as a regular expression.</param>
+		/// <exception cref="ArgumentNullException"/>
+		public static Type GetEndpoint(string url, bool asRegex = false) => GetEndpoint<Endpoint>(url, asRegex);
+		/// <summary>
+		/// Returns the type of an <see cref="Endpoint"/> subclass whose <see cref="EndpointUrl"/> attribute
+		/// matches the specified <paramref name="url"/>, or null if none were found.
+		/// </summary>
 		/// <typeparam name="T">The type that the returned endpoint must extend.</typeparam>
 		/// <param name="url">The url of the endpoint.</param>
 		/// <param name="asRegex">If true, interprets <paramref name="url"/> as a regular expression.</param>
