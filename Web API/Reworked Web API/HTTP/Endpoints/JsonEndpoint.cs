@@ -13,6 +13,9 @@ namespace API.HTTP.Endpoints
 	/// To make actual JSON endpoints you must extend this class and implement the abstract classes. At least one of these functions
 	/// must write data to the response object. If nothing is sent, a 501 will be sent instead.
 	/// Attributes must be used to specify the target url.
+	/// Because reflection is used to invoke a particular HTTP method, additional HTTP method support can be implemented by simply
+	/// making a new public function, whose name is the HTTP method it represents in all upper case. Note that they must take the
+	/// same parameters as the other functions.
 	/// </remarks>
 	public abstract class JsonEndpoint : Endpoint
 	{
