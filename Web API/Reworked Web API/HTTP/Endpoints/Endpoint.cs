@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace API.HTTP.Endpoints
 {
@@ -10,11 +13,11 @@ namespace API.HTTP.Endpoints
 	public abstract class Endpoint
 	{
 		/// <summary>
-		/// The request object passed to this <see cref="Endpoint"/> instance.
+		/// Gets the request object passed to this <see cref="Endpoint"/> instance.
 		/// </summary>
 		protected HttpListenerRequest Request { get; }
 		/// <summary>
-		/// The response object passed to this <see cref="Endpoint"/> instance.
+		/// Gets the response object passed to this <see cref="Endpoint"/> instance.
 		/// </summary>
 		protected HttpListenerResponse Response { get; }
 
@@ -27,6 +30,34 @@ namespace API.HTTP.Endpoints
 		{
 			Request = request;
 			Response = response;
+		}
+
+		/// <summary>
+		/// Returns the type of an <see cref="Endpoint"/> subclass whose <see cref="EndpointUrl"/> attribute
+		/// matches the specified <paramref name="url"/>, or null if none were found.
+		/// </summary>
+		/// <typeparam name="T">The type that the returned endpoint must extend.</typeparam>
+		/// <param name="url">The url of the endpoint.</param>
+		/// <param name="asRegex">If true, interprets <paramref name="url"/> as a regular expression.</param>
+		/// <exception cref="ArgumentNullException"/>
+		public static Type GetEndpoint<T>(string url, bool asRegex = false) where T : Endpoint
+		{
+			// Regex url cannot be null
+			if (asRegex && url == null) throw new ArgumentNullException("url", "Url used as RegEx cannot be null");
+			// Get the assembly of type T and iterate through it's types
+			Assembly asm = typeof(T).Assembly;
+			foreach (var type in asm.GetTypes())
+			{
+				// Every non abstract class is tested
+				if (type.IsClass && !type.IsAbstract && type.IsSubclassOf(typeof(T)))
+				{
+					// Get all EndpointUrl attributes and see if they match the given url
+					var attributes = type.GetCustomAttributes(typeof(EndpointUrl)).Cast<EndpointUrl>();
+					if (!asRegex && attributes.Any(x => x.Url == url)) return type;
+					else if (attributes.Any(x => Regex.IsMatch(x.Url, url))) return type;
+				}
+			}
+			return null;
 		}
 
 		/// <summary>
