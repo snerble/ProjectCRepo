@@ -1,4 +1,5 @@
 ﻿using API.HTTP.Endpoints;
+using API.HTTP.Filters;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
@@ -22,6 +23,14 @@ namespace API.HTTP
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
 			string url = request.Url.AbsolutePath;
+
+			// Find all url filters
+			foreach (var filterType in Filter.GetFilters(url))
+			{
+				var filter = Activator.CreateInstance(filterType, request, response) as Filter;
+				// If invoke returned false, then further url parsing should be interrupted.
+				if (!filter.Invoke()) return;
+			}
 
 			// Find an endpoint
 			var endpoint = Endpoint.GetEndpoint<JsonEndpoint>(url);

@@ -1,10 +1,10 @@
 ﻿using API.HTTP.Endpoints;
+using API.HTTP.Filters;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 
 namespace API.HTTP
 {
@@ -44,15 +44,20 @@ namespace API.HTTP
 		{
 			string url = request.Url.AbsolutePath;
 
+			// Find all url filters
+			foreach (var filterType in Filter.GetFilters(url))
+			{
+				var filter = Activator.CreateInstance(filterType, request, response) as Filter;
+				// If invoke returned false, then further url parsing should be interrupted.
+				if (!filter.Invoke()) return;
+			}
+
 			// Find an endpoint
 			var endpoint = Endpoint.GetEndpoint<HTMLEndpoint>(url);
 			if (endpoint != null)
 			{
 				// Create an instance of the endpoint
 				Activator.CreateInstance(endpoint, request, response);
-				// Close the response if the endpoint didn't close it
-				try { response.Close(); }
-				catch (ObjectDisposedException) { }
 				return;
 			}
 
