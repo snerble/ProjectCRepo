@@ -51,8 +51,8 @@ namespace API.HTTP
 				// Create an instance of the endpoint
 				Activator.CreateInstance(endpoint, request, response);
 				// Close the response if the endpoint didn't close it
-				if (response.OutputStream.CanWrite)
-					response.Close();
+				try { response.Close(); }
+				catch (ObjectDisposedException) { }
 				return;
 			}
 

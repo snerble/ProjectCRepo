@@ -23,25 +23,16 @@ namespace API.HTTP
 		{
 			string url = request.Url.AbsolutePath;
 
-			// Get current assembly and loop through all of it's types/classes
-			Assembly asm = Assembly.GetExecutingAssembly();
-			foreach (Type type in asm.GetTypes())
+			// Find an endpoint
+			var endpoint = Endpoint.GetEndpoint<JsonEndpoint>(url);
+			if (endpoint != null)
 			{
-				// Find all subclasses of HTMLEndpoint
-				if (type.IsSubclassOf(typeof(JsonEndpoint)))
-				{
-					// Check if any of it's EndpointUrl attributes match the requested url
-					var attributes = type.GetCustomAttributes(typeof(EndpointUrl)).Select(x => x as EndpointUrl);
-					if (attributes.Any(x => x.Url == url))
-					{
-						// Create an instance of the endpoint that was found
-						Activator.CreateInstance(type, request, response);
-						// Close the stream if it wasn't closed by the endpoint
-						if (response.OutputStream.CanWrite)
-							response.OutputStream.Close();
-						return;
-					}
-				}
+				// Create an instance of the endpoint
+				Activator.CreateInstance(endpoint, request, response);
+				// Close the response if the endpoint didn't close it
+				try { response.Close(); }
+				catch (ObjectDisposedException) { }
+				return;
 			}
 
 			// Send 404 if no endpoint is found

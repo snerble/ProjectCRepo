@@ -68,7 +68,8 @@ namespace API.HTTP
 					catch (Exception e)
 					{
 						// Send internal server error on exception
-						SendError(context.Response, HttpStatusCode.InternalServerError);
+						try { SendError(context.Response, HttpStatusCode.InternalServerError); }
+						catch (ObjectDisposedException) { }
 						Program.Log.Error($"{e.GetType().Name} in {GetType().Name}.Main(): {e.Message}", e, false);
 					}
 				}
