@@ -44,30 +44,22 @@ namespace API.HTTP
 		{
 			string url = request.Url.AbsolutePath;
 
-			// Get current assembly and loop through all of it's types/classes
-			Assembly asm = Assembly.GetExecutingAssembly();
-			foreach (Type type in asm.GetTypes())
+			// Find an endpoint
+			var endpoint = Endpoint.GetEndpoint<HTMLEndpoint>(url);
+			if (endpoint != null)
 			{
-				// Find all subclasses of HTMLEndpoint
-				if (type.IsSubclassOf(typeof(HTMLEndpoint)))
-				{
-					// Check if any of it's EndpointUrl attributes match the requested url
-					var attributes = type.GetCustomAttributes(typeof(EndpointUrl)).Select(x => x as EndpointUrl);
-					if (attributes.Any(x => x.Url == url))
-					{
-						// Create an instance of the endpoint that was found
-						Activator.CreateInstance(type, request, response);
-						// Close the stream if it wasn't closed by the endpoint
-						return;
-					}
-				}
+				// Create an instance of the endpoint
+				Activator.CreateInstance(endpoint, request, response);
+				// Close the response if the endpoint didn't close it
+				if (response.OutputStream.CanWrite)
+					response.Close();
+				return;
 			}
 
 			// Replace blank url with index.html
 			if (url == "/") url = "/index.html";
+
 			// Try to find a file endpoint
-			// Using simple string concatination for a rather effective path injection blocker
-			// TODO implement a system that checks if the resource is actually pointing to something inside the designated folders.
 			string file = HTMLFileDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file))
 			{
@@ -77,8 +69,11 @@ namespace API.HTTP
 
 			// Try to serve a custom page if an image was requested
 			file = ResourceDir + Uri.UnescapeDataString(url);
-			if (File.Exists(file) && request.AcceptTypes.Any(x => x.Contains("image/")) && ServeImage(request, response, url))
+			if (File.Exists(file) && request.AcceptTypes.Any(x => x.Contains("image/")))
+			{
+				ServeImage(request, response, url);
 				return;
+			}
 
 			// Send 404 if no endpoint is found
 			SendError(response, HttpStatusCode.NotFound);
@@ -88,21 +83,23 @@ namespace API.HTTP
 		/// Custom function that sends a custom page for image requests.
 		/// </summary>
 		/// <param name="response"></param>
-		private bool ServeImage(HttpListenerRequest request, HttpListenerResponse response, string file)
+		private void ServeImage(HttpListenerRequest request, HttpListenerResponse response, string file)
 		{
 			if (new string[] { ".webm", ".mp4", ".ogg" }.Contains(Path.GetExtension(file)))
 			{
 				response.AddHeader("Accept-Ranges", "bytes");
-				SendText(response, "<html style=\"text-align: center\">" +
+				// TODO implement these shenanigans in a neat (hopefully .cshtml) template
+				SendText(response,
+					"<html style=\"text-align: center\">" +
 					"<body style=\"background-color: black; margin: 0; padding: 0;\">" +
 					"<video controls style=\"width: 100%; max-height: 100vh;\">" +
 					$"<source src=\"{file}\" type=\"video/{Path.GetExtension(file)[1..]}\">" +
 					"</video>" +
 					"</body>" +
 					"</html>");
-				return true;
+				return;
 			}
-			return false;
+			Send(response, File.ReadAllBytes(ResourceDir + Uri.UnescapeDataString(file)));
 		}
 	}
 }
