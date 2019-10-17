@@ -1,31 +1,16 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Net;
-using System.Linq;
 
 namespace API.HTTP.Endpoints
 {
 	/// <summary>
-	/// Workaround for testing. Allows a browser to access the api function without supplying a JSON payload.
-	/// </summary>
-	[EndpointUrl("/login.json")]
-	public sealed class HTMLLogin : HTMLEndpoint
-	{
-		public HTMLLogin(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
-
-		public override void GET(Dictionary<string, string> parameters)
-		{
-			new APILogin(Request, Response);
-		}
-	}
-
-	/// <summary>
 	/// API endpoint that sets login cookies when you give the right login information.
 	/// </summary>
 	[EndpointUrl("/login.json")]
-	public sealed class APILogin : JsonEndpoint
+	public sealed class Login : JsonEndpoint
 	{
-		public APILogin(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
+		public Login(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
 
 		public override void GET(JObject json, Dictionary<string, string> parameters)
 		{
@@ -49,21 +34,25 @@ namespace API.HTTP.Endpoints
 				Server.AddCookie(Response, "token", "placeholder"); // TODO remove placeholder
 				Server.AddCookie(Response, "permission", "User");
 				Server.SendError(Response, HttpStatusCode.NoContent);
+				return;
 			}
-			else if (username == "ts" && password == "ts")
+			if (username == "ts" && password == "ts")
 			{
 				Server.AddCookie(Response, "username", username);
 				Server.AddCookie(Response, "token", "placeholder"); // TODO remove placeholder
 				Server.AddCookie(Response, "permission", "Moderator");
 				Server.SendError(Response, HttpStatusCode.NoContent);
+				return;
 			}
-			else if (username == "mg" && password == "mg")
+			if (username == "mg" && password == "mg")
 			{
 				Server.AddCookie(Response, "username", username);
 				Server.AddCookie(Response, "token", "placeholder"); // TODO remove placeholder
 				Server.AddCookie(Response, "permission", "Admin");
 				Server.SendError(Response, HttpStatusCode.NoContent);
+				return;
 			}
+			Server.SendError(Response, HttpStatusCode.Unauthorized);
 		}
 	}
 }
