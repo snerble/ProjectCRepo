@@ -44,7 +44,7 @@ namespace API.HTTP.Filters
 		public bool Invoke()
 		{
 			try { Main(); }
-			catch (OperationCanceledException) { return false; }
+			catch (FilterInterrupt) { return false; }
 			return true;
 		}
 
@@ -59,7 +59,7 @@ namespace API.HTTP.Filters
 		/// <remarks>
 		/// Simply a convenience method. Do not put this in a try-catch that catches <see cref="OperationCanceledException"/>.
 		/// </remarks>
-		protected static void Interrupt() => throw new OperationCanceledException();
+		protected static void Interrupt() => throw new FilterInterrupt();
 
 		/// <summary>
 		/// Returns all types of <see cref="Filter"/> subclasses whose <see cref="FilterUrl"/> attribute
@@ -96,4 +96,9 @@ namespace API.HTTP.Filters
 			}
 		}
 	}
+
+	/// <summary>
+	/// Special exception that is thrown when a <see cref="Filter"/> requests to interrupt parsing of a request.
+	/// </summary>
+	sealed class FilterInterrupt : Exception { }
 }
