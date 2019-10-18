@@ -91,7 +91,7 @@ namespace API.HTTP.Filters
 					// Get all FilterUrl attributes and see if they match the given url
 					var attributes = type.GetCustomAttributes(typeof(FilterUrl)).Cast<FilterUrl>();
 					if (!asRegex && attributes.Any(x => url.ToLower().StartsWith(x.Url))) yield return type;
-					else if (attributes.Any(x => Regex.IsMatch(x.Url, url))) yield return type;
+					else if (asRegex && attributes.Any(x => Regex.IsMatch(x.Url, url))) yield return type;
 				}
 			}
 		}
