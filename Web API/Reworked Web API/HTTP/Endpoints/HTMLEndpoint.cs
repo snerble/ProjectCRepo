@@ -23,7 +23,7 @@ namespace API.HTTP.Endpoints
 		/// <param name="response">The <see cref="HttpListenerResponse"/> object to pass to this endpoint.</param>
 		public HTMLEndpoint(HttpListenerRequest request, HttpListenerResponse response) : base(request, response)
 		{
-			var parameters = SplitQuery(request.Url.Query);
+			var parameters = SplitQuery(request);
 
 			// Invoke the right http method function
 			var method = GetType().GetMethod(request.HttpMethod.ToUpper());

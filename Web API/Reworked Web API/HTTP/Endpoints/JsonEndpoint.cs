@@ -44,7 +44,7 @@ namespace API.HTTP.Endpoints
 				Server.SendError(Response, HttpStatusCode.BadRequest);
 				return;
 			}
-			var parameters = SplitQuery(Request.Url.Query);
+			var parameters = SplitQuery(Request);
 
 			// Invoke the right http method function
 			var method = GetType().GetMethod(request.HttpMethod.ToUpper());

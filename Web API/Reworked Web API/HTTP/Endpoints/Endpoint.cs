@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -69,16 +70,35 @@ namespace API.HTTP.Endpoints
 		}
 
 		/// <summary>
+		/// Returns the url of the specified endpoint class.
+		/// </summary>
+		/// <typeparam name="T">A subclass of <see cref="Endpoint"/>.</typeparam>
+		public static string GetUrl<T>() where T : Endpoint
+			=> typeof(T).GetCustomAttribute<EndpointUrl>()?.Url;
+
+		/// <summary>
 		/// Splits a url query into a dictionary.
 		/// </summary>
-		protected static Dictionary<string, string> SplitQuery(string query)
+		protected static Dictionary<string, string> SplitQuery(HttpListenerRequest request)
 		{
-			var queryParts = query.Split('?');
+			string query;
+			// Post requests keep their query string inside their payload
+			if (request.HttpMethod.ToLower() == "post")
+			{
+				using var reader = new StreamReader(request.InputStream);
+				query = reader.ReadToEnd();
+			}
+			else
+			{
+				query = request.Url.Query;
+				// Strip the '?' from the query if it is specified
+				if (query.Length > 1) query = query[1..];
+			}
 			// Return empty dict if there is no query string
-			if (queryParts.Length == 1) return new Dictionary<string, string>();
+			if (query.Length == 0) return new Dictionary<string, string>();
 
 			// Split the query string into key-value pairs
-			var items = Uri.UnescapeDataString(queryParts[1]).Split('&');
+			var items = Uri.UnescapeDataString(query).Split('&');
 			var outDict = new Dictionary<string, string>();
 			foreach (var item in items)
 			{
