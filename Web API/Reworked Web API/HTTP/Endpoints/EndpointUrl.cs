@@ -5,7 +5,7 @@ namespace API.HTTP.Endpoints
 	/// <summary>
 	/// A custom attribute class meant to decorate <see cref="Endpoint"/> subclasses and specify their target url.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
 	public sealed class EndpointUrl : Attribute
 	{
 		/// <summary>
