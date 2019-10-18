@@ -9,7 +9,7 @@ namespace API.HTTP.Endpoints
 	/// <summary>
 	/// Subclass of <see cref="HTMLEndpoint"/> that displays all image and video resources on the server. Created to illustrate the capability of these endpoints.
 	/// </summary>
-	[EndpointUrl("/image")]
+	[EndpointUrl("/u/image")]
 	public sealed class ImageHost : HTMLEndpoint
 	{
 		public ImageHost(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
@@ -164,20 +164,20 @@ img, video {{
 			// Generate image label for each image found
 			foreach (var _image in images)
 			{
-				var image = Path.GetRelativePath(Program.Config["serverSettings"]["resourceDir"].ToObject<string>(), _image);
+				var image = Path.GetRelativePath(Program.Config["serverSettings"]["resourceDir"].ToObject<string>(), _image).Replace("\\", "/");
 
 				outtext += "<div class=\"item\">";
 				// If extension is a video, create a video label (doesn't seem to work on mobile though)
 				if (new string[] { ".webm", ".mp4", ".ogg" }.Contains(Path.GetExtension(image).ToLower()))
 				{
 					outtext +=
-						$"<video autoplay controls muted loop title=\"{Path.GetFileName(image)}\">" +
-							$"<source src=\"{Uri.EscapeDataString(image)}\" type=\"video/{Path.GetExtension(image).ToLower()[1..]}\">" +
+						$"<video autoplay controls muted loop>" +
+							$"<source src=\"/{image}\" type=\"video/{Path.GetExtension(image).ToLower()[1..]}\">" +
 						$"</video>";	
 				} // Otherwise just create an image label with a description div
 				else
 				{
-					outtext += $"<image src=\"{Uri.EscapeDataString(image)}\"/>";
+					outtext += $"<image src=\"/{image}\"/>";
 					outtext += $"<div class=\"desc\">{Path.GetFileName(image)}</div>";
 				}
 				outtext += "</div>";
