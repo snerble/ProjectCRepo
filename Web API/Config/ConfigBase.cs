@@ -54,17 +54,11 @@ namespace Config
 			ConfigFile = file;
 
 			// Set JObject content
-			if (File.Exists(file))
-			{
-				Content = (JObject)JsonConvert.DeserializeObject(File.ReadAllText(file));
-				ConfigWatcher = new FileSystemWatcher(Path.GetDirectoryName(Path.GetFullPath(file)));
-				ConfigWatcher.Changed += OnChanged;
-			}
+			if (File.Exists(file)) Content = (JObject)JsonConvert.DeserializeObject(File.ReadAllText(file));
 			if (Content == null) Content = new JObject();
-			
+
 			// Run content setup
 			Setup();
-			ConfigWatcher.EnableRaisingEvents = true;
 		}
 
 		/// <summary>
@@ -105,11 +99,17 @@ namespace Config
 		/// </summary>
 		public void Save()
 		{
-			ConfigWatcher.EnableRaisingEvents = false;
+			if (ConfigWatcher != null) ConfigWatcher.EnableRaisingEvents = false;
 			var outJson = new JObject(Content.Properties().OrderBy(x => x.Name));
 			StreamWriter writer = File.CreateText(ConfigFile);
 			writer.Write(JsonConvert.SerializeObject(outJson, Formatting.Indented));
 			writer.Dispose();
+			// Create new file watcher if it doesn't already exist
+			if (ConfigWatcher == null)
+			{
+				ConfigWatcher = new FileSystemWatcher(Path.GetDirectoryName(Path.GetFullPath(ConfigFile)));
+				ConfigWatcher.Changed += OnChanged;
+			}
 			ConfigWatcher.EnableRaisingEvents = true;
 		}
 
