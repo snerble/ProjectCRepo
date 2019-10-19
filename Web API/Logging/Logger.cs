@@ -210,7 +210,7 @@ namespace Logging
 			{
 				lock (stream)
 				{
-					stream.WriteLine(GetRecord(level, message.ToString(), stack, includeStackTrace));
+					stream.WriteLine(GetRecord(level, message?.ToString(), stack, includeStackTrace));
 					stream.Flush();
 				}
 			}
