@@ -12,179 +12,101 @@ namespace API.HTTP.Endpoints
 	[EndpointUrl("/u/image")]
 	public sealed class ImageHost : HTMLEndpoint
 	{
+		private static readonly string[] VideoExtensions = new string[] { ".webm", ".ogg", ".mp4" };
+		private static readonly string[] ImageExtensions = new string[] { ".apng", ".bmp", ".gif", ".ico", ".cur", ".jpeg", ".jpg", ".jfif", ".pjpeg", ".pjp", ".png", ".svg", ".tif", ".tiff", ".webp" };
+
 		public ImageHost(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
 
 		/// <summary>
-		/// Simple recursive function that returns an array of all files under a certain path.
+		/// Returns files in the specified directory.
 		/// </summary>
-		/// <param name="path">The path to search recursively.</param>
-		private string[] Recurse(string path)
+		/// <param name="path">The path in which to search.</param>
+		/// <param name="recurse">Whether to search for files recursively or not.</param>
+		/// <param name="predicate">A predicate to test every file for a condition.</param>
+		private static IEnumerable<string> FileSearch(string path, bool recurse = false, Func<string, bool> predicate = null)
 		{
-			List<string> outList = Directory.EnumerateFiles(path).ToList();
-			foreach (var dir in Directory.EnumerateDirectories(path))
-				outList.AddRange(Recurse(dir));
-			return outList.ToArray();
+			// Throw exception if the path doesn't exist
+			if (!Directory.Exists(path)) throw new ArgumentException("The specified path is invalid.");
+			predicate ??= x => true; // Default predicate always returns true
+
+			// Yield all files in 'path' that satisfy the predicate
+			foreach (var file in Directory.EnumerateFiles(path).Where(predicate))
+				yield return file;
+
+			// If 'recurse' is true, yield all underlying files in 'path' that satisfy the predicate
+			if (recurse)
+				foreach (var dir in Directory.EnumerateDirectories(path))
+					foreach (var file in FileSearch(dir, true, predicate))
+						yield return file;
 		}
 
 		public override void GET(Dictionary<string, string> parameters)
 		{
 			string src = Program.Config["serverSettings"]["resourceDir"].ToObject<string>();
-			string[] images;
+
+			bool recurse = parameters.ContainsKey("recurse");
+			bool all = parameters.ContainsKey("all");
+			string[] searchParams = new string[0];
+			int limit = 0;
+			int page = 0;
+
+			if (parameters.ContainsKey("image")) searchParams = parameters["image"].ToLower().Split(',');
+			if (parameters.ContainsKey("limit")) int.TryParse(parameters["limit"], out limit);
+			if (parameters.ContainsKey("page")) int.TryParse(parameters["page"], out page);
+
+			bool predicate(string file)
+			{
+				var ext = Path.GetExtension(file).ToLower();
+				if (!ImageExtensions.Contains(ext) && !VideoExtensions.Contains(ext)) return false; // Must be image or video
+				if (searchParams.Length > 0 && !searchParams.Any(x => file.ToLower().Contains(x))) return false; // Must contain one search param
+				return true;
+			}
+
 			// Get files
-			if (parameters.ContainsKey("recurse")) images = Recurse(src); // recursively if specified
-			else images = Directory.EnumerateFiles(src).ToArray(); // otherwise just list all of them
-
-			// Get all files that contain the strings in the image parameter. delimited with ,
-			if (parameters.ContainsKey("image"))
-				images = images.Where(x => parameters["image"].ToLower().Split(',').Any(y => x.ToLower().Contains(y))).ToArray();
-
-			// filter out all non-image or video files
-			string[] imageAndVideoExtensions = new string[] { ".webm", ".ogg", ".mp4", ".apng", ".bmp", ".gif", ".ico", ".cur", ".jpeg", ".jpg", ".jfif", ".pjpeg", ".pjp", ".png", ".svg", ".tif", ".tiff", ".webp" };
-			images = images.Where(x => imageAndVideoExtensions.Contains(Path.GetExtension(x).ToLower())).ToArray();
+			var images = new List<string>();
+			if (all) images.AddRange(FileSearch(src, recurse, predicate));
+			else images.Add(FileSearch(src, recurse, predicate).FirstOrDefault());
 
 			// If no images are found, send "no images found"
-			if (images.Length == 0)
+			if (images.FirstOrDefault() == null)
 			{
 				Server.SendText(Response, "No images found");
 				return;
 			}
 
+			// If images is less than 1, replace it with images.Count
+			if (limit <= 0) limit = images.Count;
+			// Convert all image paths to relative paths
+			images = images.Select(x => Path.GetRelativePath(src, x)).ToList();
+
 			// If the 'all' parameter is not specified, send only one image
 			if (!parameters.ContainsKey("all"))
 			{
-				// Get the index value
-				int index = 0;
-				if (parameters.ContainsKey("index")) int.TryParse(parameters["index"], out index);
-
-				// If the index is out of the available range, return error message
-				if (index >= images.Length || index < 0)
-				{
-					Server.SendText(Response, $"Index out of range. (0-{images.Length - 1})");
-					return;
-				}
-
 				// Send the image at the specified index
-				Server.Send(Response, File.ReadAllBytes(images[index]));
+				Server.Send(Response, File.ReadAllBytes(src + '\\' + images[page]));
 				return;
 			}
 
-			// Prepare generated html if the 'all' parameter was specified
-			string outtext = "<html style=\"text-align: center; font-family: Calibri; font-size: 13pt;\">";
-
-			// Get image grid width value
-			int width = 5;
-			if (parameters.ContainsKey("w")) int.TryParse(parameters["w"], out width);
-			width = width > images.Length ? images.Length : width;
-
-			// Get limit and page value
-			int limit = 0;
-			if (parameters.ContainsKey("limit")) int.TryParse(parameters["limit"], out limit);
-			int page = 0;
-			if (parameters.ContainsKey("page")) int.TryParse(parameters["page"], out page);
-			int imageCount = images.Length;
-			if (limit > 0)
+			// Generate page links for use in the template
+			var pages = new string[images.Count / limit];
+			for (int i = 0; i < pages.Length; i++)
 			{
-				if (page < 0 || page > (images.Length / limit))
-				{
-					Server.SendText(Response, $"page value out of range. (0-{images.Length / limit})");
-					return;
-				}
-				page = page > (images.Length / limit) ? (images.Length / limit) : page;
-
-				int offset = limit * page;
-				int end = offset + limit > images.Length ? images.Length : offset + limit;
-				images = images[offset..end];
+				parameters["page"] = i.ToString();
+				pages[i] = Request.Url.Scheme + "://"
+					+ Request.Url.Host
+					+ Request.Url.AbsolutePath + '?'
+					+ string.Join("&", parameters.Select(x => x.Key + (x.Value.Length == 0 ? "" : "=") + x.Value));
 			}
 
-			// Append page links if a limit is used
-			if (limit > 0)
+			// Run template with dynamic model and send the result
+			Server.SendText(Response, Templates.RunTemplate(GetUrl<ImageHost>() + ".cshtml", Request, parameters, new
 			{
-				outtext += "<div style=\"position: sticky; text-align: center; top: 5px; margin: 1% auto 1% auto; z-index: 100; " +
-					"width: fit-content; display: table; background-color: white; border: 2px solid #d4d4d4; border-radius: 5px; padding: 3px\">";
-				for (int i = 0; i <= ((imageCount-1) / limit); i++)
-				{
-					if (i == page)
-					{
-						outtext += $"<b style=\"margin: 5px\">{i}</b>";
-						continue;
-					}
-					string pageUrl = Request.Url.Scheme + "://" + Request.Url.Host + Request.Url.AbsolutePath + '?';
-					parameters["page"] = i.ToString();
-					pageUrl += string.Join('&', parameters.Select(item => item.Key + (item.Value.Length == 0 ? "" : "=" + item.Value)));
-					outtext += $"<a style=\"display: inline-block; margin: 5px\" href=\"{pageUrl}\">{i}</a>";
-				}
-				outtext += "</div>";
-			}
-			outtext += @$"<style>
-a {{
-	text-decoration: none;
-}}
-a:hover {{
-	text-decoration: underline;
-}}
-.item {{
-	position: relative;
-	display: inline-block;
-	margin: 2px;
-	vertical-align: top;
-}}
-.item img, .item video {{
-	height: auto;
-	flex: 1;
-	width: auto;
-	height: auto;
-	max-width: 100%;
-	max-height: 25vh;
-}}
-img, video {{
-	border-radius: 4px;
-}}
-.desc {{
-	margin: 0 auto 0 auto;
-	padding: 5px 5px 8px 5px;
-	position: absolute;
-	width: -webkit-fill-available;
-	bottom: 0;
-	left: 0;
-	word-break: break-word;
-	overflow-y: hidden;
-	overflow-x: hidden;
-	max-height: 95%;
-	opacity: 0;
-	-webkit-transition: opacity 0.25s;
-	font-weight: bold;
-	color: white;
-	background: #000000B2;
-	border-radius: 0 0 4px 4px;
-}}
-.item:hover .desc {{
-	opacity: 1;
-}}
-</style>";
-			// Generate image label for each image found
-			foreach (var _image in images)
-			{
-				var image = Path.GetRelativePath(Program.Config["serverSettings"]["resourceDir"].ToObject<string>(), _image).Replace("\\", "/");
-
-				outtext += "<div class=\"item\">";
-				// If extension is a video, create a video label (doesn't seem to work on mobile though)
-				if (new string[] { ".webm", ".mp4", ".ogg" }.Contains(Path.GetExtension(image).ToLower()))
-				{
-					outtext +=
-						$"<video autoplay controls muted loop>" +
-							$"<source src=\"/{image}\" type=\"video/{Path.GetExtension(image).ToLower()[1..]}\">" +
-						$"</video>";	
-				} // Otherwise just create an image label with a description div
-				else
-				{
-					outtext += $"<image src=\"/{image}\"/>";
-					outtext += $"<div class=\"desc\">{Path.GetFileName(image)}</div>";
-				}
-				outtext += "</div>";
-			}
-
-			// Append the closing html label and send the text
-			Server.SendText(Response, outtext + "</html>");
+				images,
+				limit,
+				page,
+				VideoExtensions,
+				pages
+			}));
 		}
 	}
 }
