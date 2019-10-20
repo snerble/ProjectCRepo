@@ -18,37 +18,32 @@ namespace API.Config
 		/// </summary>
 		protected override bool AutoReload { get; } = true;
 
+		public string HTMLSourceDir
+		{
+			get
+			{
+				return Path.GetFullPath(Path.Combine(
+					Directory.GetCurrentDirectory(),
+					Program.Config["serverSettings"]["htmlSourceDir"].ToObject<string>()
+				));
+			}
+		}
+		public string ResourceDir
+		{
+			get
+			{
+				return Path.GetFullPath(Path.Combine(
+					Directory.GetCurrentDirectory(),
+					Program.Config["serverSettings"]["resourceDir"].ToObject<string>()
+				));
+			}
+		}
+
 		/// <summary>
 		/// Creates a new instance of <see cref="AppConfig"/>.
 		/// </summary>
 		/// <param name="file">The path to the config JSON file. The file extension must be '.json'.</param>
 		public AppConfig(string file) : base(file) { }
-
-		/// <summary>
-		/// The function that is called when the config file has been edited by another process.
-		/// </summary>
-		/// <param name="newContent">The content of the new config.</param>
-		/// <remarks>
-		/// The new content is raw and may not satisfy the requirements of <see cref="Setup"/>.
-		/// </remarks>
-		protected override void OnReload(JObject newContent)
-		{
-			JObject oldContent = Content;
-			try
-			{
-				Content = newContent;
-				Setup();
-			}
-			catch (Exception e)
-			{
-				Program.Log.Error($"Reload failed: {e.Message}", e, false);
-				Program.Log.Error($"Restoring previous config...");
-				Content = oldContent;
-				Save();
-				return;
-			}
-			Program.Log.Info("Reloaded config.");
-		}
 
 		/// <summary>
 		/// Sets up the JSON file associated with this <see cref="AppConfig"/>.
@@ -116,6 +111,32 @@ namespace API.Config
 				throw new ConfigException("No such directory specified at 'serverSettings['htmlSourceDir']'.");
 			if (!Directory.Exists(Content["serverSettings"]["resourceDir"].Value<string>()))
 				throw new ConfigException("No such directory specified at 'serverSettings['resourceDir']'.");
+		}
+
+		/// <summary>
+		/// The function that is called when the config file has been edited by another process.
+		/// </summary>
+		/// <param name="newContent">The content of the new config.</param>
+		/// <remarks>
+		/// The new content is raw and may not satisfy the requirements of <see cref="Setup"/>.
+		/// </remarks>
+		protected override void OnReload(JObject newContent)
+		{
+			JObject oldContent = Content;
+			try
+			{
+				Content = newContent;
+				Setup();
+			}
+			catch (Exception e)
+			{
+				Program.Log.Error($"Reload failed: {e.Message}", e, false);
+				Program.Log.Error($"Restoring previous config...");
+				Content = oldContent;
+				Save();
+				return;
+			}
+			Program.Log.Info("Reloaded config.");
 		}
 
 		// Example of a property that refers directly to a config setting. The setter is optional.
