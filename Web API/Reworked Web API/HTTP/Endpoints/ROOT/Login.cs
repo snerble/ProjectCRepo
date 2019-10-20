@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
+using RazorEngine;
+using RazorEngine.Templating;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Net;
 
 namespace API.HTTP.Endpoints
@@ -12,36 +14,15 @@ namespace API.HTTP.Endpoints
 	[EndpointUrl("/login")]
 	public sealed class HTMLLogin : HTMLEndpoint
 	{
-		private readonly string Page = @"<!DOCTYPE HTML>
-<style>
-body {
-	text-align: center;
-	font-family: Verdana, sans-serif;
-}
-form input {
-	border-radius: 5pt;
-	padding: 5pt;
-	margin: 10pt;
-}
-</style>
-<html>
-	<body>
-		<form method='post'>
-			<input type='text' name='username' placeholder='Username'><br>
-			<input type='password' name='password' placeholder='Password'><br>
-			<input type='submit' value='Log In'>
-			<input hidden name='redirect' value='@()'>
-		</form>
-	</body>
-</html>
-";
+		public string HtmlDir => Path.GetFullPath(Path.Combine(
+			Directory.GetCurrentDirectory(),
+			Program.Config["serverSettings"]["htmlSourceDir"].ToObject<string>()
+		));
 
 		public HTMLLogin(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
 
 		public override void GET(Dictionary<string, string> parameters)
-		{
-			Server.SendText(Response, Page.Replace("#REDIRECT#", parameters.ContainsKey("redirect") ? parameters["redirect"] : ""));
-		}
+			=> Server.SendText(Response, Templates.RunTemplate(GetUrl<HTMLLogin>() + ".cshtml", Request, parameters));
 
 		public override void POST(Dictionary<string, string> parameters)
 		{
@@ -52,21 +33,30 @@ form input {
 			if (!parameters.TryGetValue("password", out string password)) { Server.SendError(Response, HttpStatusCode.BadRequest); return; }
 
 			// Send 401 unauthorized if the login info is incorrect
-			if (!Login.VerifyLogin(username, password)) { Server.SendError(Response, HttpStatusCode.Unauthorized); return; }
-
-			Server.AddCookie(Response, "username", username);
-			Server.AddCookie(Response, "token", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-			// Imagine a convenient method that gets the permissions from the database
-			string permissions;
-			if (username == "ts") permissions = "Moderator";
-			else if (username == "mg") permissions = "Admin";
-			else permissions = "User";
-			Server.AddCookie(Response, "permission", permissions);
+			if (username == "vp" && password == "vp")
+			{
+				Server.AddCookie(Response, "username", username);
+				Server.AddCookie(Response, "token", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+				Server.AddCookie(Response, "permission", "User");
+			}
+			else if (username == "ts" && password == "ts")
+			{
+				Server.AddCookie(Response, "username", username);
+				Server.AddCookie(Response, "token", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+				Server.AddCookie(Response, "permission", "Moderator");
+			}
+			else if (username == "mg" && password == "mg")
+			{
+				Server.AddCookie(Response, "username", username);
+				Server.AddCookie(Response, "token", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+				Server.AddCookie(Response, "permission", "Admin");
+			}
+			else Server.SendError(Response, HttpStatusCode.Unauthorized);
 
 			// Try to get redirect url, or use default homepage
 			parameters.TryGetValue("redirect", out string redirectUrl);
-			if (redirectUrl == null || redirectUrl.Length == 0)
-				redirectUrl = GetUrl<ImageHost>() + "?all&recurse&image=wallpaper&limit=25";
+			if (redirectUrl == null || redirectUrl.Length == 0) redirectUrl = GetUrl<ImageHost>();
+			else redirectUrl = Uri.UnescapeDataString(redirectUrl);
 			
 			Response.Redirect(redirectUrl);
 			Server.SendError(Response, HttpStatusCode.Redirect);
@@ -100,7 +90,7 @@ form input {
 			if (username == "vp" && password == "vp")
 			{
 				Server.AddCookie(Response, "username", username);
-				Server.AddCookie(Response, "token", "placeholder"); // TODO remove placeholder
+				Server.AddCookie(Response, "token", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
 				Server.AddCookie(Response, "permission", "User");
 				Server.SendError(Response, HttpStatusCode.NoContent);
 				return;
@@ -108,7 +98,7 @@ form input {
 			if (username == "ts" && password == "ts")
 			{
 				Server.AddCookie(Response, "username", username);
-				Server.AddCookie(Response, "token", "placeholder"); // TODO remove placeholder
+				Server.AddCookie(Response, "token", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
 				Server.AddCookie(Response, "permission", "Moderator");
 				Server.SendError(Response, HttpStatusCode.NoContent);
 				return;
@@ -116,23 +106,18 @@ form input {
 			if (username == "mg" && password == "mg")
 			{
 				Server.AddCookie(Response, "username", username);
-				Server.AddCookie(Response, "token", "placeholder"); // TODO remove placeholder
+				Server.AddCookie(Response, "token", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
 				Server.AddCookie(Response, "permission", "Admin");
 				Server.SendError(Response, HttpStatusCode.NoContent);
 				return;
 			}
 			Server.SendError(Response, HttpStatusCode.Unauthorized);
 		}
-
-		public static bool VerifyLogin(string username, string password)
-		{
-			if (username == "vp" && password == "vp") return true;
-			if (username == "ts" && password == "ts") return true;
-			if (username == "mg" && password == "mg") return true;
-			return false;
-		}
 	}
 
+	/// <summary>
+	/// Delegate HTML endpoint for the <see cref="Login"/> endpoint.
+	/// </summary>
 	[EndpointUrl("/logout")]
 	public sealed class HTMLLogout : HTMLEndpoint
 	{
@@ -144,16 +129,21 @@ form input {
 		}
 	}
 
+	/// <summary>
+	/// API endpoint that removes the login cookies.
+	/// </summary>
 	[EndpointUrl("/logout")]
 	public sealed class Logout : JsonEndpoint
 	{
+		public static string Expiration = DateTimeOffset.FromUnixTimeSeconds(0).ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'");
+
 		public Logout(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
 
 		public override void GET(JObject json, Dictionary<string, string> parameters)
 		{
-			Server.AddCookie(Response, "username", "deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT");
-			Server.AddCookie(Response, "token", "deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT");
-			Server.AddCookie(Response, "permission", "deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT");
+			Server.AddCookie(Response, "username", "deleted; expires=" + Expiration);
+			Server.AddCookie(Response, "token", "deleted; expires=" + Expiration);
+			Server.AddCookie(Response, "permission", "deleted; expires=" + Expiration);
 			Response.Redirect("/");
 			Server.SendError(Response, HttpStatusCode.Redirect);
 		}
