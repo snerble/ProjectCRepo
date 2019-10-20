@@ -77,7 +77,18 @@ namespace API
 			}
 			#endregion
 
-			Templates.CompileAll();
+			try
+			{
+				// Compile razor .cshtml templates
+				Templates.CompileAll();
+			}
+			catch (Exception e)
+			{
+				// Print any error and terminate
+				Log.Fatal("Template compilation failed:");
+				Log.Fatal($"{e.GetType().Name}: {e.Message}", e);
+				Terminate(1);
+			}
 
 			#region Setup Server
 			dynamic serverSettings = Config["serverSettings"];
