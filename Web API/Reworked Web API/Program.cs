@@ -77,6 +77,8 @@ namespace API
 			}
 			#endregion
 
+			Templates.CompileAll();
+
 			#region Setup Server
 			dynamic serverSettings = Config["serverSettings"];
 			dynamic performance = Config["performance"];
