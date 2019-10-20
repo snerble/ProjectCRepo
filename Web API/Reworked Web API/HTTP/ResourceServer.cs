@@ -1,4 +1,5 @@
 ﻿using API.HTTP.Filters;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
@@ -11,17 +12,8 @@ namespace API.HTTP
 	/// </summary>
 	public sealed class ResourceServer : Server
 	{
-		private long PartialDataLimit => Program.Config["serverSettings"]["partialDataLimit"].ToObject<long>();
-		private string ResourceDir
-		{
-			get
-			{
-				return Path.GetFullPath(Path.Combine(
-					Directory.GetCurrentDirectory(),
-					Program.Config["serverSettings"]["resourceDir"].ToObject<string>()
-				));
-			}
-		}
+		private long PartialDataLimit => Program.Config["serverSettings"]["partialDataLimit"].Value<long>();
+		private string ResourceDir => Program.Config.ResourceDir;
 
 		/// <summary>
 		/// Creates a new instance of <see cref="ResourceServer"/>.

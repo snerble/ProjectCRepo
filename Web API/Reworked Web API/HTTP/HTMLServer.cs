@@ -13,26 +13,8 @@ namespace API.HTTP
 	/// </summary>
 	public sealed class HTMLServer : Server
 	{
-		private string HTMLFileDir
-		{
-			get
-			{
-				return Path.GetFullPath(Path.Combine(
-					Directory.GetCurrentDirectory(),
-					Program.Config["serverSettings"]["htmlSourceDir"].ToObject<string>()
-				));
-			}
-		}
-		private string ResourceDir
-		{
-			get
-			{
-				return Path.GetFullPath(Path.Combine(
-					Directory.GetCurrentDirectory(),
-					Program.Config["serverSettings"]["resourceDir"].ToObject<string>()
-				));
-			}
-		}
+		private static string HTMLSourceDir => Program.Config.HTMLSourceDir;
+		private static string ResourceDir => Program.Config.ResourceDir;
 
 		/// <summary>
 		/// Creates a new instance of <see cref="HTMLServer"/>.
@@ -65,7 +47,7 @@ namespace API.HTTP
 			if (url == "/") url = "/index.html";
 
 			// Try to find a file endpoint
-			string file = HTMLFileDir + Uri.UnescapeDataString(url);
+			string file = HTMLSourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file))
 			{
 				Send(response, File.ReadAllBytes(file));
