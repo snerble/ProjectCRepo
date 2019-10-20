@@ -98,7 +98,7 @@ namespace API.HTTP.Endpoints
 			if (query.Length == 0) return new Dictionary<string, string>();
 
 			// Split the query string into key-value pairs
-			var items = Uri.UnescapeDataString(query).Split('&');
+			var items = query.Split('&');
 			var outDict = new Dictionary<string, string>();
 			foreach (var item in items)
 			{

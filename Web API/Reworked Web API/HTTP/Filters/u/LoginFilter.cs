@@ -1,7 +1,9 @@
-﻿using System.Net;
+﻿using API.HTTP.Endpoints;
+using System;
 using System.Linq;
+using System.Net;
 
-namespace API.HTTP.Filters.u
+namespace API.HTTP.Filters
 {
 	/// <summary>
 	/// Custom <see cref="Filter"/> class that prevents unauthorized access to urls underneath the /u url.
@@ -23,8 +25,8 @@ namespace API.HTTP.Filters.u
 			if (username == null || token == null)
 			{
 				Program.Log.Fine($"Denied unauthorized request to \"{Request.Url.LocalPath}\"");
-				Response.Redirect(Endpoints.Endpoint.GetUrl<Endpoints.Login>() + "?redirect=" + Request.RawUrl);
-				Server.SendError(Response, HttpStatusCode.Redirect);
+				Response.Redirect(Endpoint.GetUrl<Login>() + "?redirect=" + Uri.EscapeDataString(Request.RawUrl));
+				Server.SendError(Response, HttpStatusCode.Found);
 				Interrupt();
 			}
 		}
