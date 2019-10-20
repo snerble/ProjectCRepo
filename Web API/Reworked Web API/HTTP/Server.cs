@@ -66,10 +66,10 @@ namespace API.HTTP
 					}
 					catch (Exception e)
 					{
-						// Send internal server error on exception
+						// Try to send an internal server error on exception
 						try { SendError(context.Response, HttpStatusCode.InternalServerError); }
 						catch (ObjectDisposedException) { }
-						Program.Log.Error($"{e.GetType().Name} in {GetType().Name}.Main(): {e.Message}", e, false);
+						Program.Log.Error($"{e.GetType().Name} in {GetType().Name}.Main(): {e.Message}", e, true);
 					}
 				}
 			}
