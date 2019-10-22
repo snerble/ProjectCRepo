@@ -23,7 +23,8 @@ h1, h2, h3, h4, h5, h6 {
     top: 0;
     left: 0;
     background-color: #1f006e;
-    overflow-x: hidden;
+	overflow: auto;
+    /*overflow-x: hidden; */
     padding-top: 20px;
 }
   
@@ -64,9 +65,27 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 40px;
 }
   
-@media screen and (max-height: 450px) {
+/* @media screen and (max-height: 450px) {
     .sidenav {padding-top: 15px;}
     .sidenav a {font-size: 18px;}
+} */
+
+@media screen and (max-width: 700px) {
+  .sidenav {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .sidenav a {float: left;}
+  div.main {margin-left: 0;}
+  div.task{width:98%}
+}
+
+@media screen and (max-width: 400px) {
+  .sidenav a {
+    text-align: center;
+    float: none;
+	}
 }
 
 
@@ -125,7 +144,7 @@ input[type=submit] {
 
 .task {
 	background-color: #f7eef0;
-	width: 600px;
+	width: 40%;
 	height: 130px;
     /*border: 2px #1f006e solid;*/
 	box-shadow: 5px 5px 5px grey;
