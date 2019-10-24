@@ -1,0 +1,37 @@
+﻿@{
+    string redirect = null;
+    if (@ViewBag.parameters.ContainsKey("redirect"))
+    {
+        redirect = Uri.UnescapeDataString(@ViewBag.parameters["redirect"]);
+    }
+}
+<!doctype html>
+<style>
+    body {
+        text-align: center;
+        font-family: Verdana, sans-serif;
+    }
+
+    form input {
+        border-radius: 5pt;
+        padding: 5pt;
+        margin: 10pt;
+    }
+</style>
+<html>
+<head>
+    <script>
+        function test() {
+            
+            alert("Hi")
+        }
+
+    </script>
+</head>
+<body>
+    <form method="post">
+        <input type="text" name="taak" placeholder="Taak" /><br>
+        <input type="submit" value="Taak aanmaken" onclick="test()" />
+    </form>
+</body>
+</html>
