@@ -1,121 +1,182 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
-    <title>Register</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- <link rel="stylesheet" href="stylesheet.css">
-    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet"> -->
-    <link rel="shortcut icon" type="image/ico" href="favicon.ico"/>
-	<style>
-		@import url(http://fonts.googleapis.com/css?family=Roboto);
-		body {
-			background-color: #1f006e;
-		}
+    <head>
+        <title>Register</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- <link rel="stylesheet" href="stylesheet.css">
+        <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet"> -->
+        <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+        <style>
+            @import url(http://fonts.googleapis.com/css?family=Roboto);
 
-		h2 {
-			color: #af5166;
-			padding: 30px 35px;
-			margin: -10px -50px;
-			text-align:center;
-			border-radius: 10px 10px 0 0;
-		}
+            body {
+                background-image: url(https://get.pxhere.com/photo/laptop-desk-computer-work-man-working-coffee-people-technology-internet-sitting-corporate-office-professional-business-modern-workstation-label-monitor-brand-product-design-eye-document-644378.jpg);
+                background-repeat: no-repeat;
+                background-size: auto;
+                background-color: #1f006e;
+            }
 
-		hr {
-			margin: 10px -50px;
-			border: 0;
-			border-top: 1px solid #ccc;
-			margin-bottom: 40px;
-		}
+            h2 {
+                color: black;
+                padding: 25px 35px;
+                margin: -10px -50px;
+                text-align: center;
+                border-radius: 10px 10px 0 0;
+            }
 
-		div.main {
-			position: absolute;
-			left: 37%;
-			margin-left: -50px;
-			font-family: 'Roboto', sans-serif;
-			margin: 0 auto;
-			background-color: #ffffff;
-			width: 300px;
-			padding: 10px 50px 25px;
-			border: 1px solid #ffffff;
-			border-radius: 10px;
-			font-family: Roboto;
-			float:left;
-			margin-top:50px;
-		}
-		
-		input[type=text],input[type=password] {
-			width: 95%;
-			height: 40px;
-			padding-left: 10px;
-			margin-bottom: 25px;
-			margin-top: 5px;
-			border: 2px solid #7ea8bf;
-			color: #4f4f4f;
-			font-size: 16px;
-			border-radius: 5px;
-		}
+            h3 {
+                color: black;
+                padding: 15px 35px;
+                margin: -10px -50px;
+                text-align: center;
+                border-radius: 10px 10px 0 0;
+                font-weight: lighter;
+                font-size: 20px;
+            }
 
-		label {
-			color: #af5166;
-			font-size: 14px;
-			font-weight: bold;
-		}
+            hr {
+                margin: 10px -50px;
+                border: 0;
+                border-top: 1px solid #ccc;
+                margin-bottom: 40px;
+            }
 
-		center {
-			font-size:32px;
-		}	
+            div.main {
+                position: absolute;
+                left: 37%;
+                margin-left: -50px;
+                font-family: 'Roboto', sans-serif;
+                margin: 0 auto;
+                background-color: #ffffff;
+                width: 300px;
+                padding: 10px 50px 25px;
+                border: 1px solid #ffffff;
+                border-radius: 10px;
+                font-family: Roboto;
+                float: left;
+                margin-top: 50px;
+            }
 
-		.valid {
-			color: #7ea8bf;
-		}
+            input[type=text], input[type=password] {
+                width: 95%;
+                height: 40px;
+                padding-left: 10px;
+                margin-bottom: 10px;
+                margin-top: 5px;
+                border: 2px solid #7ea8bf;
+                color: #4f4f4f;
+                font-size: 16px;
+                border-radius: 5px;
+            }
 
-		.back {
-			text-decoration: none;
-			border: 1px solid rgb(0, 143, 255);
-			background-color: rgb(0, 214, 255);
-			padding: 3px 20px;
-			border-radius: 2px;
-			color: black;
-		}
+            label {
+                color: black;
+                font-size: 14px;
+                font-weight: bold;
+            }
 
-		input[type=button] {
-			font-size: 16px;
-			background: #af5166;
-			border: 1px solid #af5166;
-			color: #ffffff;
-			font-weight: bold;
-			cursor: pointer;
-			width: 100%;
-			border-radius: 5px;
-			padding: 10px 0;
-			outline:none;
-		}
+            center {
+                font-size: 32px;
+            }
 
-		input[type=button]:hover {
-			background: #8c4051;
-			border: 1px solid #8c4051;
-		}
-	</style>
+            .valid {
+                color: #7ea8bf;
+            }
+
+            .back {
+                text-decoration: none;
+                border: 1px solid rgb(0, 143, 255);
+                background-color: rgb(0, 214, 255);
+                padding: 3px 20px;
+                border-radius: 2px;
+                color: black;
+            }
+
+            input[type=button] {
+                font-size: 16px;
+                background: black;
+                border: 1px solid black;
+                color: #ffffff;
+                font-weight: bold;
+                cursor: pointer;
+                width: 100%;
+                border-radius: 5px;
+                padding: 10px 0;
+                outline: none;
+            }
+
+                input[type=button]:hover {
+                    background: black;
+                    border: 1px solid black;
+                }
+
+                input[type=button].button2 {
+                    font-size: 12px;
+                    background: white;
+                    border: 0px solid black;
+                    color: black;
+                    font-weight: lighter;
+                    cursor: pointer;
+                    width: 100%;
+                    padding: 10px 0;
+                    margin-top: 25px;
+                    outline: none;
+                }
+
+            p {
+                text-align: center;
+                font-family: 'Roboto', sans-serif;
+                margin: auto;
+                background-color: #ffffff;
+                width: 300px;
+                padding: 0px;
+                border-radius: 10px;
+                font-family: Roboto;
+                font-size: 14px;
+                float: left;
+                margin-top: 15px;
+                margin-bottom: 15px;
+            }
+        </style>
+        <script>
+            var name = document.getElementById("name").value;
+            var email = document.getElementById("email").value;
+            var password = document.getElementById("password").value;
+            var passwordConfirm = document.getElementById("passwordConfirm").value;
+
+            function validate() {
+                if (name == null) {
+                    alert("Verkeerde gegevens");
+                }
+                else {
+                    window.location = "registered.html";
+                    return false;
+                }
+            }
+
+            
+            
+
+
+        </script>
+    </head>
     <body>
 		<div class="main">
 			<h2>Registreren</h2>
-			<form id="form_id" method="post" name="myform">
-			<label>Voornaam:</label>
-			<input type="text" name="firstname" id="firstname"/>
-			<label>Achternaam:</label>
-			<input type="text" name="lastname" id="lastname"/>
-			<label>Functie:</label><br>
-			<select name="function">
-				<option value="vp">Vloerpersoneel</option>
-				<option value="ts">Technische staff</option>
-				<option value="mg">Manager</option>
-			</select><br><br>
-			<label>Email:</label>
-			<input type="text" name="username" id="username"/>
-			<label>Wachtwoord:</label>
-			<input type="password" name="password" id="password"/>
-			<input type="button" value="Registreer" id="submit" onclick="location.href='registered.html';"/>
-			</form>
+            <h3> Welkom bij Alldone, registreer om verder te gaan</h3>
+            <form id="registerForm" method="post" name="myform">
+                <label>Naam:</label> <input name="name" type="text" id="name" />
+
+                <label>Email:</label> <input name="email" type="text" id="email" />
+                <label>Wachtwoord:</label> <input name="password" type="password" id="password" />
+                <label>Bevestig wachtwoord:</label> <input name="passwordConfirm" type="password" id="passwordConfirm" />
+
+                <p> Door te registreren, gaat u akkoor met onze Termen & Condities</p>
+
+                <input type="button" value="Registreer" id="signup" onclick="validate()" />
+                <input type="button" value="Al geregistreerd? Klik dan hier" id="backLogin" class="button2" onclick="window.location.href = 'login.html';" />
+            </form>
 		</div>
     </body>
 </html>
