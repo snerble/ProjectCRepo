@@ -84,19 +84,19 @@ namespace API {
 				Archive = Logs("{0:dd-MM-yyyy}.{2}.zip")
 			});
 
-
 			//Get local IP address, if autodetect is enabled in settings.
 			List<string> addresses = Settings["connectionSettings"]["serverAddresses"].ToObject<List<string>>();
 			if ((bool)Settings["connectionSettings"]["autodetect"]) {
 				string address;
-				using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0)) {
+				using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
 					socket.Connect("8.8.8.8", 65530);
 					IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
 					address = endPoint.Address.ToString();
 					addresses.Add(address);
-				}
 				log.Info("Detected IPv4 address to be " + address);
 			}
+
+			var h = RequestWorkers[0..1];
 
 			//Create request queue
 			var requestQueue = new BlockingCollection<HttpListenerContext>();
