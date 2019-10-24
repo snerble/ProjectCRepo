@@ -135,15 +135,13 @@ namespace API.HTTP.Endpoints
 	[EndpointUrl("/logout")]
 	public sealed class Logout : JsonEndpoint
 	{
-		public static string Expiration = DateTimeOffset.FromUnixTimeSeconds(0).ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'");
-
 		public Logout(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
 
 		public override void GET(JObject json, Dictionary<string, string> parameters)
 		{
-			Server.AddCookie(Response, "username", "deleted; expires=" + Expiration);
-			Server.AddCookie(Response, "token", "deleted; expires=" + Expiration);
-			Server.AddCookie(Response, "permission", "deleted; expires=" + Expiration);
+			Server.RemoveCookie(Response, "username");
+			Server.RemoveCookie(Response, "token");
+			Server.RemoveCookie(Response, "permission");
 			Response.Redirect("/");
 			Server.SendError(Response, HttpStatusCode.Redirect);
 		}

@@ -15,6 +15,12 @@ namespace API.HTTP
 	public abstract class Server
 	{
 		/// <summary>
+		/// A string denoting Epoch time in a format accepted by cookies.
+		/// </summary>
+		/// TODO Add some kind of Utils class that contains a `ToUTC_GMTString` function
+		private static string CookieExpiration { get; } = DateTimeOffset.FromUnixTimeSeconds(0).ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'");
+
+		/// <summary>
 		/// Source of http requests for this <see cref="Server"/>.
 		/// </summary>
 		private readonly BlockingCollection<HttpListenerContext> queue;
@@ -152,5 +158,13 @@ namespace API.HTTP
 		/// <param name="value">The value of the cookie.</param>
 		public static void AddCookie(HttpListenerResponse response, string name, object value)
 			=> response.Headers.Add("Set-Cookie", $"{name}={value}");
+		/// <summary>
+		/// Deletes a cookie by settings it's value to `deleted` and setting it's expiration to 1 Jan 1970.
+		/// </summary>
+		/// <param name="response">The response object to remove a cookie from.</param>
+		/// <param name="name">The name of the cookie to remove.</param>
+		public static void RemoveCookie(HttpListenerResponse response, string name)
+			=> AddCookie(response, name, "deleted; expires=" + CookieExpiration);
+			
 	}
 }
