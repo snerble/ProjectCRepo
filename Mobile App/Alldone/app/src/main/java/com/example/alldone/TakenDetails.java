@@ -11,11 +11,15 @@ import android.content.Intent;
 import com.google.android.material.navigation.NavigationView;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class TakenDetails extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
+
+    private String title;
+    private String users;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +35,16 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         NavigationView navigationView = (NavigationView) findViewById(R.id.nv1);
         navigationView.setNavigationItemSelectedListener(this);
+
+        Intent intent=getIntent();
+
+        title = intent.getStringExtra("title");
+        users = intent.getStringExtra("status");
+        TextView titleText = findViewById(R.id.title);
+        TextView usersText = findViewById(R.id.status);
+
+        titleText.setText(title);
+        usersText.setText(users);
     }
 
     @Override

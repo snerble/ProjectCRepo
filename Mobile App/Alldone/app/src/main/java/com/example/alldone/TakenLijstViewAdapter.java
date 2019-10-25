@@ -1,6 +1,7 @@
 package com.example.alldone;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,6 +53,11 @@ public class TakenLijstViewAdapter extends RecyclerView.Adapter<TakenLijstViewAd
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "onClick: clicked on " + titleList.get(position));
+                Context context = v.getContext();
+                Intent intent = new Intent(context, TakenDetails.class);
+                intent.putExtra("title", titleList.get(position));
+                intent.putExtra("status", usersList.get(position));
+                context.startActivity(intent);
             }
         });
     }
