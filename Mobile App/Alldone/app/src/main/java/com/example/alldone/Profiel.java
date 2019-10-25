@@ -10,11 +10,15 @@ import android.os.Bundle;
 import com.google.android.material.navigation.NavigationView;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 
 public class Profiel extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
+
+    private String name;
+    private String job;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +34,14 @@ public class Profiel extends AppCompatActivity implements NavigationView.OnNavig
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         NavigationView navigationView = (NavigationView) findViewById(R.id.nv1);
         navigationView.setNavigationItemSelectedListener(this);
+
+        name = "Abel Beekink";
+        job = "Technische staff";
+        TextView nameText = findViewById(R.id.name);
+        TextView jobText = findViewById(R.id.job);
+
+        nameText.setText(name);
+        jobText.setText(job);
     }
 
     @Override
