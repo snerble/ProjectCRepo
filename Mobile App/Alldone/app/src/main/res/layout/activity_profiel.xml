@@ -16,20 +16,6 @@
         android:layout_height="match_parent"
         tools:context=".Profiel">
 
-        <shape
-            android:layout_width="474dp"
-            android:layout_height="299dp"
-            android:shape="rectangle"
-            tools:layout_editor_absoluteX="-35dp"
-            tools:layout_editor_absoluteY="-23dp">
-
-            <solid android:color="#FFC0CCDA" />
-
-            <size
-                android:width="540dp"
-                android:height="303dp" />
-        </shape>
-
         <ImageView
             android:id="@+id/profilePic"
             android:layout_width="wrap_content"
