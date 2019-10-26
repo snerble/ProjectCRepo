@@ -157,7 +157,11 @@ namespace API.HTTP
 		/// <param name="name">The name of the cookie.</param>
 		/// <param name="value">The value of the cookie.</param>
 		public static void AddCookie(HttpListenerResponse response, string name, object value)
-			=> response.Headers.Add("Set-Cookie", $"{name}={value}");
+		{
+			// Create a cookie instance to take advantage of builtin syntax checking, like checking if the value does not contain illegal characters.
+			var cookie = new Cookie(name, value.ToString());
+			response.Headers.Add("Set-Cookie", $"{cookie.Name}={cookie.Value}");
+		}
 		/// <summary>
 		/// Deletes a cookie by settings it's value to `deleted` and setting it's expiration to 1 Jan 1970.
 		/// </summary>
