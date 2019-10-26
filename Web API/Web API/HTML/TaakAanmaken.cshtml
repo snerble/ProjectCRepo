@@ -1,11 +1,4 @@
-﻿@{
-    string redirect = null;
-    if (@ViewBag.parameters.ContainsKey("redirect"))
-    {
-        redirect = Uri.UnescapeDataString(@ViewBag.parameters["redirect"]);
-    }
-}
-<!doctype html>
+﻿<!doctype html>
 <style>
     body {
         text-align: center;
@@ -18,20 +11,64 @@
         margin: 10pt;
     }
 </style>
+
 <html>
 <head>
-    <script>
-        function test() {
+    <script type="text/javascript">
+
+        function bakeCookie() {
+            document.cookie = 'name=Cindy;max-age=60';
+            alert("Cookie has been created: " + document.cookie);
             
-            alert("Hi")
         }
 
+        function checkCookie() {
+            if (document.cookie) {
+                alert("Cookie has been checked: " + document.cookie);
+            }
+            else {
+                alert("No cookie has been found");
+
+            }
+        }
+
+        function getCookie(name) {
+            var value = "; " + document.cookie;
+            var parts = value.split("; " + name + "=");
+            if (parts.length == 2) return parts.pop().split(";").shift();
+            alert(getCookie("yeet"));
+        }
+
+        
+        
     </script>
 </head>
 <body>
+
+    <button onclick="bakeCookie()">Maak Cookie</button>
+    <button onclick="checkCookie()">Check Cookie</button>
+    <button onclick="getCookie()">Get Cookie</button>
+
+
+    <!--<div id="showForm">
     <form method="post">
-        <input type="text" name="taak" placeholder="Taak" /><br>
-        <input type="submit" value="Taak aanmaken" onclick="test()" />
+        <input hidden value="create" />
+        <input type="text" name="taak" placeholder="Taak" />
+        <br />
+        <input type="submit" id="createButton" value="Taak aanmaken" onclick="get_cookie()" />
     </form>
+    </div>
+    <form method="post">
+        <input hidden value="update" />
+        <input type="text" name="taak" placeholder="Taak" />
+        <br />
+        <input type="submit" id="ubutton" value="Taak aanmaken" onclick="test1()" />
+    </form>
+    <form method="delete">
+        <input hidden value="delete" />
+        <input type="text" name="taak" placeholder="Taak" />
+        <br />
+        <input type="submit" id="dbutton" value="Taak aanmaken" onclick="test2()" />
+    </form>-->
 </body>
 </html>
