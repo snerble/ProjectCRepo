@@ -1,4 +1,5 @@
 ﻿using API.Config;
+using API.Database;
 using API.HTTP;
 using Config.Exceptions;
 using Logging;
@@ -8,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 
 namespace API
 {
@@ -29,6 +31,7 @@ namespace API
 
 		private static readonly List<Server> Servers = new List<Server>();
 		private static Listener listener;
+		private static AppDatabase database;
 
 		static void Main()
 		{
@@ -76,6 +79,14 @@ namespace API
 				Log.OutputStreams.Add(File.CreateText(log));
 			}
 			#endregion
+
+			Log.Config("Creating database connection...");
+			database = new AppDatabase();
+			Log.Info($"Opened connection to '{database.Connection.DataSource}'.");
+
+			Test();
+
+			Terminate();
 
 			try
 			{
@@ -131,6 +142,22 @@ namespace API
 			Terminate(0);
 		}
 
+		static void Test()
+		{
+			foreach (var e in database.Select<User>())
+			{
+				Log.Info(e);
+			}
+
+			database.Insert(new User()
+			{
+				Username = "Code test",
+				Password = "This is from " + Assembly.GetExecutingAssembly().GetName(),
+				Token = 0,
+				AccessLevel = AccessLevel.Admin
+			});
+		}
+
 		/// <summary>
 		/// Returns the IP address of this device.
 		/// </summary>
@@ -147,7 +174,7 @@ namespace API
 		/// <summary>
 		/// Ends the program with the specified exit code.
 		/// </summary>
-		static void Terminate(int exitCode = -1)
+		static void Terminate(int exitCode = 0)
 		{
 			Log.Info("Terminating...");
 			listener?.Stop();
