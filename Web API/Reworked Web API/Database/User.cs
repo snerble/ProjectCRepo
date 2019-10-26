@@ -1,4 +1,5 @@
 ﻿using MySQL.Modeling;
+using System;
 
 namespace API.Database
 {
@@ -11,9 +12,6 @@ namespace API.Database
 		Admin
 	}
 
-	/// <summary>
-	/// Represents the 'users' table in the database.
-	/// </summary>
 	[Table("users")]
 	public sealed class User : ItemAdapter
 	{
@@ -35,16 +33,7 @@ namespace API.Database
 		public int? Id { get; set; }
 		public string Username { get; set; }
 		public string Password { get; set; }
-		public long Token { get; set; }
-		public AccessLevel AccessLevel { get; set; }
-	}
-
-	[Table("groups")]
-	public sealed class Group : ItemAdapter
-	{
-		public int? Id { get; set; }
-		public int Creator { get; set; }
-		public string Name { get; set; }
-		public string Description { get; set; }
+		public long Token { get; set; } = DateTimeOffset.Now.ToUnixTimeSeconds();
+		public AccessLevel AccessLevel { get; set; } = AccessLevel.User;
 	}
 }
