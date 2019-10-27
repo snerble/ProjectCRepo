@@ -52,7 +52,7 @@ namespace MySQL.Modeling
 		/// <summary>
 		/// Returns the table name of the specified data model, or the data model type name if no name is specified.
 		/// </summary>
-		public static string GetName<T>() where T : ItemAdapter
+		public static string GetTableName<T>() where T : ItemAdapter
 			=> typeof(T).GetCustomAttribute<TableAttribute>()?.Name ?? typeof(T).Name;
 
 		/// <summary>
