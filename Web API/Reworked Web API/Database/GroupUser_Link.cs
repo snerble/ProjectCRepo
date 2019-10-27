@@ -4,9 +4,9 @@ namespace API.Database
 {
 	public enum Rank
 	{
-		User,
-		Moderator,
-		Admin
+		User = 1,
+		Moderator = 2,
+		Admin = 3
 	}
 
 	[Table("groups_users")]

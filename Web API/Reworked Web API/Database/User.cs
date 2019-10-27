@@ -8,8 +8,8 @@ namespace API.Database
 	/// </summary>
 	public enum AccessLevel
 	{
-		User,
-		Admin
+		User = 1,
+		Admin = 2
 	}
 
 	[Table("users")]
