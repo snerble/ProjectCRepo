@@ -16,49 +16,46 @@
 <head>
     <script type="text/javascript">
 
-        function bakeCookie() {
-            document.cookie = 'name=Cindy;max-age=60';
-            alert("Cookie has been created: " + document.cookie);
-            
-        }
-
-        function checkCookie() {
-            if (document.cookie) {
-                alert("Cookie has been checked: " + document.cookie);
-            }
-            else {
-                alert("No cookie has been found");
-
-            }
-        }
-
-        function getCookie(name) {
-            var value = "; " + document.cookie;
-            var parts = value.split("; " + name + "=");
-            if (parts.length == 2) return parts.pop().split(";").shift();
-            alert(getCookie("yeet"));
-        }
-
         
-        
+        var maxAge = 60;
+
+        function setCookie(name, value) {
+            document.cookie = name + "=" + escape(value) + ";max-age=" + maxAge;
+        }
+
+        function storeValue(form) {
+            setCookie("taak1", form.taak1.value);
+            return true;
+        }
+
+        if (taak1 = getCookie("taak1")) document.taakForm.taak1.value = taak1;
+
     </script>
 </head>
 <body>
-
-    <button onclick="bakeCookie()">Maak Cookie</button>
-    <button onclick="checkCookie()">Check Cookie</button>
-    <button onclick="getCookie()">Get Cookie</button>
-
-
-    <!--<div id="showForm">
-    <form method="post">
-        <input hidden value="create" />
-        <input type="text" name="taak" placeholder="Taak" />
-        <br />
-        <input type="submit" id="createButton" value="Taak aanmaken" onclick="get_cookie()" />
-    </form>
+    <div id="showForm">
+        <form name="taakForm" method="post" action="/taakaanmaken" onsubmit="return storeValue(this);">
+            <input type="text" name="taak1" value="" placeholder="Taak aanmaken"/>
+            <br />
+            <input type="submit" value="Taak aanmaken"/>
+        </form>
     </div>
-    <form method="post">
+    <div id="showTaak">
+        <h1>Takenlijst</h1>
+        <script type="text/javascript">
+
+            /// uitleg over functie nodig ;-;
+            function getCookie(name){
+            var re = new RegExp(name + "=([^;]+)");
+                var value = re.exec(document.cookie);
+                return (value != null) ? unescape(value[1]) : null;
+            }
+
+            document.write(getCookie("taak1"));
+        </script>
+
+    </div>
+    <!--<form method="post">
         <input hidden value="update" />
         <input type="text" name="taak" placeholder="Taak" />
         <br />
@@ -72,3 +69,95 @@
     </form>-->
 </body>
 </html>
+
+<!--<!DOCTYPE html>
+<html lang="en">
+<title>Nieuwe taak</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="stylesheet.css">
+<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+<link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+<head>
+    <script type="text/javascript">
+
+        /*function bakeCookie() {
+            document.cookie = "name=Cindy;max-age=60";
+            alert("Cookie has been created: " + document.cookie);
+        }
+
+        function readCookie() {
+            alert(getCookie("name"));
+        }
+
+        function getCookie(name) {
+            var value = "; " + document.cookie;
+            var parts = value.split("; " + name + "=");
+            if (parts.length == 2) return parts.pop().split(";").shift();
+        }*/
+
+        
+
+
+
+    </script>
+</head>
+<body>
+    <!-- Dit is het menu aan de linker kant van de webapp -->
+<!--<div class="sidenav">
+    <p>Ingelogd als: technische staff <a href="logout.html">Log uit</a></p>
+    <br>
+    <a href="home_ts.html">Home</a>
+    <a href="task_list_ts.html">Takenlijst</a>
+    <a href="#">Nieuwe taak</a>
+</div>
+
+<!-- Dit is het formulier waar medewerkers de taak doorgeven -->
+<!---<div class="main">
+    <h1>Nieuwe taak</h1>
+    <form action="" id="taskform" method="post">
+        <div class="split">
+            <div class="split_part">
+                <label>Titel:</label><br>
+                <input type="text" size="40" name="title" value="">
+                <br><br>
+
+                <label>Prioriteit:</label><br>
+                <select name="priority">
+                    <option value="0"></option>
+                    <option value="1">!</option>
+                    <option value="2">!!</option>
+                    <option value="3">!!!</option>
+                </select>
+
+                <br><br>
+
+                <label>Omschrijving:</label><br>
+                <textarea rows="3" cols="60" name="description" form="taskform"></textarea>
+                <br>
+
+
+            </div>
+            <div class="split_part">
+                <label>Herhalen:</label><br>
+                <select name="repeat">
+                    <option value="no">Nee</option>
+                    <option value="daily">Ja, dagelijks</option>
+                    <option value="weekly">Ja, weekelijks</option>
+                    <option value="monthly">Ja, maandelijks</option>
+                </select>
+
+                <br><br><br>
+
+                <div class="add_img"><button>+</button></div><label style="color:#111; font-size:20px; margin-left: 20px;">Voeg bestand toe</label>
+            </div>
+            <br>
+        </div>
+</div>
+
+<input type="submit" value="Submit" id="btn" onclick="bakeCookie()">
+<button onclick="readCookie()">Get Cookie</button>
+    </form>
+    </div>
+</body>
+</html> -->
