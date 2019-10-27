@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using MySql.Data.MySqlClient;
 using MySQL.Modeling;
 
@@ -23,11 +24,11 @@ namespace MySQL
 		/// <typeparam name="T">A subclass of <see cref="ItemAdapter"/>.</typeparam>
 		public IEnumerable<T> Select<T>() where T : ItemAdapter, new()
 		{
-			using var command = new MySqlCommand($"SELECT * FROM `{Utils.GetName<T>()}`", Connection);
+			using var command = new MySqlCommand($"SELECT * FROM `{Utils.GetTableName<T>()}`", Connection);
 			using var reader = command.ExecuteReader();
 
 			// Get the properties of the model and sort them based on name
-			var properties = Utils.GetAllColumns<T>().ToDictionary(x => Utils.GetColumnData(x).Name.ToLower());
+			var columns = Utils.GetAllColumns<T>().ToDictionary(x => Utils.GetColumnData(x).Name.ToLower());
 			do
 			{
 				// Collect field names in a list
@@ -40,7 +41,7 @@ namespace MySQL
 					T outObj = new T();
 					for (int i = 0; i < reader.FieldCount; i++)
 					{
-						var property = properties[fields[i]];
+						var property = columns[fields[i]];
 						var type = property.PropertyType;
 						var value = reader.GetValue(i);
 
@@ -79,12 +80,14 @@ namespace MySQL
 			// Func that creates a parameter string for one item
 			string getValueString(T item) => '(' + string.Join(", ", columns.Keys.Select(x => $"@{x.Name}_{item.GetHashCode()}")) + ')';
 
-			// Generate query for itemadapter and create a set of parameters unique to every item using their hashcode
-			string sql = $"INSERT INTO `{Utils.GetName<T>()}` ({string.Join(", ", columns.Keys.Select(x => $"`{x.Name}`"))})" +
-						"VALUES" + string.Join(",", items.Select(x => getValueString(x))) + ';';
+			// Generate query for the collection of items
+			var query = new StringBuilder($"INSERT INTO `{Utils.GetTableName<T>()}`(");
+			query.Append(string.Join(", ", columns.Keys.Select(x => $"`{x.Name}`"))); // Build component with column names
+			query.Append(")VALUES");
+			query.Append(string.Join(",", items.Select(x => getValueString(x))));	  // Build components with all item parameters
 
 			// Create command
-			using var command = new MySqlCommand(sql, Connection);
+			using var command = new MySqlCommand(query.ToString(), Connection);
 			// Create parameter objects for every value and item
 			foreach (var item in items)
 				foreach (var keyValue in columns)
@@ -120,6 +123,20 @@ namespace MySQL
 				}
 			}
 			return scalar;
+		}
+
+		public long Delete<T>(T item) where T : ItemAdapter
+		{
+			// Get the columns of the data model
+			var columns = Utils.GetAllColumns<T>().ToDictionary(x => Utils.GetColumnData(x));
+
+			var query = new StringBuilder($"DELETE FROM `{Utils.GetTableName<T>()}`");
+
+			// Create command
+			using var command = new MySqlCommand(query.ToString(), Connection);
+
+			// Run query and return number of affected rows
+			return command.ExecuteNonQuery();
 		}
 	}
 }
