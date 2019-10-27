@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+<head>
     <title>Uitgelogd</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,9 +10,9 @@
 	<style>
 		@import url(http://fonts.googleapis.com/css?family=Roboto);
 		body {
-            background-image: url(https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Desktop_after_work_%28Unsplash%29.jpg/1200px-Desktop_after_work_%28Unsplash%29.jpg);
+            background-image: url(https://get.pxhere.com/photo/laptop-desk-computer-work-man-working-coffee-people-technology-internet-sitting-corporate-office-professional-business-modern-workstation-label-monitor-brand-product-design-eye-document-644378.jpg);
 			background-repeat: no-repeat;
-            background-size: cover;
+            background-size: auto;
             background-color: #1f006e;
 		}
 
@@ -62,18 +63,21 @@
 			border: 1px solid black;
 		}
 	</style>
-    <script>
-        function preventBack(){window.history.forward();}
-            setTimeout("preventBack()", 0);
-            window.onunload=function(){null};
-    </script>
+    <script type="text/javascript">
+        function preventBack() {
+            window.history.forward();
+        }
+
+        setTimeout("preventBack()", 0);
+        window.onunload = function () { null };
+</script>
+</head>
     <body>
 		<div class="main">
 			<h2>Log out</h2>
 			<p>Je bent uitgelogd.</p>
 			<br>
 			<input type="button" value="Ga naar login" id="submit" onclick="location.href = 'login.html';"/>
-			</form>
 		</div>
     </body>
 </html>
