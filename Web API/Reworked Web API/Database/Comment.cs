@@ -6,6 +6,7 @@ namespace API.Database
 	[Table("comments")]
 	public sealed class Comment : ItemAdapter
 	{
+		[AutoIncrement]
 		public int? Id { get; set; }
 		public int Task { get; set; }
 		public int? Creator { get; set; }

@@ -30,6 +30,7 @@ namespace API.Database
 		//[Column("accessLevel")]
 		//public AccessLevel AccessLevel { get; set; }
 
+		[AutoIncrement]
 		public int? Id { get; set; }
 		public string Username { get; set; }
 		public string Password { get; set; }

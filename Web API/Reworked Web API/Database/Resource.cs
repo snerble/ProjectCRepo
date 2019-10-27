@@ -5,6 +5,7 @@ namespace API.Database
 	[Table("resources")]
 	public sealed class Resource : ItemAdapter
 	{
+		[AutoIncrement]
 		public int? Id { get; set; }
 		public string Filename { get; set; }
 		public byte[] Data { get; set; }
