@@ -56,7 +56,7 @@ namespace MySQL
 			while (reader.NextResult());
 		}
 
-		public object Insert<T>(T item) where T : ItemAdapter
+		public long Insert<T>(T item) where T : ItemAdapter
 		{
 			var properties = Utils.GetColumns<T>().ToDictionary(x => Utils.GetColumnData(x));
 
@@ -70,8 +70,8 @@ namespace MySQL
 				command.Parameters.Add(parameter);
 			}
 
-
-			return command.ExecuteScalar();
+			command.ExecuteNonQuery();
+			return command.LastInsertedId;
 		}
 	}
 }
