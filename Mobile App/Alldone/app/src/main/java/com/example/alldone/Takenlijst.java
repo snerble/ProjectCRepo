@@ -27,6 +27,7 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
     private ArrayList<String> titleList = new ArrayList<>();
     private ArrayList<String> usersList = new ArrayList<>();
     private ArrayList<String> priorityList = new ArrayList<>();
+    private ArrayList<String> statusList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,16 +51,18 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
         titleList.add("Koffiebonen bijvullen");
         usersList.add("Open voor inschrijving");
         priorityList.add("");
+        statusList.add("");
         titleList.add("Bureau repareren");
         usersList.add("Amy, Daphne");
         priorityList.add("!!");
+        statusList.add("Bezig");
 
         initRecyclerView();
     }
 
     private void initRecyclerView() {
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        TakenLijstViewAdapter adapter = new TakenLijstViewAdapter(titleList, usersList, priorityList, this);
+        TakenLijstViewAdapter adapter = new TakenLijstViewAdapter(titleList, usersList, priorityList, statusList, this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }

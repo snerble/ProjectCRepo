@@ -28,7 +28,7 @@
             tools:layout_editor_absoluteX="31dp" />
 
         <TextView
-            android:id="@+id/status"
+            android:id="@+id/users"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -45,7 +45,7 @@
             android:layout_marginTop="32dp"
             android:text="Omschrijving"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/status" />
+            app:layout_constraintTop_toBottomOf="@+id/users" />
 
         <Button
             android:id="@+id/ToAssigned"
@@ -55,7 +55,7 @@
             android:text="Ingeschreven"
             app:layout_constraintEnd_toStartOf="@+id/ToComment"
             app:layout_constraintStart_toEndOf="@+id/ToDescript"
-            app:layout_constraintTop_toBottomOf="@+id/status" />
+            app:layout_constraintTop_toBottomOf="@+id/users" />
 
         <Button
             android:id="@+id/ToComment"
@@ -64,7 +64,7 @@
             android:layout_marginTop="32dp"
             android:text="Opmerkingen"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/status" />
+            app:layout_constraintTop_toBottomOf="@+id/users" />
 
         <TextView
             android:id="@+id/detailContent"

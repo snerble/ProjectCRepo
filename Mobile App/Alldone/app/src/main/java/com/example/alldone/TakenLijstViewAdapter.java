@@ -24,12 +24,14 @@ public class TakenLijstViewAdapter extends RecyclerView.Adapter<TakenLijstViewAd
     private ArrayList<String> titleList = new ArrayList<>();
     private ArrayList<String> usersList = new ArrayList<>();
     private ArrayList<String> priorityList = new ArrayList<>();
+    private ArrayList<String> statusList = new ArrayList<>();
     private Context mContext;
 
-    public TakenLijstViewAdapter(ArrayList<String> titleList, ArrayList<String> usersList, ArrayList<String> priorityList, Context mContext) {
+    public TakenLijstViewAdapter(ArrayList<String> titleList, ArrayList<String> usersList, ArrayList<String> priorityList, ArrayList<String> statusList, Context mContext) {
         this.titleList = titleList;
         this.usersList = usersList;
         this.priorityList = priorityList;
+        this.statusList = statusList;
         this.mContext = mContext;
     }
 
@@ -48,6 +50,7 @@ public class TakenLijstViewAdapter extends RecyclerView.Adapter<TakenLijstViewAd
         holder.title.setText(titleList.get(position));
         holder.users.setText(usersList.get(position));
         holder.priority.setText(priorityList.get(position));
+        holder.status.setText(statusList.get(position));
 
         holder.parentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,6 +75,7 @@ public class TakenLijstViewAdapter extends RecyclerView.Adapter<TakenLijstViewAd
         TextView title;
         TextView users;
         TextView priority;
+        TextView status;
         RelativeLayout parentLayout;
 
         public ViewHolder(@NonNull View itemView) {
@@ -79,6 +83,7 @@ public class TakenLijstViewAdapter extends RecyclerView.Adapter<TakenLijstViewAd
             title = itemView.findViewById(R.id.title);
             users = itemView.findViewById(R.id.users);
             priority = itemView.findViewById(R.id.priority);
+            status = itemView.findViewById(R.id.status);
             parentLayout = itemView.findViewById(R.id.parent_layout);
         }
     }

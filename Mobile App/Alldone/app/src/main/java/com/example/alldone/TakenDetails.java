@@ -39,9 +39,9 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
         Intent intent=getIntent();
 
         title = intent.getStringExtra("title");
-        users = intent.getStringExtra("status");
+        users = intent.getStringExtra("users");
         TextView titleText = findViewById(R.id.title);
-        TextView usersText = findViewById(R.id.status);
+        TextView usersText = findViewById(R.id.users);
 
         titleText.setText(title);
         usersText.setText(users);
