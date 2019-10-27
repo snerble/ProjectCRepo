@@ -3,6 +3,15 @@
 namespace MySQL.Modeling
 {
 	/// <summary>
+	/// Marks a column of a database table model as PRIMARY.
+	/// </summary>
+	/// <remarks>
+	/// Primary keys must be unique and are used for foreign key constraints.
+	/// </remarks>
+	[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+	public class PrimaryAttribute : Attribute { }
+
+	/// <summary>
 	/// Marks a column of a database table model as Auto Increment and PRIMARY.
 	/// </summary>
 	/// <remarks>
@@ -10,16 +19,7 @@ namespace MySQL.Modeling
 	/// primary value incremented once from the previous.
 	/// </remarks>
 	[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-	public sealed class AutoIncrementAttribute : Attribute { }
-
-	/// <summary>
-	/// Marks a column of a database table model as PRIMARY.
-	/// </summary>
-	/// <remarks>
-	/// Primary keys must be unique and are used for foreign key constraints.
-	/// </remarks>
-	[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-	public sealed class PrimaryAttribute : Attribute { }
+	public class AutoIncrementAttribute : PrimaryAttribute { }
 
 	/// <summary>
 	/// Marks a column of a database table model as UNIQUE.
