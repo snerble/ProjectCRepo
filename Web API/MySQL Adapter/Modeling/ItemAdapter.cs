@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Reflection;
 
 namespace MySQL.Modeling
 {
@@ -17,7 +18,14 @@ namespace MySQL.Modeling
 		/// <returns></returns>
 		public override string ToString()
 		{
-			return GetType().Name + "(" + string.Join(", ", Utils.GetColumns(GetType()).Select(x => $"{Utils.GetColumnData(x).Name}: {x.GetValue(this) ?? "NULL"}")) + ")";
+			string selector(PropertyInfo x)
+			{
+				var data = Utils.GetColumnData(x);
+				var txt = x.GetValue(this)?.ToString() ?? "NULL";
+				if (x.PropertyType == typeof(string)) txt = '"' + txt + '"';
+				return $"{data.Name}: {txt}";
+			};
+			return GetType().Name + "(" + string.Join(", ", Utils.GetAllColumns(GetType()).Select(selector)) + ")";
 		}
 	}
 }
