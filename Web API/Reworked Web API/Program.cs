@@ -144,18 +144,35 @@ namespace API
 
 		static void Test()
 		{
-			foreach (var e in database.Select<User>())
+			var user = database.Select<User>().LastOrDefault() ?? throw new Exception("oof");
+			var group = new Group()
 			{
-				Log.Info(e);
-			}
+				Creator = user.Id.Value, // damn nullables. well whatever
+				Name = "Test group lol",
+				Description = "Suk my dik. this society was made by " + System.Security.Principal.WindowsIdentity.GetCurrent().Name
+			};
+			group.Id = (int)database.Insert(group);
+			var task = new Task()
+			{
+				Group = group.Id.Value,
+				Creator = user.Id.Value,
+				Title = "smonk wed and rise up gamers",
+				Description = "dank af boiiiiiiii",
+				Priority = 3
+			};
+			task.Id = (int)database.Insert(task);
+			var comment = new Comment()
+			{
+				Task = task.Id.Value,
+				Creator = user.Id.Value,
+				Message = "poop. this gang weed was made by " + System.Security.Principal.WindowsIdentity.GetCurrent().Name
+			};
+			comment.Id = (int)database.Insert(comment);
 
-			database.Insert(new User()
-			{
-				Username = "Code test",
-				Password = "This is from " + Assembly.GetExecutingAssembly().GetName(),
-				Token = 0,
-				AccessLevel = AccessLevel.Admin
-			});
+			Log.Info(user);
+			Log.Info(group);
+			Log.Info(task);
+			Log.Info(comment);
 		}
 
 		/// <summary>
