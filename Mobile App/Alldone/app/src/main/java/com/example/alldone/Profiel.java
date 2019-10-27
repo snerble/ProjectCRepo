@@ -11,6 +11,7 @@ import com.google.android.material.navigation.NavigationView;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class Profiel extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -70,13 +71,15 @@ public class Profiel extends AppCompatActivity implements NavigationView.OnNavig
                 startActivity(intent3);
                 break;
             case (R.id.profile):
-                Intent intent4 = new Intent(getApplicationContext(), Profiel.class);
-                startActivity(intent4);
+                //Intent intent4 = new Intent(getApplicationContext(), Profiel.class);
+                //startActivity(intent4);
                 break;
             case(R.id.log_out):
-                Intent intent5  = new Intent(getApplicationContext(), MainActivity.class);
+                Toast.makeText(getApplicationContext(), "Je bent uitgelogd",Toast.LENGTH_SHORT).show();
+                Intent intent5 = new Intent(getApplicationContext(), MainActivity.class);
+                intent5.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent5.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent5);
-                break;
         }
         return true;
     }
