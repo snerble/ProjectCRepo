@@ -1,16 +1,15 @@
 package com.example.alldone;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.MenuItem;
+import android.widget.TextView;
+
+import com.google.android.material.navigation.NavigationView;
+
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
-
-import android.content.Intent;
-import android.os.Bundle;
-
-import com.google.android.material.navigation.NavigationView;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
 
 
 public class Profiel extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
