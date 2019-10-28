@@ -18,9 +18,10 @@
 
         
         var maxAge = 60;
+        var expired = "expires= Thu, 01 Jan 1970 00:00:00 GMT";
 
         function setCookie(name, value) {
-            document.cookie = name + "=" + escape(value) + ";max-age=" + maxAge;
+            document.cookie = name + "=" + encodeURI(value) + ";path=/;max-age=" + maxAge;
         }
 
         function storeValue(form) {
@@ -28,16 +29,28 @@
             return true;
         }
 
+        function deleteCookie(name) {
+            document.cookie = name + "=null;" + "max-age=" + expired;
+        }
+
+        function clearCookie() {
+            deleteCookie("taak1");
+            alert("Cookie deleted")
+        }
+
+
         if (taak1 = getCookie("taak1")) document.taakForm.taak1.value = taak1;
 
     </script>
 </head>
 <body>
     <div id="showForm">
-        <form name="taakForm" method="post" action="/taakaanmaken" onsubmit="return storeValue(this);">
-            <input type="text" name="taak1" value="" placeholder="Taak aanmaken"/>
+        <form name="taakForm" method="post" action="/takenlijst" onsubmit="return storeValue(this);">
+            <input type="text" name="taak1" value="" placeholder="Taak aanmaken" />
             <br />
-            <input type="submit" value="Taak aanmaken"/>
+            <input type="submit" value="Taak aanmaken" />
+            <input type="button" onclick="clearCookie()" value="Taak verwijderen" />
+
         </form>
     </div>
     <div id="showTaak">
@@ -96,10 +109,6 @@
             if (parts.length == 2) return parts.pop().split(";").shift();
         }*/
 
-        
-
-
-
     </script>
 </head>
 <body>
@@ -135,7 +144,6 @@
                 <label>Omschrijving:</label><br>
                 <textarea rows="3" cols="60" name="description" form="taskform"></textarea>
                 <br>
-
 
             </div>
             <div class="split_part">
