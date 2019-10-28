@@ -34,6 +34,11 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_takenlijst);
 
+        /*if(!SharedPrefManager.getInstance(this).isLoggedIn()){
+            finish();
+            startActivity(new Intent(this, MainActivity.class));
+        } */
+
         initArrays();
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
