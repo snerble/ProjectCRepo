@@ -1,4 +1,5 @@
-﻿using MySQL.Modeling;
+﻿using MySql.Data.MySqlClient;
+using MySQL.Modeling;
 using System;
 
 namespace API.Database

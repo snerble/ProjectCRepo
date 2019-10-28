@@ -1,14 +1,15 @@
 ﻿using MySql.Data.MySqlClient;
+using MySQL.Modeling;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace MySQL.Modeling
+namespace MySQL
 {
 	/// <summary>
 	/// Package-only class containing various utilities used in the Modeling namespace
 	/// </summary>
-	public static class Utils
+	static class Utils
 	{
 		/// <summary>
 		/// Simple dictionary that maps a C# type to a MySqlDbType. Used for automatic typing for queries.
@@ -52,8 +53,12 @@ namespace MySQL.Modeling
 		/// <summary>
 		/// Returns the table name of the specified data model, or the data model type name if no name is specified.
 		/// </summary>
-		public static string GetTableName<T>() where T : ItemAdapter
-			=> typeof(T).GetCustomAttribute<TableAttribute>()?.Name ?? typeof(T).Name;
+		public static string GetTableName<T>() where T : ItemAdapter => GetTableName(typeof(T));
+		/// <summary>
+		/// Returns the table name of the specified data model, or the data model type name if no name is specified.
+		/// </summary>
+		public static string GetTableName(Type t)
+			=> t.GetCustomAttribute<TableAttribute>()?.Name ?? t.Name;
 
 		/// <summary>
 		/// Returns all columns/properties of the specified type <typeparamref name="T"/> with the specified

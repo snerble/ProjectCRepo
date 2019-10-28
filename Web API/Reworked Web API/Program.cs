@@ -5,11 +5,11 @@ using Config.Exceptions;
 using Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Reflection;
 
 namespace API
 {
@@ -84,7 +84,12 @@ namespace API
 			database = new AppDatabase();
 			Log.Info($"Opened connection to '{database.Connection.DataSource}'.");
 
-			Test();
+			while (true)
+			{
+				var users = database.Select<User>("accessLevel = 1 and LOWER(username) LIKE '%test%' LIMIT 100").ToList();
+				if (users.Count == 0) break;
+				database.Delete(users);
+			}
 
 			Terminate();
 
@@ -140,39 +145,6 @@ namespace API
 
 			Console.ReadLine();
 			Terminate(0);
-		}
-
-		static void Test()
-		{
-			var user = database.Select<User>().LastOrDefault() ?? throw new Exception("oof");
-			var group = new Group()
-			{
-				Creator = user.Id.Value, // damn nullables. well whatever
-				Name = "Test group lol",
-				Description = "Suk my dik. this society was made by " + System.Security.Principal.WindowsIdentity.GetCurrent().Name
-			};
-			group.Id = (int)database.Insert(group);
-			var task = new Task()
-			{
-				Group = group.Id.Value,
-				Creator = user.Id.Value,
-				Title = "smonk wed and rise up gamers",
-				Description = "dank af boiiiiiiii",
-				Priority = 3
-			};
-			task.Id = (int)database.Insert(task);
-			var comment = new Comment()
-			{
-				Task = task.Id.Value,
-				Creator = user.Id.Value,
-				Message = "poop. this gang weed was made by " + System.Security.Principal.WindowsIdentity.GetCurrent().Name
-			};
-			comment.Id = (int)database.Insert(comment);
-
-			Log.Info(user);
-			Log.Info(group);
-			Log.Info(task);
-			Log.Info(comment);
 		}
 
 		/// <summary>
