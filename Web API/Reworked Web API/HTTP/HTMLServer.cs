@@ -24,6 +24,7 @@ namespace API.HTTP
 
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
+			response.Headers.Add("Content-Type", "text/html");
 			string url = request.Url.AbsolutePath;
 
 			// Find all url filters
@@ -50,7 +51,7 @@ namespace API.HTTP
 			string file = HTMLSourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file))
 			{
-				Send(response, File.ReadAllBytes(file));
+				SendHTML(response, file);
 				return;
 			}
 
