@@ -31,7 +31,7 @@ namespace API.HTTP.Endpoints
 		{
 			Request = request;
 			Response = response;
-			//Main();
+			Main();
 		}
 
 		/// <summary>
