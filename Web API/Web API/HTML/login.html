@@ -1,146 +1,240 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
+<head>
     <title>Login</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- <link rel="stylesheet" href="stylesheet.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet"> -->
-    <link rel="shortcut icon" type="image/ico" href="favicon.ico"/>
-	<style>
-		@import url(http://fonts.googleapis.com/css?family=Roboto);
-		body {
-			background-color: #1f006e;
-		}
+    <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+    <style>
+        @import url(http://fonts.googleapis.com/css?family=Roboto);
 
-		h2 {
-			color: #af5166;
-			padding: 30px 35px;
-			margin: -10px -50px;
-			text-align:center;
-			border-radius: 10px 10px 0 0;
-		}
+        body {
+            /*daphne heeft foto toegevoegd + kleuren van de text veranderd*/
+            background-image: url(https://get.pxhere.com/photo/laptop-desk-computer-work-man-working-coffee-people-technology-internet-sitting-corporate-office-professional-business-modern-workstation-label-monitor-brand-product-design-eye-document-644378.jpg);
+            background-repeat: no-repeat;
+            background-size: auto;
+            background-color: #1f006e;
+        }
 
-		hr {
-			margin: 10px -50px;
-			border: 0;
-			border-top: 1px solid #ccc;
-			margin-bottom: 40px;
-		}
+        h2 {
+            color: black;
+            padding: 30px 35px;
+            margin: -10px -50px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
 
-		div.main {
-			position: absolute;
-			left: 37%;
-			margin-left: -50px;
-			font-family: 'Roboto', sans-serif;
-			margin: 0 auto;
-			background-color: #ffffff;
-			width: 300px;
-			padding: 10px 50px 25px;
-			border: 1px solid #ffffff;
-			border-radius: 10px;
-			font-family: Roboto;
-			float:left;
-			margin-top:50px;
-		}
-		
-		input[type=text],input[type=password] {
-			width: 95%;
-			height: 40px;
-			padding-left: 10px;
-			margin-bottom: 25px;
-			margin-top: 5px;
-			border: 2px solid #7ea8bf;
-			color: #4f4f4f;
-			font-size: 16px;
-			border-radius: 5px;
-		}
+        hr {
+            margin: 10px -50px;
+            border: 0;
+            border-top: 1px solid #ccc;
+            margin-bottom: 40px;
+        }
 
-		label {
-			color: #af5166;
-			font-size: 14px;
-			font-weight: bold;
-		}
+        div.main {
+            position: absolute;
+            left: 37%;
+            margin-left: -50px;
+            font-family: 'Roboto', sans-serif;
+            margin: 0 auto;
+            background-color: #ffffff;
+            width: 300px;
+            padding: 10px 50px 5px;
+            border: 1px solid #ffffff;
+            border-radius: 10px;
+            font-family: Roboto;
+            float: left;
+            margin-top: 50px;
+        }
 
-		center {
-			font-size:32px;
-		}	
+        input[type=text], input[type=password] {
+            width: 95%;
+            height: 40px;
+            padding-left: 10px;
+            margin-bottom: 25px;
+            margin-top: 5px;
+            border: 2px solid #7ea8bf;
+            color: black;
+            font-size: 16px;
+            border-radius: 5px;
+        }
 
-		.valid {
-			color: #7ea8bf;
-		}
+        label {
+            color: black;
+            font-size: 14px;
+            font-weight: bold;
+        }
 
-		.back {
-			text-decoration: none;
-			border: 1px solid rgb(0, 143, 255);
-			background-color: rgb(0, 214, 255);
-			padding: 3px 20px;
-			border-radius: 2px;
-			color: black;
-		}
+        center {
+            font-size: 32px;
+        }
 
-		input[type=button] {
-			font-size: 16px;
-			background: #af5166;
-			border: 1px solid #af5166;
-			color: #ffffff;
-			font-weight: bold;
-			cursor: pointer;
-			width: 100%;
-			border-radius: 5px;
-			padding: 10px 0;
-			outline:none;
-		}
+        .valid {
+            color: black;
+        }
 
-		input[type=button]:hover {
-			background: #8c4051;
-			border: 1px solid #8c4051;
-		}
-	</style>
-	<script>
-		var attempt = 3; // Variable to count number of attempts.
+        .back {
+            text-decoration: none;
+            border: 1px solid rgb(0, 143, 255);
+            background-color: rgb(0, 214, 255);
+            padding: 3px 20px;
+            border-radius: 2px;
+            color: black;
+        }
+        
+        input[type=button] {
+            font-size: 16px;
+            background: black;
+            border: 1px solid black;
+            color: #ffffff;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 5px;
+            padding: 10px 0;
+            outline: none;
+            margin-bottom:10px;
+        }
 
-		// Below function Executes on click of login button.
-		function validate() {
-			var username = document.getElementById("username").value;
-			var password = document.getElementById("password").value;
+            input[type=button]:hover {
+                background: black;
+                border: 1px solid black;
+            }
+        
+        p {
+            position: relative;
+            top: -105px;
+            color: black;
+            text-align: center;
+            margin-bottom:10px;
+            margin-top:25px;
+        }
 
-			if (username == "vp" && password == "vp"){
-				window.location = "home_vp.html";
-				return false;
-			}
+        input[type=button].button2 {
+            font-size: 16px;
+            background: black;
+            border: 1px solid black;
+            color: #ffffff;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 5px;
+            padding: 10px 0;
+            outline: none;
+            margin-bottom:10px;
+            margin-top:30px;
+        }
 
-			else if (username == "ts" && password == "ts") {
-				window.location = "home_ts.html";
-				return false;
-			}
+            input[type=button]:hover {
+                background: black;
+                border: 1px solid black;
+            }
 
-			else if (username == "mg" && password == "mg") {
-				window.location = "home_mg.html";
-				return false;
-			}
+        input[type=button].button3 {
+                    font-size: 12px;
+                    background: white;
+                    border: 0px solid black;
+                    color: black;
+                    font-weight: lighter;
+                    cursor: pointer;
+                    width: 100%;
+                    padding: 10px 0;
+                    margin-top: 5px;
+                    outline: none;
+                }
 
-			else {
-				alert("Verkeerde gegevens");
-			}
-		}
-	</script>
+    </style>
+    <script type="text/javascript">
+        function preventBack() {
+            window.history.forward();
+        }
+
+        setTimeout("preventBack()", 0);
+        window.onunload = function () { null };
+
+        var username = document.getElementById("username").value;
+        var password = document.getElementById("password").value;
+
+        function validateUsername() {
+            if (document.forms['loginform'].username.value !== "Daphne") {
+                alert("De gebruikersnaam is onjuist")
+                return false;
+            }
+            else {
+                return true
+            }
+        }
+
+        function validatePassword() {
+            if (document.forms['loginform'].password.value !== "1") {
+                alert("Wachtwoord is onjuist")
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+
+        function validateAll() {
+            if (!validateUsername() | !validatePassword()) {
+                return false
+            }
+            else {
+                window.location = "home_vp.html"
+            }
+        }
+
+        // Code van Amy
+        //var attempt = 3; // Variable to count number of attempts.
+        // Below function Executes on click of login button.
+        //function validate() {
+        //    var username = document.getElementById("username").value;
+        //    var password = document.getElementById("password").value;
+        //    if (username == "vp" && password == "vp") {
+        //        window.location = "home_vp.html";
+        //        return false;
+        //    }
+
+        //    else if (username == "ts" && password == "ts") {
+        //        window.location = "home_ts.html";
+        //       return false;
+        //    }
+
+        //    else if (username == "mg" && password == "mg") {
+        //        window.location = "home_mg.html";
+        //        return false;
+        //    }
+        //    else {
+        //        alert("Verkeerde gegevens");
+        //    }
+        //}
+        // stond in de body onder </form> <br> 
+        //<span>
+		//		<b class="valid"><a href="register.html">Registreren</a></b><br><br>
+		//		<b class="valid">Vloerpersoneel: vp<br/>Wachtwoord: vp</b><br><br>
+		//		<b class="valid">Technische staff: ts<br/>Wachtwoord: ts</b><br><br>
+		//		<b class="valid">Manager: mg<br/>Wachtwoord: mg</b><br>
+		//	</span>
+        // Ook heb username veranderd in email
+
+    </script>
+</head>
     <body>
 		<div class="main">
-			<h2>Login</h2>
-			<form id="form_id" method="post" name="myform">
-			<label>Username:</label>
-			<input type="text" name="username" id="username"/>
-			<label>Wachtwoord:</label>
-			<input type="password" name="password" id="password"/>
-			<input type="button" value="Login" id="submit" onclick="validate()"/>
+			<h2>Welkom bij Alldone, Login</h2>
+			<form id="loginform" method="post" name="loginform">
+                <label>Gebruikersnaam:</label> <input type="text" name="username" id="username"/>
+			    <label>Wachtwoord:</label> <input type="password" name="password" id="password"/>
+			
+                <input type="button" value="Login" id="submit" onclick="validateAll()"/>
+                <input type="button" value="Registreer" id="registreer" class="button2" onclick="window.location.href = 'register.html';"/>
+			    <p> Of </p>
+                <input type="button" value="Wachtwoord vergeten? klik hier" id="forgotPassword" class="button3" onclick="window.location.href = 'forgot_password.html';"/>
 			</form>
 			<br>
-			<span>
-				<b class="valid"><a href="register.html">Registreren</a></b><br><br>
-				<b class="valid">Vloerpersoneel: vp<br/>Wachtwoord: vp</b><br><br>
-				<b class="valid">Technische staff: ts<br/>Wachtwoord: ts</b><br><br>
-				<b class="valid">Manager: mg<br/>Wachtwoord: mg</b><br>
-			</span>
+			
 		</div>
     </body>
 </html>

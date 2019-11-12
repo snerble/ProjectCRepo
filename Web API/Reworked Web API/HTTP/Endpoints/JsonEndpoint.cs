@@ -20,18 +20,16 @@ namespace API.HTTP.Endpoints
 	public abstract class JsonEndpoint : Endpoint
 	{
 		/// <summary>
-		/// Initializes a new instance of <see cref="JsonEndpoint"/> and immediately calls the right http method function.
+		/// Extracts the parameters and JSON from the request object and calls the specified HTTP method function.
 		/// </summary>
-		/// <param name="request">The <see cref="HttpListenerRequest"/> object to pass to this endpoint.</param>
-		/// <param name="response">The <see cref="HttpListenerResponse"/> object to pass to this endpoint.</param>
-		public JsonEndpoint(HttpListenerRequest request, HttpListenerResponse response) : base(request, response)
+		protected override void Main()
 		{
 			// Read the inputstream of the request and try to convert it to a JObject
 			JObject content;
 			try
 			{
 				// If content length is 0 (no content) then use blank JObject
-				if (request.ContentLength64 == 0) content = new JObject();
+				if (Request.ContentLength64 == 0) content = new JObject();
 				else
 				{
 					using var streamReader = new StreamReader(Request.InputStream, Request.ContentEncoding);
@@ -47,8 +45,8 @@ namespace API.HTTP.Endpoints
 			var parameters = SplitQuery(Request);
 
 			// Invoke the right http method function
-			var method = GetType().GetMethod(request.HttpMethod.ToUpper());
-			if (method == null) Server.SendError(response, HttpStatusCode.NotImplemented);
+			var method = GetType().GetMethod(Request.HttpMethod.ToUpper());
+			if (method == null) Server.SendError(Response, HttpStatusCode.NotImplemented);
 			else method.Invoke(this, new object[] { content, parameters });
 		}
 
