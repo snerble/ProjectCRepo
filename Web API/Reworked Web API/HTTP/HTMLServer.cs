@@ -48,7 +48,7 @@ namespace API.HTTP
 			if (url == "/") url = "/index.html";
 
 			// Try to find a file endpoint
-			string file = HTMLSourceDir + Uri.UnescapeDataString(url);
+			string file = Uri.UnescapeDataString(url);
 			if (File.Exists(file))
 			{
 				SendHTML(response, file);

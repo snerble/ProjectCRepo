@@ -9,6 +9,16 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
     <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
     <style>
+        .logo {
+            display: inline-block;
+            vertical-align: top;
+            width: 100px;
+            height: 100px;
+            margin-right: 25px;
+            margin-top: 15px;
+            margin-left: 30%;
+        }
+
         div.dashboard{
             background-color:#007D92;
             width: 300px;
@@ -21,7 +31,7 @@
             color: #ffffff;
             font-weight: normal;
             cursor: pointer;
-            width: 250px;
+            width: 300px;
             padding: 10px 10px;
             outline: none;
             text-align: left; 
@@ -37,7 +47,7 @@
             color: #ffffff;
             font-weight: normal;
             cursor: pointer;
-            width: 250px;
+            width: 300px;
             padding: 10px 10px;
             outline: none;
             text-align: left;           
@@ -64,7 +74,6 @@
 
     </style>
     <script>
-
         function myFunction(id) {
             var x = document.getElementById(id);
             if (x.className.indexOf("w3-show") == -1) {
@@ -77,9 +86,10 @@
 </head>
 <body>
     <div class="sidenav">
-        <div class="w3-container">
+        <img class="logo" src="Alldone Logo.png" />
+        <div class="container">
 
-            <p>Ingelogd als: vloerpersoneel <a href="logout.html">Log uit</a></p>
+            <p>Ingelogd als: vloerpersoneel</p>
 
             <input type="button" value="Dashboard" onclick="myFunction('Dashboard')" />
             <div id="Dashboard" class="dashboard w3-hide">
@@ -90,7 +100,7 @@
 
             </div>
 
-            <input type="button" value="Mijn profiel" class="button2" onclick="window.location.href = ''" />
+            <input type="button" value="Mijn profiel" class="button2" onclick="window.location.href = 'profile.html'" />
 
         </div>
         <input type="button" value="Uitloggen" class="button3" onclick="window.location.href = 'logout.html'" />

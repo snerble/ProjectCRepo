@@ -151,7 +151,7 @@
         var email = document.getElementById("email").value;
         var password = document.getElementById("password").value;
         var confirmPassword = document.getElementById("confirmPassword").value;
-        var passwordPattern = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$");
+        var passwordPattern = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}");
 
         // "^" +                   //string starts here
         // "(?=.*[0 - 9])" +       // at least 1 digit
@@ -194,11 +194,11 @@
         }
 
         function validatePassword() {
-            if (document.forms['registerForm'].password.value === '') {
+            if (document.forms['registerForm'].password.value == '') {
                 alert("Vul een wachtwoord in");
                 return false;
             }
-            else if (!document.forms['registerForm'].password.value.match(passwordPattern)) {
+            if (document.forms['registerForm'].password.value.match(passwordPattern) === null) {
                 alert("juiste patroon gebruiken");
                 return false;
             }

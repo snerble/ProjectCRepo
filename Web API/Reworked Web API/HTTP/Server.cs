@@ -126,7 +126,7 @@ namespace API.HTTP
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
 		public static void SendHTML(HttpListenerResponse response, string htmlFile, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
-			htmlFile = Path.Combine(Program.Config.HTMLSourceDir, htmlFile);
+			htmlFile = Program.Config.HTMLSourceDir + htmlFile;
 			response.Headers.Set("Content-Type", "text/html");
 			Send(response, File.ReadAllBytes(htmlFile), statusCode);
 		}

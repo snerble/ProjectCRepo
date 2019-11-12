@@ -146,80 +146,8 @@
                 }
 
     </style>
-    <script type="text/javascript">
-        function preventBack() {
-            window.history.forward();
-        }
+    <script scr="login.js"></script>
 
-        setTimeout("preventBack()", 0);
-        window.onunload = function () { null };
-
-        var username = document.getElementById("username").value;
-        var password = document.getElementById("password").value;
-
-        function validateUsername() {
-            if (document.forms['loginform'].username.value !== "Daphne") {
-                alert("De gebruikersnaam is onjuist")
-                return false;
-            }
-            else {
-                return true
-            }
-        }
-
-        function validatePassword() {
-            if (document.forms['loginform'].password.value !== "1") {
-                alert("Wachtwoord is onjuist")
-                return false;
-            }
-            else {
-                return true;
-            }
-        }
-
-        function validateAll() {
-            if (!validateUsername() | !validatePassword()) {
-                return false
-            }
-            else {
-                window.location = "home_vp.html"
-            }
-        }
-
-        // Code van Amy
-        //var attempt = 3; // Variable to count number of attempts.
-        // Below function Executes on click of login button.
-        //function validate() {
-        //    var username = document.getElementById("username").value;
-        //    var password = document.getElementById("password").value;
-        //    if (username == "vp" && password == "vp") {
-        //        window.location = "home_vp.html";
-        //        return false;
-        //    }
-
-        //    else if (username == "ts" && password == "ts") {
-        //        window.location = "home_ts.html";
-        //       return false;
-        //    }
-
-        //    else if (username == "mg" && password == "mg") {
-        //        window.location = "home_mg.html";
-        //        return false;
-        //    }
-        //    else {
-        //        alert("Verkeerde gegevens");
-        //    }
-        //}
-        // stond in de body onder </form> <br> 
-        //<span>
-		//		<b class="valid"><a href="register.html">Registreren</a></b><br><br>
-		//		<b class="valid">Vloerpersoneel: vp<br/>Wachtwoord: vp</b><br><br>
-		//		<b class="valid">Technische staff: ts<br/>Wachtwoord: ts</b><br><br>
-		//		<b class="valid">Manager: mg<br/>Wachtwoord: mg</b><br>
-		//	</span>
-        // Ook heb username veranderd in email
-
-    </script>
 </head>
     <body>
 		<div class="main">
@@ -228,7 +156,7 @@
                 <label>Gebruikersnaam:</label> <input type="text" name="username" id="username"/>
 			    <label>Wachtwoord:</label> <input type="password" name="password" id="password"/>
 			
-                <input type="button" value="Login" id="submit" onclick="validateAll()"/>
+                <input type="submit" value="Login" id="submit" onclick="validateAll()"/>
                 <input type="button" value="Registreer" id="registreer" class="button2" onclick="window.location.href = 'register.html';"/>
 			    <p> Of </p>
                 <input type="button" value="Wachtwoord vergeten? klik hier" id="forgotPassword" class="button3" onclick="window.location.href = 'forgot_password.html';"/>
