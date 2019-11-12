@@ -13,9 +13,6 @@ namespace API.HTTP
 	/// </summary>
 	public sealed class HTMLServer : Server
 	{
-		private static string HTMLSourceDir => Program.Config.HTMLSourceDir;
-		private static string ResourceDir => Program.Config.ResourceDir;
-
 		/// <summary>
 		/// Creates a new instance of <see cref="HTMLServer"/>.
 		/// </summary>
@@ -24,7 +21,7 @@ namespace API.HTTP
 
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
-			response.Headers.Add("Content-Type", "text/html");
+			response.ContentType = "text/html";
 			string url = request.Url.AbsolutePath;
 
 			// Find all url filters
@@ -48,7 +45,7 @@ namespace API.HTTP
 			if (url == "/") url = "/index.html";
 
 			// Try to find a file endpoint
-			string file = HTMLSourceDir + Uri.UnescapeDataString(url);
+			string file = Uri.UnescapeDataString(url);
 			if (File.Exists(file))
 			{
 				SendHTML(response, file);
@@ -56,10 +53,10 @@ namespace API.HTTP
 			}
 
 			// Try to serve a custom page if an image was requested
-			file = ResourceDir + Uri.UnescapeDataString(url);
+			file = Program.Config.ResourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file) && request.AcceptTypes.Any(x => x.Contains("image/")))
 			{
-				ServeImage(request, response, url);
+				ServeImage(response, url);
 				return;
 			}
 
@@ -71,7 +68,7 @@ namespace API.HTTP
 		/// Custom function that sends a custom page for image requests.
 		/// </summary>
 		/// <param name="response"></param>
-		private void ServeImage(HttpListenerRequest request, HttpListenerResponse response, string file)
+		private void ServeImage(HttpListenerResponse response, string file)
 		{
 			if (new string[] { ".webm", ".mp4", ".ogg" }.Contains(Path.GetExtension(file)))
 			{
@@ -87,7 +84,7 @@ namespace API.HTTP
 					"</html>");
 				return;
 			}
-			Send(response, File.ReadAllBytes(ResourceDir + Uri.UnescapeDataString(file)));
+			Send(response, File.ReadAllBytes(Program.Config.ResourceDir + Uri.UnescapeDataString(file)));
 		}
 	}
 }

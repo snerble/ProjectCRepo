@@ -19,6 +19,7 @@ namespace API.HTTP
 
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
+			response.ContentType = "application/json";
 			string url = request.Url.AbsolutePath;
 
 			// Find all url filters
