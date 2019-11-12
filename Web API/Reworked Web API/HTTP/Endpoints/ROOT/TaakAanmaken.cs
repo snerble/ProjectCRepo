@@ -16,8 +16,9 @@ namespace API.HTTP.Endpoints
         {
             Program.Log.Debug("Received post request.");
 
-           
-            
+            //Response.Redirect("");
+            //Server.SendError(Response, HttpStatusCode.Redirect);
+
 
         }
     }

@@ -16,7 +16,7 @@
 <head>
     <script type="text/javascript">
 
-        
+
         var maxAge = 60;
         var expired = "expires= Thu, 01 Jan 1970 00:00:00 GMT";
 
@@ -25,7 +25,7 @@
         }
 
         function storeValue(form) {
-            setCookie("taak1", form.taak1.value);
+            setCookie("taak", form.taak.value);
             return true;
         }
 
@@ -34,19 +34,23 @@
         }
 
         function clearCookie() {
-            deleteCookie("taak1");
-            alert("Cookie deleted")
+
+            deleteCookie("taak");
+            alert("Taak verwijderd.")
         }
 
+        function updateCookie(name, value) {
+            // functie voor het bewerken van de cookie
+        }
 
-        if (taak1 = getCookie("taak1")) document.taakForm.taak1.value = taak1;
+        if (taak = getCookie("taak")) document.taakForm.taak.value = taak;
 
     </script>
-</head>
+    </head>
 <body>
-    <div id="showForm">
+    <!--<div id="showForm">
         <form name="taakForm" method="post" action="/takenlijst" onsubmit="return storeValue(this);">
-            <input type="text" name="taak1" value="" placeholder="Taak aanmaken" />
+            <input type="text" name="taak" value="" placeholder="Taak aanmaken" />
             <br />
             <input type="submit" value="Taak aanmaken" />
             <input type="button" onclick="clearCookie()" value="Taak verwijderen" />
@@ -64,11 +68,11 @@
                 return (value != null) ? unescape(value[1]) : null;
             }
 
-            document.write(getCookie("taak1"));
+            document.write(getCookie("taak"));
         </script>
 
     </div>
-    <!--<form method="post">
+    <form method="post">
         <input hidden value="update" />
         <input type="text" name="taak" placeholder="Taak" />
         <br />
@@ -79,7 +83,7 @@
         <input type="text" name="taak" placeholder="Taak" />
         <br />
         <input type="submit" id="dbutton" value="Taak aanmaken" onclick="test2()" />
-    </form>-->
+    </form>
 </body>
 </html>
 
@@ -113,16 +117,16 @@
 </head>
 <body>
     <!-- Dit is het menu aan de linker kant van de webapp -->
-<!--<div class="sidenav">
+<div class="sidenav">
     <p>Ingelogd als: technische staff <a href="logout.html">Log uit</a></p>
     <br>
     <a href="home_ts.html">Home</a>
-    <a href="task_list_ts.html">Takenlijst</a>
+    <a href="takenlijst">Takenlijst</a>
     <a href="#">Nieuwe taak</a>
 </div>
 
 <!-- Dit is het formulier waar medewerkers de taak doorgeven -->
-<!---<div class="main">
+<div class="main">
     <h1>Nieuwe taak</h1>
     <form action="" id="taskform" method="post">
         <div class="split">
@@ -168,4 +172,4 @@
     </form>
     </div>
 </body>
-</html> -->
+</html>
