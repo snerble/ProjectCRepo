@@ -18,31 +18,24 @@ namespace API.HTTP.Filters
 	public abstract class Filter
 	{
 		/// <summary>
-		/// Gets the request object passed to this <see cref="Filter"/> instance.
+		/// Gets or sets the request object passed to this <see cref="Filter"/> instance.
 		/// </summary>
-		protected HttpListenerRequest Request { get; }
+		public HttpListenerRequest Request { get; set; }
 		/// <summary>
-		/// Gets the response object passed to this <see cref="Filter"/> instance.
+		/// Gets or sets the response object passed to this <see cref="Filter"/> instance.
 		/// </summary>
-		protected HttpListenerResponse Response { get; }
-
-		/// <summary>
-		/// Initializes a new instance of <see cref="Filter"/>.
-		/// </summary>
-		/// <param name="request">The <see cref="HttpListenerRequest"/> object to pass to this endpoint.</param>
-		/// <param name="response">The <see cref="HttpListenerResponse"/> object to pass to this endpoint.</param>
-		public Filter(HttpListenerRequest request, HttpListenerResponse response)
-		{
-			Request = request;
-			Response = response;
-		}
+		public HttpListenerResponse Response { get; set; }
 
 		/// <summary>
 		/// Performs the primary function of this <see cref="Filter"/>.
 		/// </summary>
+		/// <param name="request">The <see cref="HttpListenerRequest"/> object to pass to this <see cref="Filter"/>.</param>
+		/// <param name="response">The <see cref="HttpListenerResponse"/> object to pass to this <see cref="Filter"/>.</param>
 		/// <returns>False if this <see cref="Filter"/> requests to interrupt the parsing of the URL. Otherwise true.</returns>
-		public bool Invoke()
+		public bool Invoke(HttpListenerRequest request, HttpListenerResponse response)
 		{
+			Request = request;
+			Response = response;
 			try { Main(); }
 			catch (FilterInterrupt) { return false; }
 			return true;

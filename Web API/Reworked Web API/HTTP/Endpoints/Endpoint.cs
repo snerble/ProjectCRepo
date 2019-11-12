@@ -14,24 +14,30 @@ namespace API.HTTP.Endpoints
 	public abstract class Endpoint
 	{
 		/// <summary>
-		/// Gets the request object passed to this <see cref="Endpoint"/> instance.
+		/// Gets or sets the request object passed to this <see cref="Endpoint"/> instance.
 		/// </summary>
-		protected HttpListenerRequest Request { get; }
+		public HttpListenerRequest Request { get; set; }
 		/// <summary>
 		/// Gets the response object passed to this <see cref="Endpoint"/> instance.
 		/// </summary>
-		protected HttpListenerResponse Response { get; }
+		public HttpListenerResponse Response { get; set; }
 
 		/// <summary>
-		/// Initializes a new instance of <see cref="Endpoint"/> and immediately calls the right http method function.
+		/// Invokes the main function of this <see cref="Endpoint"/>.
 		/// </summary>
-		/// <param name="request">The <see cref="HttpListenerRequest"/> object to pass to this endpoint.</param>
-		/// <param name="response">The <see cref="HttpListenerResponse"/> object to pass to this endpoint.</param>
-		public Endpoint(HttpListenerRequest request, HttpListenerResponse response)
+		/// <param name="request">The request instance to pass to this <see cref="Endpoint"/>.</param>
+		/// <param name="response">The response instance to pass to this <see cref="Endpoint"/>.</param>
+		public void Invoke(HttpListenerRequest request, HttpListenerResponse response)
 		{
 			Request = request;
 			Response = response;
+			Main();
 		}
+
+		/// <summary>
+		/// Invokes the main function of this <see cref="Endpoint"/>.
+		/// </summary>
+		protected abstract void Main();
 
 		/// <summary>
 		/// Returns the type of an <see cref="Endpoint"/> subclass whose <see cref="EndpointUrl"/> attribute
