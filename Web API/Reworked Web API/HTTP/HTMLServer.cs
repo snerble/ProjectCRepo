@@ -27,9 +27,9 @@ namespace API.HTTP
 			// Find all url filters
 			foreach (var filterType in Filter.GetFilters(url))
 			{
-				var filter = Activator.CreateInstance(filterType, request, response) as Filter;
+				var filter = Activator.CreateInstance(filterType) as Filter;
 				// If invoke returned false, then further url parsing should be interrupted.
-				if (!filter.Invoke()) return;
+				if (!filter.Invoke(request, response)) return;
 			}
 
 			// Find an endpoint
@@ -37,7 +37,7 @@ namespace API.HTTP
 			if (endpoint != null)
 			{
 				// Create an instance of the endpoint
-				Activator.CreateInstance(endpoint, request, response);
+				(Activator.CreateInstance(endpoint) as Endpoint).Invoke(request, response);
 				return;
 			}
 
@@ -46,7 +46,7 @@ namespace API.HTTP
 
 			// Try to find a file endpoint
 			string file = Uri.UnescapeDataString(url);
-			if (File.Exists(file))
+			if (File.Exists(Program.Config.HTMLSourceDir + file))
 			{
 				SendHTML(response, file);
 				return;

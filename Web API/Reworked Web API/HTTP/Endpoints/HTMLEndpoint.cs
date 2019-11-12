@@ -7,8 +7,8 @@ namespace API.HTTP.Endpoints
 	/// An abstract subclass of <see cref="Endpoint"/>. Implementations of this class are specifically meant to handle page requests.
 	/// </summary>
 	/// <remarks>
-	/// To make actual HTML endpoints you must extend this class and implement the abstract classes. At least one of these functions
-	/// must write data to the response object. If nothing is sent, a 501 will be sent instead.
+	/// To make actual HTML endpoints you must extend this class and implement the abstract classes. If the specified HTTP method is not
+	/// found, a 501 will be sent.
 	/// Attributes must be used to specify the target url.
 	/// Because reflection is used to invoke a particular HTTP method, additional HTTP method support can be implemented by simply
 	/// making a new public function, whose name is the HTTP method it represents in all upper case. Note that they must take the
@@ -17,17 +17,16 @@ namespace API.HTTP.Endpoints
 	public abstract class HTMLEndpoint : Endpoint
 	{
 		/// <summary>
-		/// Initializes a new instance of <see cref="HTMLEndpoint"/> and immediately calls the right http method function.
+		/// Extracts the parameters from the request object and calls the specified HTTP method function.
 		/// </summary>
-		/// <param name="request">The <see cref="HttpListenerRequest"/> object to pass to this endpoint.</param>
-		/// <param name="response">The <see cref="HttpListenerResponse"/> object to pass to this endpoint.</param>
-		public HTMLEndpoint(HttpListenerRequest request, HttpListenerResponse response) : base(request, response)
+		protected override void Main()
 		{
-			var parameters = SplitQuery(request);
+			// Get the url (or payload) parameters
+			var parameters = SplitQuery(Request);
 
 			// Invoke the right http method function
-			var method = GetType().GetMethod(request.HttpMethod.ToUpper());
-			if (method == null) Server.SendError(response, HttpStatusCode.NotImplemented);
+			var method = GetType().GetMethod(Request.HttpMethod.ToUpper());
+			if (method == null) Server.SendError(Response, HttpStatusCode.NotImplemented);
 			else method.Invoke(this, new object[] { parameters });
 		}
 

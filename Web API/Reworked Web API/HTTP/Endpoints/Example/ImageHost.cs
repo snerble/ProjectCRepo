@@ -15,8 +15,6 @@ namespace API.HTTP.Endpoints
 		private static readonly string[] VideoExtensions = new string[] { ".webm", ".ogg", ".mp4" };
 		private static readonly string[] ImageExtensions = new string[] { ".apng", ".bmp", ".gif", ".ico", ".cur", ".jpeg", ".jpg", ".jfif", ".pjpeg", ".pjp", ".png", ".svg", ".tif", ".tiff", ".webp" };
 
-		public ImageHost(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
-
 		/// <summary>
 		/// Returns files in the specified directory.
 		/// </summary>

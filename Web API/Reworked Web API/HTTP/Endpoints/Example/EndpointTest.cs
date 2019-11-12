@@ -10,8 +10,6 @@ namespace API.HTTP.Endpoints
 	[EndpointUrl("/")]
 	public sealed class EndpointTest : HTMLEndpoint
 	{
-		public EndpointTest(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
-
 		public override void GET(Dictionary<string, string> parameters)
 		{
 			if (parameters.Count == 0)
