@@ -5,7 +5,6 @@ using Config.Exceptions;
 using Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -28,10 +27,10 @@ namespace API
 
 		public static Logger Log = new Logger(Level.ALL, Console.Out);
 		public static AppConfig Config;
+		public static AppDatabase Database;
 
 		private static readonly List<Server> Servers = new List<Server>();
 		private static Listener listener;
-		private static AppDatabase database;
 
 		static void Main()
 		{
@@ -81,17 +80,8 @@ namespace API
 			#endregion
 
 			Log.Config("Creating database connection...");
-			database = new AppDatabase();
-			Log.Info($"Opened connection to '{database.Connection.DataSource}'.");
-
-			while (true)
-			{
-				var users = database.Select<User>("accessLevel = 1 and LOWER(username) LIKE '%test%' LIMIT 100").ToList();
-				if (users.Count == 0) break;
-				database.Delete(users);
-			}
-
-			Terminate();
+			Database = new AppDatabase();
+			Log.Info($"Opened connection to '{Database.Connection.DataSource}'.");
 
 			try
 			{
