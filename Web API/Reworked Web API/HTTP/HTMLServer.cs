@@ -13,9 +13,6 @@ namespace API.HTTP
 	/// </summary>
 	public sealed class HTMLServer : Server
 	{
-		private static string HTMLSourceDir => Program.Config.HTMLSourceDir;
-		private static string ResourceDir => Program.Config.ResourceDir;
-
 		/// <summary>
 		/// Creates a new instance of <see cref="HTMLServer"/>.
 		/// </summary>
@@ -24,14 +21,15 @@ namespace API.HTTP
 
 		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
 		{
+			response.ContentType = "text/html";
 			string url = request.Url.AbsolutePath;
 
 			// Find all url filters
 			foreach (var filterType in Filter.GetFilters(url))
 			{
-				var filter = Activator.CreateInstance(filterType, request, response) as Filter;
+				var filter = Activator.CreateInstance(filterType) as Filter;
 				// If invoke returned false, then further url parsing should be interrupted.
-				if (!filter.Invoke()) return;
+				if (!filter.Invoke(request, response)) return;
 			}
 
 			// Find an endpoint
@@ -39,7 +37,7 @@ namespace API.HTTP
 			if (endpoint != null)
 			{
 				// Create an instance of the endpoint
-				Activator.CreateInstance(endpoint, request, response);
+				(Activator.CreateInstance(endpoint) as Endpoint).Invoke(request, response);
 				return;
 			}
 
@@ -47,18 +45,18 @@ namespace API.HTTP
 			if (url == "/") url = "/index.html";
 
 			// Try to find a file endpoint
-			string file = HTMLSourceDir + Uri.UnescapeDataString(url);
-			if (File.Exists(file))
+			string file = Uri.UnescapeDataString(url);
+			if (File.Exists(Program.Config.HTMLSourceDir + file))
 			{
-				Send(response, File.ReadAllBytes(file));
+				SendHTML(response, file);
 				return;
 			}
 
 			// Try to serve a custom page if an image was requested
-			file = ResourceDir + Uri.UnescapeDataString(url);
+			file = Program.Config.ResourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file) && request.AcceptTypes.Any(x => x.Contains("image/")))
 			{
-				ServeImage(request, response, url);
+				ServeImage(response, url);
 				return;
 			}
 
@@ -70,7 +68,7 @@ namespace API.HTTP
 		/// Custom function that sends a custom page for image requests.
 		/// </summary>
 		/// <param name="response"></param>
-		private void ServeImage(HttpListenerRequest request, HttpListenerResponse response, string file)
+		private void ServeImage(HttpListenerResponse response, string file)
 		{
 			if (new string[] { ".webm", ".mp4", ".ogg" }.Contains(Path.GetExtension(file)))
 			{
@@ -86,7 +84,7 @@ namespace API.HTTP
 					"</html>");
 				return;
 			}
-			Send(response, File.ReadAllBytes(ResourceDir + Uri.UnescapeDataString(file)));
+			Send(response, File.ReadAllBytes(Program.Config.ResourceDir + Uri.UnescapeDataString(file)));
 		}
 	}
 }

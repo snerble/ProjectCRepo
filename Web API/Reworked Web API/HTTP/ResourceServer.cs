@@ -28,9 +28,9 @@ namespace API.HTTP
 			// Find all url filters
 			foreach (var filterType in Filter.GetFilters(url))
 			{
-				var filter = Activator.CreateInstance(filterType, request, response) as Filter;
+				var filter = Activator.CreateInstance(filterType) as Filter;
 				// If invoke returned false, then further url parsing should be interrupted.
-				if (!filter.Invoke()) return;
+				if (!filter.Invoke(request, response)) return;
 			}
 
 			// Add bytes accept range header to advertise partial request support.

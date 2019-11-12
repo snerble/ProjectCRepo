@@ -14,13 +14,6 @@ namespace API.HTTP.Endpoints
 	[EndpointUrl("/login")]
 	public sealed class HTMLLogin : HTMLEndpoint
 	{
-		public string HtmlDir => Path.GetFullPath(Path.Combine(
-			Directory.GetCurrentDirectory(),
-			Program.Config["serverSettings"]["htmlSourceDir"].ToObject<string>()
-		));
-
-		public HTMLLogin(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
-
 		public override void GET(Dictionary<string, string> parameters)
 			=> Server.SendText(Response, Templates.RunTemplate(GetUrl<HTMLLogin>() + ".cshtml", Request, parameters));
 
@@ -69,8 +62,6 @@ namespace API.HTTP.Endpoints
 	[EndpointUrl("/login")]
 	public sealed class Login : JsonEndpoint
 	{
-		public Login(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
-
 		public override void GET(JObject json, Dictionary<string, string> parameters)
 		{
 			// Temp endpoint piping
@@ -121,11 +112,9 @@ namespace API.HTTP.Endpoints
 	[EndpointUrl("/logout")]
 	public sealed class HTMLLogout : HTMLEndpoint
 	{
-		public HTMLLogout(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
-
 		public override void GET(Dictionary<string, string> parameters)
 		{
-			new Logout(Request, Response);
+			new Logout().Invoke(Request, Response);
 		}
 	}
 
@@ -135,13 +124,13 @@ namespace API.HTTP.Endpoints
 	[EndpointUrl("/logout")]
 	public sealed class Logout : JsonEndpoint
 	{
-		public Logout(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
+		public static string Expiration = DateTimeOffset.FromUnixTimeSeconds(0).ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'");
 
 		public override void GET(JObject json, Dictionary<string, string> parameters)
 		{
-			Server.RemoveCookie(Response, "username");
-			Server.RemoveCookie(Response, "token");
-			Server.RemoveCookie(Response, "permission");
+			Server.AddCookie(Response, "username", "deleted; expires=" + Expiration);
+			Server.AddCookie(Response, "token", "deleted; expires=" + Expiration);
+			Server.AddCookie(Response, "permission", "deleted; expires=" + Expiration);
 			Response.Redirect("/");
 			Server.SendError(Response, HttpStatusCode.Redirect);
 		}

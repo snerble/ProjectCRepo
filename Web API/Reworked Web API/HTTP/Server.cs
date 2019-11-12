@@ -72,10 +72,13 @@ namespace API.HTTP
 					}
 					catch (Exception e)
 					{
-						// Try to send an internal server error on exception
+						Program.Log.Error($"{e.GetType().Name} in {GetType().Name}.Main(): {e.Message}", e, true);
+					}
+					finally
+					{
+						// If it isn't already closed, send an internal server error
 						try { SendError(context.Response, HttpStatusCode.InternalServerError); }
 						catch (ObjectDisposedException) { }
-						Program.Log.Error($"{e.GetType().Name} in {GetType().Name}.Main(): {e.Message}", e, true);
 					}
 				}
 			}
@@ -124,6 +127,18 @@ namespace API.HTTP
 		/// <param name="encoding">The encoding of the text. <see cref="Encoding.UTF8"/> by default.</param>
 		public static void SendText(HttpListenerResponse response, string text, HttpStatusCode statusCode = HttpStatusCode.OK, Encoding encoding = null)
 			=> Send(response, (encoding ?? Encoding.UTF8).GetBytes(text), statusCode);
+		/// <summary>
+		/// Writes the contents of an html file from the project HTML folder to the specified <see cref="HttpListenerResponse"/>.
+		/// </summary>
+		/// <param name="response">The <see cref="HttpListenerResponse"/> to send data to.</param>
+		/// <param name="htmlFile">The path of the html file, relative to the project HTML source directory.</param>
+		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
+		public static void SendHTML(HttpListenerResponse response, string htmlFile, HttpStatusCode statusCode = HttpStatusCode.OK)
+		{
+			htmlFile = Program.Config.HTMLSourceDir + htmlFile;
+			response.ContentType = "text/html";
+			Send(response, File.ReadAllBytes(htmlFile), statusCode);
+		}
 		/// <summary>
 		/// Writes a <see cref="JObject"/> to the specified <see cref="HttpListenerResponse"/>.
 		/// </summary>

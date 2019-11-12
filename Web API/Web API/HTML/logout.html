@@ -1,5 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
+<head>
     <title>Uitgelogd</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,11 +10,14 @@
 	<style>
 		@import url(http://fonts.googleapis.com/css?family=Roboto);
 		body {
-			background-color: #1f006e;
+            background-image: url(https://get.pxhere.com/photo/laptop-desk-computer-work-man-working-coffee-people-technology-internet-sitting-corporate-office-professional-business-modern-workstation-label-monitor-brand-product-design-eye-document-644378.jpg);
+			background-repeat: no-repeat;
+            background-size: auto;
+            background-color: #1f006e;
 		}
 
 		h2 {
-			color: #af5166;
+			color: black;
 			padding: 30px 35px;
 			margin: -10px -50px;
 			text-align:center;
@@ -43,8 +47,8 @@
 
 		input[type=button] {
 			font-size: 16px;
-			background: #af5166;
-			border: 1px solid #af5166;
+			background: black;
+			border: 1px solid black;
 			color: #ffffff;
 			font-weight: bold;
 			cursor: pointer;
@@ -55,17 +59,25 @@
 		}
 
 		input[type=button]:hover {
-			background: #8c4051;
-			border: 1px solid #8c4051;
+			background: black;
+			border: 1px solid black;
 		}
 	</style>
+    <script type="text/javascript">
+        function preventBack() {
+            window.history.forward();
+        }
+
+        setTimeout("preventBack()", 0);
+        window.onunload = function () { null };
+</script>
+</head>
     <body>
 		<div class="main">
 			<h2>Log out</h2>
 			<p>Je bent uitgelogd.</p>
 			<br>
 			<input type="button" value="Ga naar login" id="submit" onclick="location.href = 'login.html';"/>
-			</form>
 		</div>
     </body>
 </html>

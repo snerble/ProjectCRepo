@@ -13,8 +13,6 @@ namespace API.HTTP.Filters
 	[FilterUrl("/u/")]
 	public sealed class LoginFilter : Filter
 	{
-		public LoginFilter(HttpListenerRequest request, HttpListenerResponse response) : base(request, response) { }
-
 		protected override void Main()
 		{
 			// Get login data
