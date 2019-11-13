@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Config\Config.csproj" />
     <ProjectReference Include="..\Logging\Logging.csproj" />
+    <ProjectReference Include="..\MySQL Adapter\MySQL.csproj" />
   </ItemGroup>
 
 </Project>
