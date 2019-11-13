@@ -8,7 +8,11 @@
 
 var username = document.getElementById("username").value;
 var password = document.getElementById("password").value;
-var emailPattern = /\S+@\S+\.\S+/;
+//var emailPattern = /\S+@\S+\.\S+/;
+
+function returnToPreviousPage() {
+    window.history.back();
+}
 
 function validateUsername() {
     if (document.forms['loginform'].username.value !== "Daphne") {
@@ -31,9 +35,9 @@ function validatePassword() {
 }
 
 function validateAll() {
-    alert("heyo")
     if (!validateUsername() | !validatePassword()) {
-        return false
+        returnToPreviousPage();
+        return false;
     }
     else {
         window.location = "Login1"
