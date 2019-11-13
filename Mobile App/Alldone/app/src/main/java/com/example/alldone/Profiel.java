@@ -3,6 +3,7 @@ package com.example.alldone;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
@@ -38,6 +39,9 @@ public class Profiel extends AppCompatActivity implements NavigationView.OnNavig
         job = "Technische staff";
         TextView nameText = findViewById(R.id.name);
         TextView jobText = findViewById(R.id.job);
+
+        ImageView img= (ImageView) findViewById(R.id.profilePic);
+        img.setImageResource(R.drawable.no_user);
 
         nameText.setText(name);
         jobText.setText(job);
