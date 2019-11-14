@@ -9,9 +9,6 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.example.alldone.R;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;

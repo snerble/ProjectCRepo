@@ -1,17 +1,17 @@
 package com.example.alldone;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.material.navigation.NavigationView;
+
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
-
-import android.content.Intent;
-import android.os.Bundle;
-
-import com.google.android.material.navigation.NavigationView;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
 
 
 public class Profiel extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -40,6 +40,9 @@ public class Profiel extends AppCompatActivity implements NavigationView.OnNavig
         job = "Technische staff";
         TextView nameText = findViewById(R.id.name);
         TextView jobText = findViewById(R.id.job);
+
+        ImageView img= (ImageView) findViewById(R.id.profilePic);
+        img.setImageResource(R.drawable.no_user);
 
         nameText.setText(name);
         jobText.setText(job);
