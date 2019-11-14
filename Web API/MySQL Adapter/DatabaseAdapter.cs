@@ -46,20 +46,30 @@ namespace MySQL
 			var columns = Utils.GetAllColumns<T>().ToDictionary(x => Utils.GetColumnData(x));
 
 			// Func that creates a parameter string for one item
-			string getValueString(T item) => '(' + string.Join(", ", columns.Keys.Select(x => $"@{x.Name}_{item.GetHashCode()}")) + ')';
+			int i = 0;
+			string getValueString(T item)
+			{
+				var s = '(' + string.Join(", ", columns.Keys.Select(x => $"@{x.Name}_{i}")) + ')';
+				i++;
+				return s;
+			}
 
 			// Generate query for the collection of items
-			var query = new StringBuilder($"INSERT INTO `{Utils.GetTableName<T>()}`(");
+			var query = new StringBuilder($"INSERT INTO `{Utils.GetTableName<T>()}` (");
 			query.Append(string.Join(", ", columns.Keys.Select(x => $"`{x.Name}`"))); // Build component with column names
-			query.Append(")VALUES");
+			query.Append(") VALUES ");
 			query.Append(string.Join(",", items.Select(x => getValueString(x))));     // Build components with all item parameters
 
 			// Create command
 			var command = new MySqlCommand(query.ToString(), Connection);
 			// Create parameter objects for every value and item
+			i = 0;
 			foreach (var item in items)
+			{
 				foreach (var keyValue in columns)
-					command.Parameters.Add(new MySqlParameter(keyValue.Key.Name + '_' + item.GetHashCode(), keyValue.Value.GetValue(item) ?? DBNull.Value));
+					command.Parameters.Add(new MySqlParameter(keyValue.Key.Name + '_' + i, keyValue.Value.GetValue(item) ?? DBNull.Value));
+				i++;
+			}
 			// Return the generated command
 			return command;
 		}
@@ -83,21 +93,30 @@ namespace MySQL
 			// Get the columns of the data model
 			var columns = Utils.GetAllColumns<T>().ToDictionary(x => Utils.GetColumnData(x));
 
+			int i = 0;
+			string getCondition(T item)
+			{
+				var s = string.Join(" AND ", columns.Where(x => x.Value.GetValue(item) != null).Select(x => $"`{x.Key.Name}` = @{x.Key.Name}_{i}"));
+				i++;
+				return s;
+			}
+
 			// Generate query
-			var query = new StringBuilder($"DELETE FROM `{Utils.GetTableName<T>()}` WHERE");
-			// TODO Implement some kind of conditionBuilder
+			var query = new StringBuilder($"DELETE FROM `{Utils.GetTableName<T>()}` WHERE ");
+
 			// Create condition testing every non-null value of the item to their column
-			query.Append(
-				string.Join("OR", items.Select(item => '(' +
-				string.Join(" AND ", columns.Where(x => x.Value.GetValue(item) != null).Select(x => $"`{x.Key.Name}` = @{x.Key.Name}_{item.GetHashCode()}")) + ')'))
-			);
+			query.Append(string.Join(" OR ", items.Select(item => '(' + getCondition(item) + ')')));
 
 			// Create command
 			var command = new MySqlCommand(query.ToString(), Connection);
 			// Generate the parameters
+			i = 0;
 			foreach (var item in items)
+			{
 				foreach (var keyValue in columns)
-					command.Parameters.Add(new MySqlParameter(keyValue.Key.Name + '_' + item.GetHashCode(), keyValue.Value.GetValue(item)));
+					command.Parameters.Add(new MySqlParameter(keyValue.Key.Name + '_' + i, keyValue.Value.GetValue(item)));
+				i++;
+			}
 			// Return the new command
 			return command;
 		}
