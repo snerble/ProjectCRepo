@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
+using MimeKit;
 
 namespace API.HTTP
 {
@@ -122,18 +123,6 @@ namespace API.HTTP
 		public static void SendText(HttpListenerResponse response, string text, HttpStatusCode statusCode = HttpStatusCode.OK, Encoding encoding = null)
 			=> Send(response, (encoding ?? Encoding.UTF8).GetBytes(text), statusCode);
 		/// <summary>
-		/// Writes the contents of an html file from the project HTML folder to the specified <see cref="HttpListenerResponse"/>.
-		/// </summary>
-		/// <param name="response">The <see cref="HttpListenerResponse"/> to send data to.</param>
-		/// <param name="htmlFile">The path of the html file, relative to the project HTML source directory.</param>
-		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
-		public static void SendHTML(HttpListenerResponse response, string htmlFile, HttpStatusCode statusCode = HttpStatusCode.OK)
-		{
-			htmlFile = Program.Config.HTMLSourceDir + htmlFile;
-			response.ContentType = "text/html";
-			Send(response, File.ReadAllBytes(htmlFile), statusCode);
-		}
-		/// <summary>
 		/// Writes a <see cref="JObject"/> to the specified <see cref="HttpListenerResponse"/>.
 		/// </summary>
 		/// <param name="response">The <see cref="HttpListenerResponse"/> to send data to.</param>
@@ -145,6 +134,18 @@ namespace API.HTTP
 			response.StatusCode = (int)statusCode;
 			using var writer = new JsonTextWriter(new StreamWriter(response.OutputStream));
 			json.WriteTo(writer);
+		}
+		/// <summary>
+		/// Sends all the data of the specified file and automatically provides the correct MIME type to the client.
+		/// </summary>
+		/// <param name="response">The <see cref="HttpListenerResponse"/> to send data to.</param>
+		/// <param name="path">The path to the file to send.</param>
+		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
+		public static void SendFile(HttpListenerResponse response, string path, HttpStatusCode statusCode = HttpStatusCode.OK)
+		{
+			if (!File.Exists(path)) throw new FileNotFoundException("File does not exist.", path);
+			response.ContentType = MimeTypes.GetMimeType(Path.GetExtension(path));
+			Send(response, File.ReadAllBytes(path), statusCode);
 		}
 		/// <summary>
 		/// Sends just a <see cref="HttpStatusCode"/> to the client.
@@ -159,6 +160,7 @@ namespace API.HTTP
 			response.StatusCode = (int)statusCode;
 			response.Close();
 		}
+
 		/// <summary>
 		/// Adds a cookie to the response object.
 		/// </summary>
