@@ -40,7 +40,7 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
 
-    String ServerURL = "http://145.137.121.243/alldone/v1/get_data.php";
+    String ServerURL = "http://145.137.120.163/alldone/v1/get_data.php";
     EditText title, description;
     Button button;
     String TempTitle, TempDescription;
@@ -128,6 +128,10 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
                 super.onPostExecute(result);
 
                 Toast.makeText(MaakTaak.this, "Data Submit Successfully", Toast.LENGTH_LONG).show();
+                Intent intent0 = new Intent(getApplicationContext(), Takenlijst1.class);
+                intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent0);
 
             }
         }
@@ -159,7 +163,7 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
                 //startActivity(intent2);
                 break;
             case (R.id.task_list):
-                Intent intent3 = new Intent(getApplicationContext(), Takenlijst.class);
+                Intent intent3 = new Intent(getApplicationContext(), Takenlijst1.class);
                 startActivity(intent3);
                 break;
             case (R.id.profile):

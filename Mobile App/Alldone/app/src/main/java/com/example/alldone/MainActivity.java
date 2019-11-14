@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                     obj.getString("username"),
                                                     obj.getString("email")
                                             );
-                                    startActivity(new Intent(getApplicationContext(), Takenlijst.class));
+                                    startActivity(new Intent(getApplicationContext(), Takenlijst1.class));
                                     finish();
                                 }else{
                                     Toast.makeText(

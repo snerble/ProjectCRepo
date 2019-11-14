@@ -68,7 +68,7 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
                 startActivity(intent2);
                 break;
             case (R.id.task_list):
-                Intent intent3 = new Intent(getApplicationContext(), Takenlijst.class);
+                Intent intent3 = new Intent(getApplicationContext(), Takenlijst1.class);
                 startActivity(intent3);
                 break;
             case (R.id.profile):
