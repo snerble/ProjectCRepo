@@ -1,9 +1,11 @@
 ﻿using API.Config;
+using API.Database;
 using API.HTTP;
 using Config.Exceptions;
 using Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -29,6 +31,7 @@ namespace API
 
 		private static readonly List<Server> Servers = new List<Server>();
 		private static Listener listener;
+		private static AppDatabase Database;
 
 		static void Main()
 		{
@@ -76,6 +79,10 @@ namespace API
 				Log.OutputStreams.Add(File.CreateText(log));
 			}
 			#endregion
+
+			Log.Config("Creating database connection...");
+			Database = new AppDatabase();
+			Log.Info($"Opened connection to '{Database.Connection.DataSource}'.");
 
 			try
 			{
@@ -147,7 +154,7 @@ namespace API
 		/// <summary>
 		/// Ends the program with the specified exit code.
 		/// </summary>
-		static void Terminate(int exitCode = -1)
+		static void Terminate(int exitCode = 0)
 		{
 			Log.Info("Terminating...");
 			listener?.Stop();

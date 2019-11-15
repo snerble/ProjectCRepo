@@ -67,7 +67,7 @@ namespace API.HTTP
 					return;
 				}
 
-				Send(response, File.ReadAllBytes(file));
+				SendFile(response, file);
 				return;
 			}
 
