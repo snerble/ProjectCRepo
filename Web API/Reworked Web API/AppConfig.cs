@@ -151,13 +151,13 @@ namespace API.Config
 			{
 				Content = newContent;
 				Setup();
-				Save();
 			}
 			catch (Exception e)
 			{
 				Program.Log.Error($"Update failed: {e.Message}", e, false);
 				Program.Log.Error($"Restoring previous config...");
 				Content = oldContent;
+				Save();
 				return;
 			}
 			Program.Log.Info("Updated config.");

@@ -135,7 +135,7 @@ namespace Config
 		/// <summary>
 		/// Convenience method that automatically converts <paramref name="json"/> to a <see cref="JObject"/>.
 		/// Equivalent to calling <see cref="TryAddItem{T}(JObject, string, T)"/> like so:
-		/// <code>TryAddItem((<see cref="JObject"/>)<paramref name="json"/>, <paramref name="key"/>, <paramref name="value"/>);</code>
+		/// <code>TryAddItem(<paramref name="json"/> as <see cref="JObject"/>, <paramref name="key"/>, <paramref name="value"/>);</code>
 		/// </summary>
 		protected static void TryAddItem<T>(JToken json, string key, T value) => TryAddItem(json as JObject, key, value);
 		/// <summary>
