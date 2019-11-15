@@ -48,6 +48,7 @@ namespace API.HTTP
 			string file = Program.Config.HTMLSourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file))
 			{
+				response.AddHeader("Date", FormatTimeStamp(File.GetLastWriteTimeUtc(file)));
 				SendFile(response, file);
 				return;
 			}
@@ -56,6 +57,7 @@ namespace API.HTTP
 			file = Program.Config.ResourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file) && request.AcceptTypes.Any(x => x.Contains("image/")))
 			{
+				response.AddHeader("Date", FormatTimeStamp(File.GetLastWriteTimeUtc(file)));
 				ServeImage(response, url);
 				return;
 			}

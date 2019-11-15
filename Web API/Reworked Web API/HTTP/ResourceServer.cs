@@ -40,6 +40,7 @@ namespace API.HTTP
 			string file = ResourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file))
 			{
+				response.AddHeader("Date", FormatTimeStamp(File.GetLastWriteTimeUtc(file)));
 				// If a range was specified, create and send a partial response
 				if (request.Headers.Get("Range") != null)
 				{

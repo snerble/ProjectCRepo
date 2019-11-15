@@ -169,5 +169,20 @@ namespace API.HTTP
 		/// <param name="value">The value of the cookie.</param>
 		public static void AddCookie(HttpListenerResponse response, string name, object value)
 			=> response.Headers.Add("Set-Cookie", $"{name}={value}");
+
+		/// <summary>
+		/// Formats a <see cref="DateTime"/> object into a string suitable for HTTP headers.
+		/// </summary>
+		/// <param name="timeStamp">The <see cref="DateTime"/> to format.</param>
+		/// <returns>The formatted time string.</returns>
+		public static string FormatTimeStamp(DateTime timeStamp)
+			=> timeStamp.ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'");
+		/// <summary>
+		/// Formats a <see cref="DateTimeOffset"/> object into a string suitable for HTTP headers.
+		/// </summary>
+		/// <param name="timeStamp">The <see cref="DateTimeOffset"/> to format.</param>
+		/// <returns>The formatted time string.</returns>
+		public static string FormatTimeStamp(DateTimeOffset timeStamp)
+			=> timeStamp.ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'");
 	}
 }

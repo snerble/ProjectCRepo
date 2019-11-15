@@ -124,7 +124,7 @@ namespace API.HTTP.Endpoints
 	[EndpointUrl("/logout")]
 	public sealed class Logout : JsonEndpoint
 	{
-		public static string Expiration = DateTimeOffset.FromUnixTimeSeconds(0).ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'");
+		public static string Expiration = Server.FormatTimeStamp(DateTimeOffset.FromUnixTimeSeconds(0));
 
 		public override void GET(JObject json, Dictionary<string, string> parameters)
 		{
