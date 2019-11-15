@@ -19,7 +19,7 @@ namespace API.HTTP.Endpoints
 		/// <param name="url">The target url.</param>
 		public EndpointUrl(string url)
 		{
-			Url = url?.ToLower() ?? throw new ArgumentNullException("url");
+			Url = url?.ToLower() ?? throw new ArgumentNullException(nameof(url));
 		}
 	}
 }
