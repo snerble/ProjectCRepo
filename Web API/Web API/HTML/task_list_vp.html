@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+    <title>Takenlijst</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="stylesheet.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/ico" href="favicon.ico"/>
+    <body>
+        <div class="sidenav">
+            <p>Ingelogd als: vloerpersoneel <a href="logout.html">Log uit</a></p>
+            <br>
+            <a href="home_vp.html">Home</a>
+            <a href="#">Takenlijst</a>
+            <a href="new_task_vp.html">Nieuwe taak</a>
+        </div>
+
+        <div class="main">
+            <h1>Takenlijst</h1>
+            Sorteren
+            <select name="order" style="margin-left:20px;margin-bottom:40px;">
+                <option value=""></option>
+                <option value="pr_asc">Prioriteit hoog</option>
+                <option value="pr_des">Prioriteit laag</option>
+            </select>
+            <div class="task_list">
+                <div class="task" style="cursor: pointer;" onclick="window.location.href='task1_vp.html'">
+					<div class="info">
+						<p id="title">Bureau repareren</h5>
+						<p>Amy, Daphne</p>
+					</div>
+					<div class="priority">!!</div>
+                </div>
+				
+                <div class="task" style="cursor: pointer;" onclick="window.location.href='task2_vp.html'">
+					<div class="info">
+						<p id="title">Meterkast repareren</h5>
+						<p>Cindy, Conor, Abel</p>
+					</div>
+					<div class="priority">!!!</div>
+                </div>
+
+				<div class="task" style="cursor: pointer;" onclick="window.location.href='task3_vp.html'">
+					<div class="info">
+						<p id="title">Lamp vervangen</h5>
+						<p>Abel</p>
+					</div>
+					<div class="priority">!</div>
+                </div>
+
+                <div class="task" style="cursor: pointer;" onclick="window.location.href='task4_vp.html'">
+					<div class="info">
+						<p id="title">Vloer vegen</h5>
+						<p>Open voor inschrijving</p>
+					</div>
+					<div class="priority"></div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
