@@ -35,7 +35,7 @@ namespace API.HTTP
 			if (endpoint != null)
 			{
 				// Create an instance of the endpoint
-				Activator.CreateInstance(endpoint, request, response);
+				(Activator.CreateInstance(endpoint) as Endpoint).Invoke(request, response);
 				// Close the response if the endpoint didn't close it
 				try { response.Close(); }
 				catch (ObjectDisposedException) { }

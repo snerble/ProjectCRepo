@@ -102,7 +102,13 @@ namespace MySQL.Modeling
 		/// <summary>
 		/// Indicates if two items are of the same type and contain the same values.
 		/// </summary>
-		public static bool operator ==(ItemAdapter item1, ItemAdapter item2) => item1.Equals(item2);
+		public static bool operator ==(ItemAdapter item1, ItemAdapter item2)
+		{
+			// First use the object equals operator to check if it is null
+			if (item1 as object == null)
+				return item2 as object == null;
+			return item1.Equals(item2);
+		}
 		/// <summary>
 		/// Indicates if two items aren't of the same type or don't contain the same values.
 		/// </summary>

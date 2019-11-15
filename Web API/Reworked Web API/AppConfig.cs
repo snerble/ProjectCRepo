@@ -139,6 +139,30 @@ namespace API.Config
 			Program.Log.Info("Reloaded config.");
 		}
 
+		/// <summary>
+		/// Updates the current config JObject with the specified JObject.
+		/// </summary>
+		/// <param name="newContent">A new <see cref="JObject"/> to use for this config.</param>
+		/// <exception cref="ConfigException">Thrown when <paramref name="newContent"/> fails the config validation.</exception>
+		public void Update(JObject newContent)
+		{
+			JObject oldContent = Content;
+			try
+			{
+				Content = newContent;
+				Setup();
+				Save();
+			}
+			catch (Exception e)
+			{
+				Program.Log.Error($"Update failed: {e.Message}", e, false);
+				Program.Log.Error($"Restoring previous config...");
+				Content = oldContent;
+				return;
+			}
+			Program.Log.Info("Updated config.");
+		}
+
 		// Example of a property that refers directly to a config setting. The setter is optional.
 		/*public string ServerAddress
 		{

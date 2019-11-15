@@ -18,6 +18,7 @@ namespace MySQL
 		/// </summary>
 		public abstract MySqlConnection Connection { get; }
 
+		#region Command Getters
 		/// <summary>
 		/// Builds and returns a new <see cref="MySqlCommand"/> with a SELECT query and returns a result set
 		/// containing the data of the specified data model.
@@ -46,26 +47,133 @@ namespace MySQL
 			var columns = Utils.GetAllColumns<T>().ToDictionary(x => Utils.GetColumnData(x));
 
 			// Func that creates a parameter string for one item
-			string getValueString(T item) => '(' + string.Join(", ", columns.Keys.Select(x => $"@{x.Name}_{item.GetHashCode()}")) + ')';
+			int i = 0;
+			string getValueString(T item)
+			{
+				var s = '(' + string.Join(", ", columns.Keys.Select(x => $"@{x.Name}_{i}")) + ')';
+				i++;
+				return s;
+			}
 
 			// Generate query for the collection of items
-			var query = new StringBuilder($"INSERT INTO `{Utils.GetTableName<T>()}`(");
+			var query = new StringBuilder($"INSERT INTO `{Utils.GetTableName<T>()}` (");
 			query.Append(string.Join(", ", columns.Keys.Select(x => $"`{x.Name}`"))); // Build component with column names
-			query.Append(")VALUES");
+			query.Append(") VALUES ");
 			query.Append(string.Join(",", items.Select(x => getValueString(x))));     // Build components with all item parameters
 
 			// Create command
 			var command = new MySqlCommand(query.ToString(), Connection);
 			// Create parameter objects for every value and item
+			i = 0;
 			foreach (var item in items)
+			{
 				foreach (var keyValue in columns)
-					command.Parameters.Add(new MySqlParameter(keyValue.Key.Name + '_' + item.GetHashCode(), keyValue.Value.GetValue(item) ?? DBNull.Value));
+					command.Parameters.Add(new MySqlParameter(keyValue.Key.Name + '_' + i, keyValue.Value.GetValue(item) ?? DBNull.Value));
+				i++;
+			}
 			// Return the generated command
 			return command;
 		}
 
 		/// <summary>
-		/// Builds and returns a new <see cref="MySqlCommand"/> with a DELETE query and and deletes the <paramref name="item"/>
+		/// Builds and returns a new <see cref="MySqlCommand"/> with an UPDATE query and updates all rows matching <paramref name="condition"/>
+		/// with the values in <paramref name="item"/>.
+		/// </summary>
+		/// <typeparam name="T">A type extending <see cref="ItemAdapter"/>.</typeparam>
+		/// <param name="item">The item whose values to copy to all matched rows.</param>
+		/// <param name="condition">A MySql condition that returns true when it matches a table row.</param>
+		/// <seealso cref="ItemAdapter.Cache"/>.
+		public MySqlCommand GetUpdate<T>(T item, string condition) where T : ItemAdapter
+		{
+			var tableName = Utils.GetTableName<T>();
+			// Get all columns/properties of the model
+			var columns = Utils.GetAllColumns<T>().ToDictionary(x => Utils.GetColumnData(x));
+
+			// Build the query
+			var query = new StringBuilder();
+			query.Append($"UPDATE `{tableName}` SET ");
+			query.Append(string.Join(",", columns.Keys.Select(x => $"{x.Name} = @{x.Name}")));
+			query.Append(" WHERE ");
+			query.Append(condition);
+			query.Append(';');
+			var command = new MySqlCommand(query.ToString(), Connection);
+
+			// Create the parameter objects for the first half of the query
+			foreach (var (info, column) in columns)
+				command.Parameters.Add(new MySqlParameter(info.Name, column.GetValue(item) ?? DBNull.Value));
+
+			return command;
+		}
+		/// <summary>
+		/// Builds and returns a new <see cref="MySqlCommand"/> with an UPDATE query and updates the <paramref name="item"/>
+		/// based on it's internal cache.
+		/// </summary>
+		/// <typeparam name="T">A type extending <see cref="ItemAdapter"/>.</typeparam>
+		/// <param name="item">The item to update.</param>
+		/// <seealso cref="ItemAdapter.Cache"/>.
+		public MySqlCommand GetUpdate<T>(T item) where T : ItemAdapter
+			=> GetUpdate(new T[] { item });
+		/// <summary>
+		/// Builds and returns a new <see cref="MySqlCommand"/> with an UPDATE query and updates the <paramref name="items"/>
+		/// based on their internal cache.
+		/// </summary>
+		/// <typeparam name="T">A type extending <see cref="ItemAdapter"/>.</typeparam>
+		/// <seealso cref="ItemAdapter.Cache"/>.
+		public MySqlCommand GetUpdate<T>(ICollection<T> items) where T : ItemAdapter
+		{
+			var tableName = Utils.GetTableName<T>();
+			// Get all columns/properties of the model
+			var columns = Utils.GetAllColumns<T>().ToDictionary(x => Utils.GetColumnData(x));
+			items = items.Where(x => x.IsChanged).ToList();
+
+			var query = new StringBuilder();
+			int i = 0;
+			foreach (var item in items)
+			{
+				query.Append($"UPDATE `{tableName}` SET ");
+				query.Append(string.Join(",", columns.Keys.Select(x => $"{x.Name} = @{x.Name}_{i}")));
+				query.Append(" WHERE ");
+				query.Append(string.Join(" AND ", columns.Keys.Select(x => $"{x.Name} = @{x.Name}_c{i}")));
+				query.Append(';');
+				i++;
+			}
+			var command = new MySqlCommand(query.ToString(), Connection);
+
+			i = 0;
+			foreach (var item in items)
+			{
+				foreach (var (info, column) in columns)
+				{
+					command.Parameters.Add(new MySqlParameter(info.Name + '_' + i, column.GetValue(item) ?? DBNull.Value));
+					command.Parameters.Add(new MySqlParameter(info.Name + "_c" + i, column.GetValue(item.clone) ?? DBNull.Value));
+				}
+				i++;
+			}
+
+			return command;
+		}
+
+		/// <summary>
+		/// Builds and returns a new <see cref="MySqlCommand"/> with a DELETE query that deletes all
+		/// rows that match the specified condition from the remote database when executed.
+		/// </summary>
+		/// <typeparam name="T">A type extending <see cref="ItemAdapter"/>.</typeparam>
+		/// <param name="condition">A MySql condition that returns true for every row to delete.</param>
+		public MySqlCommand GetDelete<T>(string condition) where T : ItemAdapter
+		{
+			// Get the columns of the data model
+			var columns = Utils.GetAllColumns<T>().ToDictionary(x => Utils.GetColumnData(x));
+
+			// Generate query
+			var query = $"DELETE FROM `{Utils.GetTableName<T>()}` WHERE " + condition;
+			// Create command
+			var command = new MySqlCommand(query.ToString(), Connection);
+	
+			// Return the new command
+			return command;
+		}
+		/// <summary>
+		/// Builds and returns a new <see cref="MySqlCommand"/> with a DELETE query that deletes the <paramref name="item"/>
 		/// from the remote database when executed.
 		/// </summary>
 		/// <typeparam name="T">A type extending <see cref="ItemAdapter"/>.</typeparam>
@@ -73,7 +181,7 @@ namespace MySQL
 		public MySqlCommand GetDelete<T>(T item) where T : ItemAdapter
 			=> GetDelete(new T[] { item });
 		/// <summary>
-		/// Builds and returns a new <see cref="MySqlCommand"/> with a DELETE query and and deletes the <paramref name="items"/>
+		/// Builds and returns a new <see cref="MySqlCommand"/> with a DELETE query that deletes the <paramref name="items"/>
 		/// collection from the remote database when executed.
 		/// </summary>
 		/// <typeparam name="T">A type extending <see cref="ItemAdapter"/>.</typeparam>
@@ -83,25 +191,36 @@ namespace MySQL
 			// Get the columns of the data model
 			var columns = Utils.GetAllColumns<T>().ToDictionary(x => Utils.GetColumnData(x));
 
+			int i = 0;
+			string getCondition(T item)
+			{
+				var s = string.Join(" AND ", columns.Where(x => x.Value.GetValue(item) != null).Select(x => $"`{x.Key.Name}` = @{x.Key.Name}_{i}"));
+				i++;
+				return s;
+			}
+
 			// Generate query
-			var query = new StringBuilder($"DELETE FROM `{Utils.GetTableName<T>()}` WHERE");
-			// TODO Implement some kind of conditionBuilder
+			var query = new StringBuilder($"DELETE FROM `{Utils.GetTableName<T>()}` WHERE ");
+
 			// Create condition testing every non-null value of the item to their column
-			query.Append(
-				string.Join("OR", items.Select(item => '(' +
-				string.Join(" AND ", columns.Where(x => x.Value.GetValue(item) != null).Select(x => $"`{x.Key.Name}` = @{x.Key.Name}_{item.GetHashCode()}")) + ')'))
-			);
+			query.Append(string.Join(" OR ", items.Select(item => '(' + getCondition(item) + ')')));
 
 			// Create command
 			var command = new MySqlCommand(query.ToString(), Connection);
 			// Generate the parameters
+			i = 0;
 			foreach (var item in items)
+			{
 				foreach (var keyValue in columns)
-					command.Parameters.Add(new MySqlParameter(keyValue.Key.Name + '_' + item.GetHashCode(), keyValue.Value.GetValue(item)));
+					command.Parameters.Add(new MySqlParameter(keyValue.Key.Name + '_' + i, keyValue.Value.GetValue(item)));
+				i++;
+			}
 			// Return the new command
 			return command;
 		}
+		#endregion
 
+		#region Query Methods
 		/// <summary>
 		/// Returns all entries of the given data model in an <see cref="IEnumerable{T}"/>.
 		/// </summary>
@@ -196,6 +315,32 @@ namespace MySQL
 		}
 
 		/// <summary>
+		/// Updates the rows in the remote database the data of the specified item if they match the
+		/// specified condition/
+		/// </summary>
+		/// <typeparam name="T">A type extending <see cref="ItemAdapter"/>.</typeparam>
+		/// <param name="item">The item to update.</param>
+		/// <param name="condition">A MySql condition that returns true when it matches a table row.</param>
+		/// <seealso cref="ItemAdapter.Cache"/>.
+		/// <returns>The number of affected rows.</returns>
+		public long Update<T>(T item, string condition) where T : ItemAdapter
+		{
+			using var command = GetUpdate(item, condition);
+			return command.ExecuteNonQuery();
+		}
+		/// <summary>
+		/// Updates the specified item in the remote database using the item's internal cache.
+		/// </summary>
+		/// <typeparam name="T">A type extending <see cref="ItemAdapter"/>.</typeparam>
+		/// <param name="item">The item to update.</param>
+		/// <seealso cref="ItemAdapter.Cache"/>.
+		/// <returns>The number of affected rows.</returns>
+		public long Update<T>(T item) where T : ItemAdapter
+		{
+			using var command = GetUpdate(item);
+			return command.ExecuteNonQuery();
+		}
+		/// <summary>
 		/// Updates the rows in the remote database with the given collection of items. Items are only
 		/// updated if they have been altered and are no longer equal to their internal cache.
 		/// </summary>
@@ -205,46 +350,32 @@ namespace MySQL
 		/// <returns>The number of affected rows.</returns>
 		public long Update<T>(ICollection<T> items) where T : ItemAdapter
 		{
-			var tableName = Utils.GetTableName<T>();
-			// Get all columns/properties of the model
-			var columns = Utils.GetAllColumns<T>().ToDictionary(x => Utils.GetColumnData(x));
-			items = items.Where(x => x.IsChanged).ToList();
-
-			var query = new StringBuilder();
-			int i = 0;
-			foreach (var item in items)
-			{
-				query.Append($"UPDATE `{tableName}` SET ");
-				query.Append(string.Join(",", columns.Keys.Select(x => $"{x.Name} = @{x.Name}_{i}")));
-				query.Append(" WHERE ");
-				query.Append(string.Join(" AND ", columns.Keys.Select(x => $"{x.Name} = @{x.Name}_c{i}")));
-				query.Append(';');
-				i++;
-			}
-			using var command = new MySqlCommand(query.ToString(), Connection);
-
-			i = 0;
-			foreach (var item in items)
-			{
-				foreach (var (info, column) in columns)
-				{
-					command.Parameters.Add(new MySqlParameter(info.Name + '_' + i, column.GetValue(item) ?? DBNull.Value));
-					command.Parameters.Add(new MySqlParameter(info.Name + "_c" + i, column.GetValue(item.clone) ?? DBNull.Value));
-				}
-				i++;
-			}
-
+			using var command = GetUpdate(items);
 			return command.ExecuteNonQuery();
 		}
 
 		/// <summary>
-		/// Deletes the specified object from this database.
+		/// Deletes all objects from the model's table that match the specified condition.
+		/// </summary>
+		/// <typeparam name="T">A type extending <see cref="ItemAdapter"/>.</typeparam>
+		/// <param name="condition">A MySql condition that returns true for every row to delete.</param>
+		/// <returns>The number of affected rows.</returns>
+		public long Delete<T>(string condition) where T : ItemAdapter
+		{
+			using var command = GetDelete<T>(condition);
+			return command.ExecuteNonQuery();
+		}
+		/// <summary>
+		/// Deletes the specified object from the remote database.
 		/// </summary>
 		/// <typeparam name="T">A type extending <see cref="ItemAdapter"/>.</typeparam>
 		/// <param name="item">The item to delete from the database.</param>
 		/// <returns>The number of affected rows.</returns>
 		public long Delete<T>(T item) where T : ItemAdapter
-			=> Delete(new T[] { item });
+		{
+			using var command = GetDelete(item);
+			return command.ExecuteNonQuery();
+		}
 		/// <summary>
 		/// Deletes the specified collection of objects from the remote database.
 		/// </summary>
@@ -255,7 +386,8 @@ namespace MySQL
 		{
 			using var command = GetDelete(items);
 			return command.ExecuteNonQuery();
-		}
+		} 
+		#endregion
 
 		/// <summary>
 		/// Disposes the resources used by this <see cref="DatabaseAdapter"/>.
