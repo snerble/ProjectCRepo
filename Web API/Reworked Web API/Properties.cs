@@ -29,7 +29,7 @@ using System.Net;
 #endregion
 
 #region Errorpages
-[assembly: ErrorPage(HttpStatusCode.NotFound, "/errors/4041.html")]
+[assembly: ErrorPage(HttpStatusCode.NotFound, "/errors/404.html")]
 #endregion
 
 #nullable disable warnings
