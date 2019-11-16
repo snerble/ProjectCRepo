@@ -68,7 +68,7 @@ namespace API.HTTP.Endpoints
 			// If no images are found, send "no images found"
 			if (images.FirstOrDefault() == null)
 			{
-				Server.SendText(Response, "No images found");
+				Server.SendText("No images found");
 				return;
 			}
 
@@ -81,7 +81,7 @@ namespace API.HTTP.Endpoints
 			if (!parameters.ContainsKey("all"))
 			{
 				// Send the image at the specified index
-				Server.Send(Response, File.ReadAllBytes(src + '\\' + images[page]));
+				Server.Send(File.ReadAllBytes(src + '\\' + images[page]));
 				return;
 			}
 
@@ -97,7 +97,7 @@ namespace API.HTTP.Endpoints
 			}
 
 			// Run template with dynamic model and send the result
-			Server.SendText(Response, Templates.RunTemplate(GetUrl<ImageHost>() + ".cshtml", Request, parameters, new
+			Server.SendText(Templates.RunTemplate(GetUrl<ImageHost>() + ".cshtml", Request, parameters, new
 			{
 				images,
 				limit,

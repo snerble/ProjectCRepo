@@ -14,7 +14,6 @@ namespace API.HTTP.Endpoints
 		public override void GET(Dictionary<string, string> parameters)
 		{
 			Server.SendText(
-				Response,
 				Templates.RunTemplate(
 					GetUrl<ConfigEditor>() + ".cshtml",
 					Request,
@@ -34,20 +33,20 @@ namespace API.HTTP.Endpoints
 	public sealed class ConfigUploader : JsonEndpoint
 	{
 		public override void GET(JObject json, Dictionary<string, string> parameters)
-			=> Server.SendError(Response, HttpStatusCode.NotImplemented);
+			=> Server.SendError(HttpStatusCode.NotImplemented);
 
-		public void PUT(JObject json, Dictionary<string, string> parameters)
+		public void PUT(JObject json, Dictionary<string, string> _)
 		{
 			lock (Program.Config)
 			{
 				try
 				{
 					Program.Config.Update(json);
-					Server.SendError(Response, HttpStatusCode.Created);
+					Server.SendError(HttpStatusCode.Created);
 				}
 				catch (Exception)
 				{
-					Server.SendError(Response, HttpStatusCode.PreconditionFailed);
+					Server.SendError(HttpStatusCode.PreconditionFailed);
 				}
 			}
 		}

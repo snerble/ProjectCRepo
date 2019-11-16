@@ -14,14 +14,14 @@ namespace API.HTTP.Endpoints
 		{
 			if (parameters.Count == 0)
 			{
-				Server.SendError(Response, HttpStatusCode.OK);
+				Server.SendError(HttpStatusCode.OK);
 				return;
 			}
 			string outtext = "";
 			int max = parameters.Max(x => x.Key.Length);
 			foreach (var item in parameters)
 				outtext += $"{item.Key}:{new string(' ', max - item.Key.Length)} {item.Value}\n";
-			Server.SendText(Response, outtext);
+			Server.SendText(outtext);
 		}
 	}
 }

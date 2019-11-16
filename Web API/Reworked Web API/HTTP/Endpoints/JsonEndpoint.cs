@@ -39,14 +39,14 @@ namespace API.HTTP.Endpoints
 			catch (Exception)
 			{
 				// Send BadRequest if it doesn't contain a readable JSON
-				Server.SendError(Response, HttpStatusCode.BadRequest);
+				Server.SendError(HttpStatusCode.BadRequest);
 				return;
 			}
 			var parameters = SplitQuery(Request);
 
 			// Invoke the right http method function
 			var method = GetType().GetMethod(Request.HttpMethod.ToUpper());
-			if (method == null) Server.SendError(Response, HttpStatusCode.NotImplemented);
+			if (method == null) Server.SendError(HttpStatusCode.NotImplemented);
 			else method.Invoke(this, new object[] { content, parameters });
 		}
 
@@ -61,18 +61,18 @@ namespace API.HTTP.Endpoints
 		/// </summary>
 		/// <param name="json">The json sent by the client.</param>
 		/// <param name="parameters">A dictionary containing any url parameters.</param>
-		public virtual void POST(JObject json, Dictionary<string, string> parameters) => Server.SendError(Response, HttpStatusCode.NotImplemented);
+		public virtual void POST(JObject json, Dictionary<string, string> parameters) => Server.SendError(HttpStatusCode.NotImplemented);
 		/// <summary>
 		/// Endpoint for the http DELETE method.
 		/// </summary>
 		/// <param name="json">The json sent by the client.</param>
 		/// <param name="parameters">A dictionary containing any url parameters.</param>
-		public virtual void DELETE(JObject json, Dictionary<string, string> parameters) => Server.SendError(Response, HttpStatusCode.NotImplemented);
+		public virtual void DELETE(JObject json, Dictionary<string, string> parameters) => Server.SendError(HttpStatusCode.NotImplemented);
 		/// <summary>
 		/// Endpoint for the http PATCH method.
 		/// </summary>
 		/// <param name="json">The json sent by the client.</param>
 		/// <param name="parameters">A dictionary containing any url parameters.</param>
-		public virtual void PATCH(JObject json, Dictionary<string, string> parameters) => Server.SendError(Response, HttpStatusCode.NotImplemented);
+		public virtual void PATCH(JObject json, Dictionary<string, string> parameters) => Server.SendError(HttpStatusCode.NotImplemented);
 	}
 }
