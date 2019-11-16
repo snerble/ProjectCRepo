@@ -27,7 +27,7 @@ namespace API.HTTP
 			string url = Request.Url.AbsolutePath.ToLower();
 
 			// Apply redirects
-			var redirect = Program.Redirects.FirstOrDefault(x => (x.ValidOn & ServerAttributeTargets.Resource) != 0 && x.Target == url);
+			var redirect = Utils.Redirects.FirstOrDefault(x => (x.ValidOn & ServerAttributeTargets.Resource) != 0 && x.Target == url);
 			if (redirect != null)
 			{
 				// Send a 301 Permanent Redirect
@@ -37,7 +37,7 @@ namespace API.HTTP
 			}
 
 			// Apply aliases
-			var alias = Program.Aliases.FirstOrDefault(x => (x.ValidOn & ServerAttributeTargets.Resource) != 0 && (x.Target == url || x.Alias == url));
+			var alias = Utils.Aliases.FirstOrDefault(x => (x.ValidOn & ServerAttributeTargets.Resource) != 0 && (x.Target == url || x.Alias == url));
 			if (alias != null)
 			{
 				if (alias.HideTarget && url == alias.Target)

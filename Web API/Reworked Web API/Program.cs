@@ -34,25 +34,6 @@ namespace API
 		public static AppConfig Config;
 		public static AppDatabase Database;
 
-		/// <summary>
-		/// Gets an array of all <see cref="RedirectAttribute"/>s specified in the server properties.
-		/// </summary>
-		public static ReadOnlyCollection<RedirectAttribute> Redirects { get; } = Array.AsReadOnly(
-				Assembly.GetExecutingAssembly().GetCustomAttributes<RedirectAttribute>() as RedirectAttribute[]
-			);
-		/// <summary>
-		/// Gets an array of all <see cref="AliasAttribute"/>s specified in the server properties.
-		/// </summary>
-		public static ReadOnlyCollection<AliasAttribute> Aliases { get; } = Array.AsReadOnly(
-				Assembly.GetExecutingAssembly().GetCustomAttributes<AliasAttribute>() as AliasAttribute[]
-			);
-		/// <summary>
-		/// Gets an array of all <see cref="ErrorPageAttribute"/>s specified in the server properties.
-		/// </summary>
-		public static ReadOnlyCollection<ErrorPageAttribute> ErrorPages { get; } = Array.AsReadOnly(
-				Assembly.GetExecutingAssembly().GetCustomAttributes<ErrorPageAttribute>() as ErrorPageAttribute[]
-			);
-
 		private static readonly List<Server> Servers = new List<Server>();
 		private static Listener listener;
 

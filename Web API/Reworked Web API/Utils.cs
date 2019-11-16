@@ -1,6 +1,9 @@
-﻿using System;
+﻿using API.Attributes;
+using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Text;
 
 namespace API
@@ -10,6 +13,25 @@ namespace API
 	/// </summary>
 	static class Utils
 	{
+		/// <summary>
+		/// Gets an array of all <see cref="RedirectAttribute"/>s listed in the server properties.
+		/// </summary>
+		public static ReadOnlyCollection<RedirectAttribute> Redirects { get; } = Array.AsReadOnly(
+				Assembly.GetExecutingAssembly().GetCustomAttributes<RedirectAttribute>() as RedirectAttribute[]
+			);
+		/// <summary>
+		/// Gets an array of all <see cref="AliasAttribute"/>s listed in the server properties.
+		/// </summary>
+		public static ReadOnlyCollection<AliasAttribute> Aliases { get; } = Array.AsReadOnly(
+				Assembly.GetExecutingAssembly().GetCustomAttributes<AliasAttribute>() as AliasAttribute[]
+			);
+		/// <summary>
+		/// Gets an array of all <see cref="ErrorPageAttribute"/>s listed in the server properties.
+		/// </summary>
+		public static ReadOnlyCollection<ErrorPageAttribute> ErrorPages { get; } = Array.AsReadOnly(
+				Assembly.GetExecutingAssembly().GetCustomAttributes<ErrorPageAttribute>() as ErrorPageAttribute[]
+			);
+
 		/// <summary>
 		/// Determines a text file's encoding by analyzing its byte order mark (BOM).
 		/// Defaults to ASCII when detection of the text file's endianness fails.
