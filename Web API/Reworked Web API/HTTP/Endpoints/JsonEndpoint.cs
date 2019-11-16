@@ -54,25 +54,25 @@ namespace API.HTTP.Endpoints
 		/// Endpoint for the http GET method. This must be implemented.
 		/// </summary>
 		/// <param name="json">The json sent by the client.</param>
-		/// <param name="parameters">A dictionary containing any url parameters.</param>
+		/// <param name="parameters">A dictionary containing all url parameters.</param>
 		public abstract void GET(JObject json, Dictionary<string, string> parameters);
 		/// <summary>
 		/// Endpoint for the http POST method.
 		/// </summary>
 		/// <param name="json">The json sent by the client.</param>
-		/// <param name="parameters">A dictionary containing any url parameters.</param>
+		/// <param name="parameters">A dictionary containing all url parameters.</param>
 		public virtual void POST(JObject json, Dictionary<string, string> parameters) => Server.SendError(HttpStatusCode.NotImplemented);
 		/// <summary>
 		/// Endpoint for the http DELETE method.
 		/// </summary>
 		/// <param name="json">The json sent by the client.</param>
-		/// <param name="parameters">A dictionary containing any url parameters.</param>
+		/// <param name="parameters">A dictionary containing all url parameters.</param>
 		public virtual void DELETE(JObject json, Dictionary<string, string> parameters) => Server.SendError(HttpStatusCode.NotImplemented);
 		/// <summary>
 		/// Endpoint for the http PATCH method.
 		/// </summary>
 		/// <param name="json">The json sent by the client.</param>
-		/// <param name="parameters">A dictionary containing any url parameters.</param>
+		/// <param name="parameters">A dictionary containing all url parameters.</param>
 		public virtual void PATCH(JObject json, Dictionary<string, string> parameters) => Server.SendError(HttpStatusCode.NotImplemented);
 	}
 }
