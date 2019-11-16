@@ -1,6 +1,6 @@
 ﻿namespace API.HTTP.Filters
 {
-	[FilterUrl("/dev")]
+	[FilterUrl("/dev/")]
 	public sealed class BackendAccessFilter : Filter
 	{
 		protected override void Main()
