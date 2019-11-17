@@ -78,8 +78,8 @@ namespace API.Config
 			// Build server settings
 			TryAddItem(Content, "serverSettings", new JObject());
 			TryAddItem(Content["serverSettings"], "partialDataLimit", 1024UL * 1024UL);
-			TryAddItem(Content["serverSettings"], "htmlSourceDir", "../../../../Web API/HTML");
-			TryAddItem(Content["serverSettings"], "resourceDir", "../../../../Web API/HTML");
+			TryAddItem(Content["serverSettings"], "htmlSourceDir", "../../../HTML/src");
+			TryAddItem(Content["serverSettings"], "resourceDir", "../../../HTML/res");
 			TryAddItem(Content["serverSettings"], "serverAddresses", new JArray() { "localhost" });
 
 			Save();
