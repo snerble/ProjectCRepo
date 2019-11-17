@@ -130,7 +130,7 @@ namespace API.HTTP
 		public override void SendError(HttpStatusCode statusCode)
 		{
 			// Try to find an errorpage attribute
-			var errorPage = Program.ErrorPages.FirstOrDefault(x => x.StatusCode == statusCode);
+			var errorPage = Utils.ErrorPages.FirstOrDefault(x => x.StatusCode == statusCode);
 			if (errorPage != null)
 			{
 				// Infinite loop detection
