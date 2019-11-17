@@ -251,7 +251,7 @@ namespace MySQL
 						// Convert enum since database always returns string
 						if (type.IsEnum) value = Enum.Parse(type, value.ToString());
 
-						property.SetValue(outObj, value);
+						property.SetValue(outObj, value == DBNull.Value ? null : value);
 					}
 					outObj.Cache();
 					yield return outObj;

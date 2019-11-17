@@ -13,6 +13,6 @@ namespace API.Database
 		public long Creation { get; set; } = DateTimeOffset.Now.ToUnixTimeSeconds();
 		public string Title { get; set; }
 		public string Description { get; set; }
-		public byte Priority { get; set; }
+		public sbyte Priority { get; set; }
 	}
 }

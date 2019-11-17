@@ -1,15 +1,19 @@
-﻿using API.Config;
+﻿using API.Attributes;
+using API.Config;
 using API.Database;
 using API.HTTP;
 using Config.Exceptions;
 using Logging;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Threading;
 
 namespace API
 {
@@ -28,10 +32,10 @@ namespace API
 
 		public static Logger Log = new Logger(Level.ALL, Console.Out);
 		public static AppConfig Config;
+		public static AppDatabase Database;
 
 		private static readonly List<Server> Servers = new List<Server>();
 		private static Listener listener;
-		private static AppDatabase Database;
 
 		static void Main()
 		{
@@ -133,9 +137,18 @@ namespace API
 			Log.Config("Starting listener...");
 			listener.Start();
 			#endregion
+			
+			// Create exiter thread that releases the exit mutex when enter is pressed
+			var exiter = new Thread(() =>
+			{
+				Console.ReadLine();
+				ExitLock.Release();
+			});
+			exiter.Start();
 
-			Console.ReadLine();
-			Terminate(0);
+			// Wait until the exit mutex is released, then terminate
+			ExitLock.Wait();
+			Terminate(ExitCode);
 		}
 
 		/// <summary>
@@ -149,6 +162,21 @@ namespace API
 			// Get the local endpoint and return it's address
 			IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
 			return endPoint.Address.ToString();
+		}
+
+		static int exitcode = 0;
+		static readonly SemaphoreSlim ExitLock = new SemaphoreSlim(0, 1);
+		/// <summary>
+		/// Specifies the program exit code and terminates the program when set.
+		/// </summary>
+		public static int ExitCode
+		{
+			private get { return exitcode; }
+			set
+			{
+				exitcode = value;
+				ExitLock.Release();
+			}
 		}
 
 		/// <summary>
