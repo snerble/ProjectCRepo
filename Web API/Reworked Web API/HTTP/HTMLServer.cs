@@ -1,11 +1,13 @@
 ﻿using API.Attributes;
 using API.HTTP.Endpoints;
 using API.HTTP.Filters;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 
 namespace API.HTTP
 {
@@ -22,8 +24,6 @@ namespace API.HTTP
 
 		protected override void Main()
 		{
-			
-
 			var url = Request.Url.AbsolutePath.ToLower();
 			
 			// Apply redirects
@@ -126,7 +126,50 @@ namespace API.HTTP
 			Send(File.ReadAllBytes(Program.Config.ResourceDir + Uri.UnescapeDataString(file)));
 		}
 
-		private HttpStatusCode PreviousCode;
+		#region Overrides
+		/// <summary>
+		/// Writes a byte buffer to the specified <see cref="HttpListenerResponse"/>.
+		/// </summary>
+		/// <param name="buffer">The array of bytes to send.</param>
+		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
+		public override void Send(byte[] buffer, HttpStatusCode statusCode = HttpStatusCode.OK)
+			=> base.Send(buffer, StatusOverride ?? statusCode);
+		/// <summary>
+		/// Writes plain text to the specified <see cref="HttpListenerResponse"/>.
+		/// </summary>
+		/// <param name="text">The string of text to send.</param>
+		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
+		/// <param name="encoding">The encoding of the text. <see cref="Encoding.UTF8"/> by default.</param>
+		public override void SendText(string text, HttpStatusCode statusCode = HttpStatusCode.OK, Encoding encoding = null)
+			=> base.SendText(text, StatusOverride ?? statusCode, encoding);
+		/// <summary>
+		/// Writes a <see cref="JObject"/> to the specified <see cref="HttpListenerResponse"/>.
+		/// </summary>
+		/// <param name="json">The <see cref="JObject"/> to send to the client.</param>
+		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
+		public override void SendJSON(JObject json, HttpStatusCode statusCode = HttpStatusCode.OK)
+			=> base.SendJSON(json, StatusOverride ?? statusCode);
+		/// <summary>
+		/// Sends all the data of the specified file and automatically provides the correct MIME type to the client.
+		/// </summary>
+		/// <param name="path">The path to the file to send.</param>
+		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
+		public override void SendFile(string path, HttpStatusCode statusCode = HttpStatusCode.OK)
+			=> base.SendFile(path, StatusOverride ?? statusCode);
+
+		/// <summary>
+		/// Used for custom error pages.
+		/// </summary>
+		private HttpStatusCode? StatusOverride;
+		/// <summary>
+		/// Used for detecting infinite loops in cursom error pages.
+		/// </summary>
+		private HttpStatusCode? PreviousCode;
+
+		/// <summary>
+		/// Sends just an <see cref="HttpStatusCode"/> to the client.
+		/// </summary>
+		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to specify.</param>
 		public override void SendError(HttpStatusCode statusCode)
 		{
 			// Try to find an errorpage attribute
@@ -136,20 +179,42 @@ namespace API.HTTP
 				// Infinite loop detection
 				if (errorPage.Url == Request.Url.AbsoluteUri.ToLower() || statusCode == PreviousCode)
 				{
-					Program.Log.Error($"Caught infinite loop for error page '{errorPage.Url}' for status code {(int)statusCode}.");
-					Program.Log.Error("Please check Properties.cs"); // TODO replace with proper support message once this program gets published.
-					Program.ExitCode = 1;
+					Program.Log.Trace($"Caught infinite loop for error page '{errorPage.Url}' for status code {(int)statusCode}.");
+					// Determine possible cause
+					string cause = statusCode switch
+					{
+						HttpStatusCode.NotFound => "The error page may be missing.",
+						HttpStatusCode.InternalServerError => "The error page itself may be throwing an unhandled exception.",
+						HttpStatusCode.Forbidden => "The error page may be inaccessible.",
+						HttpStatusCode.Unauthorized => "The error page may require the user to be logged in.",
+						HttpStatusCode.NotImplemented => "The error page may be missing the requested HTTP method.",
+						_ => null
+					};
+					if (cause != null) Program.Log.Trace(cause);
+					Program.Log.Trace("Please check Properties.cs");
+					// Reset and fall back to default implementation
+					PreviousCode = null;
+					base.SendError(statusCode);
 					return;
 				}
-				// Store current statuscode to detect infinite loop
+				// Cache the status code for infinite loop detection
 				PreviousCode = statusCode;
-				// Parse the error page url instead and send that endpoint
-				Main(errorPage.Url);
-				// Unset the statuscode cache
-				PreviousCode = 0;
-				return;
+				// Overrride the next status code and parse the error page url instead and send that endpoint
+				StatusOverride = statusCode;
+				try
+				{
+					Main(errorPage.Url);
+					return;
+				}
+				finally
+				{
+					// Reset control values
+					StatusOverride = null;
+					PreviousCode = null;
+				}
 			}
 			base.SendError(statusCode);
 		}
+		#endregion
 	}
 }
