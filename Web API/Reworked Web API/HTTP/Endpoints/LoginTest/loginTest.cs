@@ -10,7 +10,7 @@ namespace API.HTTP.Endpoints.LoginTest
     {
         public override void GET(JObject json, Dictionary<string, string> parameters)
         {
-            Server.SendJSON(Response, new JObject
+            Server.SendJSON(new JObject
             {
                 {"data", "Thees ees test, ees very gut!" }
             });
