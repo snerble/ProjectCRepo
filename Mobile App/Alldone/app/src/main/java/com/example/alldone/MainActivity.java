@@ -62,11 +62,11 @@ public class MainActivity extends AppCompatActivity {
     public void NetworkingShit() {
         HttpURLConnection urlConnection = null;
         try{
-            URL url = new URL("http://192.168.178.18/logintest");
+            URL url = new URL("http://145.137.51.182/logintest");
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setDoInput(true);
-            urlConnection.setDoOutput(true);
+            urlConnection.setDoOutput(false);
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
             System.out.println("Connected.");

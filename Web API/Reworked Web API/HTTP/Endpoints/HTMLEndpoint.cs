@@ -26,29 +26,29 @@ namespace API.HTTP.Endpoints
 
 			// Invoke the right http method function
 			var method = GetType().GetMethod(Request.HttpMethod.ToUpper());
-			if (method == null) Server.SendError(Response, HttpStatusCode.NotImplemented);
+			if (method == null) Server.SendError(HttpStatusCode.NotImplemented);
 			else method.Invoke(this, new object[] { parameters });
 		}
 
 		/// <summary>
 		/// Endpoint for the http GET method. This must be implemented.
 		/// </summary>
-		/// <param name="parameters">A dictionary containing any url parameters.</param>
+		/// <param name="parameters">A dictionary containing all url parameters.</param>
 		public abstract void GET(Dictionary<string, string> parameters);
 		/// <summary>
 		/// Endpoint for the http POST method.
 		/// </summary>
-		/// <param name="parameters">A dictionary containing any url parameters.</param>
-		public virtual void POST(Dictionary<string, string> parameters) => Server.SendError(Response, HttpStatusCode.NotImplemented);
+		/// <param name="parameters">A dictionary containing all url parameters.</param>
+		public virtual void POST(Dictionary<string, string> parameters) => Server.SendError(HttpStatusCode.NotImplemented);
 		/// <summary>
 		/// Endpoint for the http DELETE method.
 		/// </summary>
-		/// <param name="parameters">A dictionary containing any url parameters.</param>
-		public virtual void DELETE(Dictionary<string, string> parameters) => Server.SendError(Response, HttpStatusCode.NotImplemented);
+		/// <param name="parameters">A dictionary containing all url parameters.</param>
+		public virtual void DELETE(Dictionary<string, string> parameters) => Server.SendError(HttpStatusCode.NotImplemented);
 		/// <summary>
 		/// Endpoint for the http PATCH method.
 		/// </summary>
-		/// <param name="parameters">A dictionary containing any url parameters.</param>
-		public virtual void PATCH(Dictionary<string, string> parameters) => Server.SendError(Response, HttpStatusCode.NotImplemented);
+		/// <param name="parameters">A dictionary containing all url parameters.</param>
+		public virtual void PATCH(Dictionary<string, string> parameters) => Server.SendError(HttpStatusCode.NotImplemented);
 	}
 }

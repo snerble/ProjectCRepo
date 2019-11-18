@@ -308,7 +308,7 @@ namespace Logging
 			return string.Format(format,
 				DateTime.Now,
 				DateTimeOffset.Now.ToUnixTimeMilliseconds()/1000d,
-				callerType.Name,
+				callerType?.Name,
 				Path.GetFileName(fileName),
 				callerFunc.Name,
 				level,
