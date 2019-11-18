@@ -8,7 +8,7 @@ namespace API.HTTP.Endpoints
     {
         public override void GET(Dictionary<string, string> parameters)
             //Templates worden naar client gestuurd, url wordt van endpoint gehaald
-            => Server.SendText(Response, Templates.RunTemplate(GetUrl<HTMLtakenlijst>() + ".cshtml", Request, parameters));
+            => Server.SendText(Templates.RunTemplate(GetUrl<HTMLtakenlijst>() + ".cshtml", Request, parameters));
 
         public override void POST(Dictionary<string, string> parameters)
         {

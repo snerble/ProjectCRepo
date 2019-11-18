@@ -173,29 +173,5 @@ namespace API.HTTP
 			Response.StatusCode = (int)statusCode;
 			Response.Close();
 		}
-<<<<<<< HEAD
-
-		/// <summary>
-		/// Adds a cookie to the response object.
-		/// </summary>
-		/// <param name="response">The response object to add a cookie to.</param>
-		/// <param name="name">The name of the cookie.</param>
-		/// <param name="value">The value of the cookie.</param>
-		public static void AddCookie(HttpListenerResponse response, string name, object value)
-		{
-			// Create a cookie instance to take advantage of builtin syntax checking, like checking if the value does not contain illegal characters.
-			var cookie = new Cookie(name, value.ToString());
-			response.Headers.Add("Set-Cookie", $"{cookie.Name}={cookie.Value}");
-		}
-		/// <summary>
-		/// Deletes a cookie by settings it's value to `deleted` and setting it's expiration to 1 Jan 1970.
-		/// </summary>
-		/// <param name="response">The response object to remove a cookie from.</param>
-		/// <param name="name">The name of the cookie to remove.</param>
-		public static void RemoveCookie(HttpListenerResponse response, string name)
-			=> AddCookie(response, name, "deleted; expires=" + CookieExpiration);
-			
-=======
->>>>>>> Reworked_Web_API
 	}
 }
