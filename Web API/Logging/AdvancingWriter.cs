@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Logging
 {
-	class AdvancingWriter : TextWriter
+	public class AdvancingWriter : TextWriter
 	{
 		public override Encoding Encoding => Encoding.UTF8;
 
@@ -89,7 +89,7 @@ namespace Logging
 				archiveFormat = value;
 				_archive = null;
 				if (!System.IO.File.Exists(archiveFormat))
-					System.IO.File.Create(Archive);
+					System.IO.File.Create(Archive).Dispose();
 			}
 		}
 		private string archiveFormat;

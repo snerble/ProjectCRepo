@@ -1,0 +1,33 @@
+@{
+	string redirect = null;
+	if (@ViewBag.parameters.ContainsKey("redirect")) {
+		redirect = Uri.UnescapeDataString(@ViewBag.parameters["redirect"]);
+	}
+}
+
+<!doctype html>
+<style>
+	body {
+		text-align: center;
+		font-family: Verdana, sans-serif;
+	}
+	form input {
+		border-radius: 5pt;
+		padding: 5pt;
+		margin: 10pt;
+	}
+</style>
+<html>
+	<body>
+		<form method="post">
+			<input type="text" name="username" placeholder="Username"/><br>
+			<input type="password" name="password" placeholder="Password"/><br>
+			<input type="submit" value="Log In"/>
+			@if (redirect != null)
+			{
+				<!-- Add redirect component if it is present -->
+				<input hidden name="redirect" value=@redirect>
+			}
+		</form>
+	</body>
+</html>

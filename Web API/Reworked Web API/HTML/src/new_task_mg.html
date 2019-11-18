@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+    <title>Nieuwe taak</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="stylesheet.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/ico" href="favicon.ico"/>
+    <body>
+        <!-- Dit is het menu aan de linker kant van de webapp -->
+        <div class="sidenav">
+            <p>Ingelogd als: manager <a href="logout.html">Log uit</a></p>
+            <br>
+            <a href="home_mg.html">Home</a>
+            <a href="task_list_mg.html">Takenlijst</a>
+            <a href="#">Nieuwe taak</a>
+        </div>
+
+        <!-- Dit is het formulier waar medewerkers de taak doorgeven -->
+        <div class="main">
+        <h1>Nieuwe taak</h1>
+        <form action="" id="taskform">
+			<div class="split">
+			<div class="split_part">
+				<label>Titel:</label><br>
+				<input type="text" size="40" name="title" value="">
+				<br><br>
+
+				<label>Prioriteit:</label><br>
+				<select name="priority">
+					<option value="0"></option>
+					<option value="1">!</option>
+					<option value="2">!!</option>
+					<option value="3">!!!</option>
+				</select>
+				
+				<br><br>
+
+				<label>Omschrijving:</label><br>
+				<textarea rows="3" cols="60" name="description" form="taskform"></textarea>
+				<br>
+
+				
+			</div>
+			<div class="split_part">
+				<label>Herhalen:</label><br>
+				<select name="repeat">
+					<option value="no">Nee</option>
+					<option value="daily">Ja, dagelijks</option>
+					<option value="weekly">Ja, weekelijks</option>
+					<option value="monthly">Ja, maandelijks</option>
+				</select>
+
+				<br><br><br>
+
+				<div class="add_img"><button>+</button></div><label style="color:#111; font-size:20px; margin-left: 20px;">Voeg bestand toe</label></div>
+				<br>
+			</div>
+			</div>
+
+            <input type="submit" value="Submit" id="btn">
+        </form>
+        </div> 
+    </body>
+</html>
