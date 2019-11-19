@@ -10,23 +10,83 @@
     <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
     <style>
         div.profileBox {
-            width: 1200px;
+            position: relative;
+            width: 95%;
             height: 550px;
             border: 1px solid gray;
-            margin-left: 20.5%;
-            margin-right: 20%;
             margin-top: 5%;
+            padding-left: 30px;
         }
 
-        input, label {
-            display:block;
+        /* dit is voor de upload knop in de hover overlay van de profiel foto*/
+        .btn-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .btn-upload input[type=file] {
+            position: absolute;
+            opacity: 0;
+            z-index: 0;
+            max-width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .btn-upload .btn{
+            padding: 8px 20px;
+            background: #af5166;
+            border: 1px solid #af5166;
+            color: #fff;
+            border: 0;
+        }
+        .btn-upload:hover .btn{
+            padding: 8px 20px;
+            background: #9e495c;
+            color: #fff;
+            border: 0;
         }
 
+        /* hier is alles wat nodig is om de foto hover overlay te creëren */
+        .container {
+            position: relative;
+            width: 40%;
+            margin-right: 10%;
+            float: right;
+        }
+
+        .image {
+            opacity: 1;
+            display: block;
+            width: 100%;
+            height: auto;
+            transition: .5s ease;
+            backface-visibility: hidden;
+        }
+
+        .middle {
+            transition: .5s ease;
+            opacity: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%)
+        }
+
+        .container:hover .image {
+            opacity: 0.3;
+        }
+
+        .container:hover .middle {
+            opacity: 1;
+        }
+
+        /* inputfields*/
         input[type=text], input[type=password] {
-            width: 50%;
+            width: 40%;
             height: 40px;
             padding-left: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 5px;
             margin-top: 5px;
             border: 2px solid #7ea8bf;
             color: black;
@@ -35,13 +95,14 @@
         }
 
         label {
+            width: auto;
+            padding-top: 10px;
             color: black;
-            font-size: 14px;
+            font-size: 20px;
             font-weight: bold;
         }
 
-        
-            input[type=button].button1 {
+        input[type=submit] {
             font-size: 16px;
             background: black;
             border: 1px solid black;
@@ -52,15 +113,23 @@
             border-radius: 5px;
             padding: 10px 0;
             outline: none;
-            margin-bottom:10px;
+            margin-bottom: 10px;
+            margin-left: 0px;
+            padding: 5px 5px 5px 5px;
         }
 
-            input[type=button]:hover {
+            input[type=submit]:hover {
                 background: black;
                 border: 1px solid black;
             }
+
+
+        input, label {
+            display: block;
         }
-        
+
+
+        /* Style voor de navigatiebar/ dashboard */
         div.dashboard {
             background-color: #007D92;
             width: 300px;
@@ -129,26 +198,45 @@
                 color: #af5166;
             }
     </style>
+    <script>
+        function myFunction(id) {
+            var x = document.getElementById(id);
+            if (x.className.indexOf("w3-show") == -1) {
+                x.className += " w3-show";
+            } else {
+                x.className = x.className.replace(" w3-show", "");
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="main">
         <h1>Profile</h1>
+        <div class="profileBox">
+            <form id="profileform" method="post" name="profileform">
+                <label>Naam:</label><input name="name" type="text" id="name"><br />
+                <label>Functie</label><input name="username" type="text" id="username"><br />
+                <label>Email:</label><input name="email" type="text" id="email"><br />
+                <label>Wachtwoord:</label> <input name="password" type="password" id="password" />
+                <input type="submit" value="Verander wachtwoord" id="wwVeranderen" onclick="window.location.href = 'profile.html';" />
+
+
+                <div class="container">
+                    <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973461_960_720.png" alt="Avatar" class="image" style="width:100%">
+                    <div class="middle">
+                        <label class="btn-upload">
+                            <input type="file" name="fileupload">
+                            <button class="btn">Upload profile picture</button>
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="profileBox">
-        <form id="profileform" method="post" name="profileform">
-            <label>Naam:</label><input name="name" type="text" id="name"><br />
-            <label>Functie</label><input name="username" type="text" id="username"><br />
-            <label>Email:</label><input name="email" type="text" id="email"><br />
-            <label>Wachtwoord:</label> <input name="password" type="password" id="password"><br />
 
-
-            <input type="button" value="Verander wachtwoord" id="wwVeranderen" class="button1" onclick="window.location.href = 'login.html';" />
-
-        </form>
-    </div>
     <div class="sidenav">
         <img class="logo" src="Alldone Logo.png" />
-        <div class="container">
+        <div class="nav-container">
 
             <p>Ingelogd als: vloerpersoneel</p>
 

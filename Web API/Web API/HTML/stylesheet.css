@@ -55,7 +55,7 @@ h1, h2, h3, h4, h5, h6 {
     color: #f4edeb;
 }
 
-.container {
+.nav-container {
     content: "";
     display: table;
     clear: both;
@@ -96,7 +96,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Hier begint de opmaak van het formulier voor een nieuwe taak. */
 form label {
-    color: #af5166;
+    color: black;
 }
 
 form input, select, textarea {

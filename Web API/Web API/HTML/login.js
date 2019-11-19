@@ -15,7 +15,7 @@ function returnToPreviousPage() {
 }
 
 function validateUsername() {
-    if (document.forms['loginform'].username.value !== "Daphne") {
+    if (document.forms["loginform"].username.value == "") {
         alert("De gebruikersnaam is onjuist")
         return false;
     }
@@ -25,7 +25,7 @@ function validateUsername() {
 }
 
 function validatePassword() {
-    if (document.forms['loginform'].password.value !== "1") {
+    if (document.forms["loginform"].password.value == "") {
         alert("Wachtwoord is onjuist")
         return false;
     }
@@ -36,6 +36,7 @@ function validatePassword() {
 
 function validateAll() {
     if (!validateUsername() | !validatePassword()) {
+        //window.location = "login_wrong.html"
         returnToPreviousPage();
         return false;
     }

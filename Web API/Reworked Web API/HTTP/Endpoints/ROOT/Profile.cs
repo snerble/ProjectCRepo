@@ -9,10 +9,6 @@ namespace API.HTTP.Endpoints.ROOT
     [EndpointUrl("/profile")]
     public sealed class Profile : HTMLEndpoint
     {
-        public Profile(HttpListenerRequest request, HttpListenerResponse response) : base(request, response)
-        {
-        }
-
         public override void GET(Dictionary<string, string> parameters)
         {
             Response.Headers.Add("Content-Type", "text/html");

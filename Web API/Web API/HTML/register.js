@@ -27,7 +27,7 @@ var passwordPattern = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]
 
 
 function validateName() {
-    if (document.forms['registerForm'].name.value === '') {
+    if (document.forms["registerForm"].name.value === "") {
         alert("Vul je naam in");
         return false;
     }
@@ -37,7 +37,7 @@ function validateName() {
 }
 
 function validateUsername() {
-    if (document.forms['registerForm'].username.value === '') {
+    if (document.forms["registerForm"].username.value === "") {
         alert("Vul een gebruikersnaam in");
         return false;
     }// else if met of die al bestaat
@@ -47,7 +47,7 @@ function validateUsername() {
 }
 
 function validateEmail() {
-    if (document.forms['registerForm'].email.value === '') {
+    if (document.forms["registerForm"].email.value === "") {
         alert("Vul een email adres in");
         return false;
     }
@@ -57,11 +57,11 @@ function validateEmail() {
 }
 
 function validatePassword() {
-    if (document.forms['registerForm'].password.value == '') {
+    if (document.forms["registerForm"].password.value == "") {
         alert("Vul een wachtwoord in");
         return false;
     }
-    if (document.forms['registerForm'].password.value.match(passwordPattern) === null) {
+    if (document.forms["registerForm"].password.value.match(passwordPattern) === null) {
         alert("juiste patroon gebruiken");
         return false;
     }
@@ -71,11 +71,11 @@ function validatePassword() {
 }
 
 function confirmPassword() {
-    if (document.forms['registerForm'].confirmPassword.value === '') {
+    if (document.forms["registerForm"].confirmPassword.value === "") {
         alert("Herhaal je wachtwoord");
         return false;
     }
-    else if (document.forms['registerForm'].confirmPassword.value !== document.forms['registerForm'].password.value) {
+    else if (document.forms["registerForm"].confirmPassword.value !== document.forms["registerForm"].password.value) {
         alert("Het wachtwoord komt niet overeen")
         return false;
 
@@ -87,10 +87,10 @@ function confirmPassword() {
 
 function validateAll() {
     if (!validateName() | !validateUsername() | !validateEmail() | !validatePassword() | !confirmPassword()) {
-        returnToPreviousPage();
+        //returnToPreviousPage();
         return false;
     }
     else {
-        window.location = "home_vp.html";
+        window.location = "Register1";
     }
 }

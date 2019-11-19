@@ -58,6 +58,8 @@ namespace API.HTTP
 				{
 					var context = queue.Take();
 
+                    Program.Log.Info(context.Request.Url.LocalPath);
+
 					// Always deny requests with invalid urls
 					if (context.Request.Url.AbsolutePath.Contains(".."))
 					{
