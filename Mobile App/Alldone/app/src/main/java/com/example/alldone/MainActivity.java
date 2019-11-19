@@ -8,6 +8,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -23,6 +26,7 @@ import java.net.URL;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
+    String msg = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,22 +40,22 @@ public class MainActivity extends AppCompatActivity {
         login.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
-            /*if(username.getText().toString().equals("admin") && password.getText().toString().equals("admin")) {
-                Toast.makeText(getApplicationContext(), "Je bent ingelogd",Toast.LENGTH_SHORT).show();
-                Intent intent0 = new Intent(getApplicationContext(), Takenlijst.class);
-                intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+             JSONObject jObj = null;
+             try {
+                 jObj = new JSONObject()
+                         .put("username", username.getText())
+                         .put("password", password.getText());
+             } catch (JSONException e) {
+                 e.printStackTrace();
+             }
 
-                startActivity(intent0);
-            }
-            else {
-                Toast.makeText(getApplicationContext(), "Verkeerde gebruikersnaam en/of wachtwoord",Toast.LENGTH_SHORT).show();
-            }*/
-            System.out.println("Yo wassup");
-            Thread e = new Thread(new Runnable() {
+             jObj.toString();
+
+             final JSONObject finalJObj = jObj;
+             Thread e = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    NetworkingShit();
+                    NetworkingShit(finalJObj);
                 }
             });
             e.start();
@@ -59,21 +63,30 @@ public class MainActivity extends AppCompatActivity {
       });
     }
 
-    public void NetworkingShit() {
+    public void NetworkingShit(JSONObject json) {
         HttpURLConnection urlConnection = null;
         try{
-            URL url = new URL("http://145.137.51.182/logintest");
+            URL url = new URL("http://145.137.48.172/login");
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setDoInput(true);
-            urlConnection.setDoOutput(false);
-            urlConnection.setRequestMethod("GET");
+            urlConnection.setDoOutput(true);
             urlConnection.connect();
             System.out.println("Connected.");
 
-//            DataOutputStream os = new DataOutputStream(urlConnection.getOutputStream());
-//            os.flush();
-//            os.close();
+            DataOutputStream os = new DataOutputStream(urlConnection.getOutputStream());
+            os.writeBytes(json.toString());
+            os.flush();
+            os.close();
+
+
+            switch(urlConnection.getResponseCode()){
+                case 200:
+                    break;
+
+                default:
+                    return;
+            }
 
             BufferedReader br = new BufferedReader(
                     new InputStreamReader(
@@ -82,12 +95,32 @@ public class MainActivity extends AppCompatActivity {
                             )
                     )
             );
+            String jsonString = null;
             StringBuilder sb = new StringBuilder();
-            String s = null;
-            while ((s = br.readLine()) != null)
-                sb.append(s);
+            while ((jsonString = br.readLine()) != null)
+                sb.append(jsonString);
             br.close();
             System.out.println(sb.toString());
+
+            if(sb.toString() != null) {
+                msg = "Je bent ingelogd";
+                Intent intent0 = new Intent(getApplicationContext(), Takenlijst.class);
+                intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent0.putExtra("userdata", jsonString);
+
+                startActivity(intent0);
+            }
+            else {
+                msg = "Verkeerde gebruikersnaam en/of wachtwoord";
+            }
+            MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), msg,Toast.LENGTH_SHORT).show();
+                    }
+                }
+            );
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
