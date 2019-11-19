@@ -1,0 +1,113 @@
+﻿<!doctype html>
+
+<style>
+    body {
+        text-align: center;
+        font-family: Verdana, sans-serif;
+    }
+
+    form input {
+        border-radius: 5pt;
+        padding: 5pt;
+        margin: 10pt;
+    }
+</style>
+
+<html>
+<head>
+    <script type="text/javascript">
+
+       /* // cookie stuff
+        var maxAge = 60;
+        var expired = "expires= Thu, 01 Jan 1970 00:00:00 GMT";
+
+        function setCookie(name, value) {
+            document.cookie = name + "=" + encodeURI(value) + ";path=/;max-age=" + maxAge;
+        }
+
+        function storeValue(form) {
+            setCookie("taak", form.taak.value);
+            return true;
+        }
+
+        function deleteCookie(name) {
+            document.cookie = name + "=null;" + "max-age=" + expired;
+        }
+
+        function clearCookie() {
+
+            deleteCookie("taak");
+            alert("Taak verwijderd.")
+        }
+
+        function updateCookie(name, value) {
+            // functie voor het bewerken van de cookie
+        }
+
+        if (taak = getCookie("taak")) document.taakForm.taak.value = taak;*/
+
+        // Div laten zien
+        function showDiv() {
+            document.getElementById("").style.display = "block";
+        }
+
+    </script>
+</head>
+
+<body>
+    <!-- Dit is het menu aan de linker kant van de webapp -->
+    <div class="sidenav">
+        <p>Ingelogd als: technische staff <a href="logout.html">Log uit</a></p>
+        <br>
+        <a href="home_ts.html">Home</a>
+        <a href="takenlijst">Takenlijst</a>
+        <a href="#">Nieuwe taak</a>
+    </div>
+
+    <!-- Dit is het formulier waar medewerkers de taak doorgeven -->
+    <div class="main">
+        <h1>Nieuwe taak</h1>
+        <form action="" id="taskform" method="post">
+            <div class="split">
+                <div class="split_part">
+                    <label>Titel:</label><br>
+                    <input type="text" size="40" name="title" id="txtTitle" value="">
+                    <br><br>
+
+                    @*<label>Prioriteit:</label><br>
+                <select name="priority">
+                    <option value="0"></option>
+                    <option value="1">!</option>
+                    <option value="2">!!</option>
+                    <option value="3">!!!</option>
+                </select>
+
+                <br><br>*@
+
+                    <label>Omschrijving:</label><br>
+                    <textarea rows="3" cols="60" name="description" form="taskform"></textarea>
+                    <br>
+
+                </div>
+                @*<div class="split_part">
+                <label>Herhalen:</label><br>
+                <select name="repeat">
+                    <option value="no">Nee</option>
+                    <option value="daily">Ja, dagelijks</option>
+                    <option value="weekly">Ja, weekelijks</option>
+                    <option value="monthly">Ja, maandelijks</option>
+                </select>
+
+                <br><br><br>
+
+                <div class="add_img"><button>+</button></div><label style="color:#111; font-size:20px; margin-left: 20px;">Voeg bestand toe</label>
+            </div>*@
+                <br>
+            </div>
+
+            <input type="submit" value="Submit" id="btn" onclick="">
+        </form>
+    </div>
+    
+</body>
+</html>

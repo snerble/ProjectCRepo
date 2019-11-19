@@ -69,6 +69,4 @@ namespace API.HTTP.Endpoints
 
         }
     }
-
-   
 }
