@@ -1,6 +1,7 @@
 ﻿using API.Attributes;
 using API.HTTP.Endpoints;
 using API.HTTP.Filters;
+using MimeKit;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
@@ -117,13 +118,13 @@ namespace API.HTTP
 				SendText("<html style=\"text-align: center\">" +
 					"<body style=\"background-color: black; margin: 0; padding: 0;\">" +
 					"<video controls style=\"width: 100%; max-height: 100vh;\">" +
-					$"<source src=\"{file}\" type=\"video/{Path.GetExtension(file)[1..]}\">" +
+					$"<source src=\"{file}\" type=\"{MimeTypes.GetMimeType(Path.GetExtension(file))}\">" +
 					"</video>" +
 					"</body>" +
 					"</html>");
 				return;
 			}
-			Send(File.ReadAllBytes(Program.Config.ResourceDir + Uri.UnescapeDataString(file)));
+			SendFile(Program.Config.ResourceDir + Uri.UnescapeDataString(file));
 		}
 
 		#region Overrides
