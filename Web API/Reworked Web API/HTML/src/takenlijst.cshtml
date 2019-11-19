@@ -17,11 +17,24 @@
 <head>
     <script type="text/javascript">
 
+        var xhr = new XMLHttpRequest();
+
+  
+
     </script>
 </head>
 <body>
     <h1>Takenlijst</h1>
-    <span>@Model.Task?.Title</span>
-
+    @foreach (var task in Model.Tasks)
+    {
+        <span>@task.Title</span>
+        <br>
+        <span>@task.Description</span>
+        <br>
+        <button onclick="deleteTask">Delete</button>
+        <button>Rename</button>
+        <br>
+        <br>
+    }
 </body>
 </html>

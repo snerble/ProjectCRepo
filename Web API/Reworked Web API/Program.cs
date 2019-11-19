@@ -6,11 +6,8 @@ using Config.Exceptions;
 using Logging;
 using System;
 using System.Collections.Generic;
-<<<<<<< HEAD
-=======
 using System.Collections.ObjectModel;
 using System.Diagnostics;
->>>>>>> Reworked_Web_API
 using System.IO;
 using System.Linq;
 using System.Net;

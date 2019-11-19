@@ -4,7 +4,6 @@ using System.Linq;
 
 namespace API.HTTP.Endpoints
 {
-
     [EndpointUrl("/taakaanmaken")]
     public sealed class HTMLTaakAanmaken : HTMLEndpoint
     {
@@ -14,7 +13,7 @@ namespace API.HTTP.Endpoints
             //var task = Program.Database.Select<Task>().ToArray();
 
             //Templates worden naar client gestuurd, url wordt van endpoint gehaald
-            Server.SendText(Response,
+            Server.SendText(
                 Templates.RunTemplate(
                     GetUrl<HTMLTaakAanmaken>() + ".cshtml",
                     Request,
@@ -53,13 +52,15 @@ namespace API.HTTP.Endpoints
                 Name = "Groep 1"
             });*/
 
-            /*Program.Database.Insert(new Task()
+            Program.Database.Insert(new Task()
             {
                 Creator = 2,
                 Title = parameters["title"],
                 Description = parameters["description"],
                 Group = 1
-            });*/
+            });
+
+            //Response.Redirect("/taakaanmaken");
 
             //Program.Log.Debug("Received post request.");
 
