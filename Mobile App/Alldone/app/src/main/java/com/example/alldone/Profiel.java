@@ -8,9 +8,13 @@ import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
+
 
 
 public class Profiel extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -19,6 +23,7 @@ public class Profiel extends AppCompatActivity implements NavigationView.OnNavig
 
     private String name;
     private String job;
+    private String userData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +40,28 @@ public class Profiel extends AppCompatActivity implements NavigationView.OnNavig
         NavigationView navigationView = (NavigationView) findViewById(R.id.nv1);
         navigationView.setNavigationItemSelectedListener(this);
 
-        name = "Abel Beekink";
-        job = "Technische staff";
+        Intent intent=getIntent();
+
+        userData = intent.getStringExtra("userdata");
+
+        int jobNr = 0;
+        try {
+            JSONObject reader = new JSONObject(userData);
+            name = reader.getString("username");
+            jobNr = reader.getInt("accesslevel");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        switch (jobNr) {
+            case 2:
+                job = "Administrator";
+                break;
+
+            default:
+                job = "Technische staff";
+                break;
+        }
         TextView nameText = findViewById(R.id.name);
         TextView jobText = findViewById(R.id.job);
 

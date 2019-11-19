@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     public void NetworkingShit(JSONObject json) {
         HttpURLConnection urlConnection = null;
         try{
-            URL url = new URL("http://145.137.48.172/login");
+            URL url = new URL("http://192.168.178.18/login");
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setDoInput(true);
@@ -100,14 +100,13 @@ public class MainActivity extends AppCompatActivity {
             while ((jsonString = br.readLine()) != null)
                 sb.append(jsonString);
             br.close();
-            System.out.println(sb.toString());
 
             if(sb.toString() != null) {
                 msg = "Je bent ingelogd";
                 Intent intent0 = new Intent(getApplicationContext(), Takenlijst.class);
                 intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                intent0.putExtra("userdata", jsonString);
+                intent0.putExtra("userdata", sb.toString());
 
                 startActivity(intent0);
             }
