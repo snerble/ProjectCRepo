@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Config
 {
@@ -116,14 +117,25 @@ namespace Config
 		/// <summary>
 		/// Returns an indented JSON representation of this <see cref="ConfigBase"/>'s content.
 		/// </summary>
-		public override string ToString() => Content.ToString();
+		public override string ToString()
+		{
+			var sb = new StringBuilder();
+			using var jtw = new JsonTextWriter(new StringWriter(sb))
+			{
+				Formatting = Formatting.Indented,
+				Indentation = 1,
+				IndentChar = '\t'
+			};
+			new JsonSerializer().Serialize(jtw, Content);
+			return sb.ToString();
+		}
 
 		public static explicit operator JObject(ConfigBase config) => new JObject(config.Content);
 
 		/// <summary>
 		/// Convenience method that automatically converts <paramref name="json"/> to a <see cref="JObject"/>.
 		/// Equivalent to calling <see cref="TryAddItem{T}(JObject, string, T)"/> like so:
-		/// <code>TryAddItem((<see cref="JObject"/>)<paramref name="json"/>, <paramref name="key"/>, <paramref name="value"/>);</code>
+		/// <code>TryAddItem(<paramref name="json"/> as <see cref="JObject"/>, <paramref name="key"/>, <paramref name="value"/>);</code>
 		/// </summary>
 		protected static void TryAddItem<T>(JToken json, string key, T value) => TryAddItem(json as JObject, key, value);
 		/// <summary>

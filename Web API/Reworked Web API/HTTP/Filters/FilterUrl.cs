@@ -20,8 +20,8 @@ namespace API.HTTP.Filters
 		/// <param name="url">The target url of the <see cref="Filter"/>.</param>
 		public FilterUrl(string url)
 		{
-			if (!url.EndsWith("/")) throw new ArgumentException("Argument 'url' must end with '/' to indicate a full url path.");
-			Url = url?.ToLower() ?? throw new ArgumentNullException("url");
+			if (!url.EndsWith("/")) throw new ArgumentException($"Argument '{nameof(url)}' must end with '/' to indicate a full url path.");
+			Url = url?.ToLower() ?? throw new ArgumentNullException(nameof(url));
 		}
 	}
 }

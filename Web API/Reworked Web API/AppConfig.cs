@@ -78,8 +78,8 @@ namespace API.Config
 			// Build server settings
 			TryAddItem(Content, "serverSettings", new JObject());
 			TryAddItem(Content["serverSettings"], "partialDataLimit", 1024UL * 1024UL);
-			TryAddItem(Content["serverSettings"], "htmlSourceDir", "../../../../Web API/HTML");
-			TryAddItem(Content["serverSettings"], "resourceDir", "../../../../Web API/HTML");
+			TryAddItem(Content["serverSettings"], "htmlSourceDir", "../../../HTML/src");
+			TryAddItem(Content["serverSettings"], "resourceDir", "../../../HTML/res");
 			TryAddItem(Content["serverSettings"], "serverAddresses", new JArray() { "localhost" });
 
 			Save();
@@ -137,6 +137,30 @@ namespace API.Config
 				return;
 			}
 			Program.Log.Info("Reloaded config.");
+		}
+
+		/// <summary>
+		/// Updates the current config JObject with the specified JObject.
+		/// </summary>
+		/// <param name="newContent">A new <see cref="JObject"/> to use for this config.</param>
+		/// <exception cref="ConfigException">Thrown when <paramref name="newContent"/> fails the config validation.</exception>
+		public void Update(JObject newContent)
+		{
+			JObject oldContent = Content;
+			try
+			{
+				Content = newContent;
+				Setup();
+			}
+			catch (Exception e)
+			{
+				Program.Log.Error($"Update failed: {e.Message}", e, false);
+				Program.Log.Error($"Restoring previous config...");
+				Content = oldContent;
+				Save();
+				return;
+			}
+			Program.Log.Info("Updated config.");
 		}
 
 		// Example of a property that refers directly to a config setting. The setter is optional.

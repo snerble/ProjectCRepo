@@ -14,23 +14,29 @@ namespace API.HTTP.Endpoints
 	public abstract class Endpoint
 	{
 		/// <summary>
-		/// Gets or sets the request object passed to this <see cref="Endpoint"/> instance.
+		/// Gets the request object passed to this <see cref="Endpoint"/>.
 		/// </summary>
-		public HttpListenerRequest Request { get; set; }
+		protected HttpListenerRequest Request { get; private set; }
 		/// <summary>
-		/// Gets the response object passed to this <see cref="Endpoint"/> instance.
+		/// Gets the response object passed to this <see cref="Endpoint"/>.
 		/// </summary>
-		public HttpListenerResponse Response { get; set; }
+		protected HttpListenerResponse Response { get; private set; }
+		/// <summary>
+		/// Gets the <see cref="HTTP.Server"/> instance that created this <see cref="Endpoint"/>.
+		/// </summary>
+		protected Server Server { get; private set; }
 
 		/// <summary>
 		/// Invokes the main function of this <see cref="Endpoint"/>.
 		/// </summary>
 		/// <param name="request">The request instance to pass to this <see cref="Endpoint"/>.</param>
 		/// <param name="response">The response instance to pass to this <see cref="Endpoint"/>.</param>
-		public void Invoke(HttpListenerRequest request, HttpListenerResponse response)
+		/// <param name="server">The <see cref="HTTP.Server"/> instance that created this <see cref="Endpoint"/>.</param>
+		public void Invoke(HttpListenerRequest request, HttpListenerResponse response, Server server)
 		{
 			Request = request;
 			Response = response;
+			Server = server;
 			Main();
 		}
 

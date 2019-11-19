@@ -13,7 +13,7 @@ namespace API.HTTP.Endpoints
     {
         public override void GET(Dictionary<string, string> parameters)
         {
-                Server.SendHTML(Response, "/login.html");
+                Server.SendFile(Program.Config.HTMLSourceDir + "/login.html");
         }
 
         public override void POST(Dictionary<string, string> parameters)
@@ -30,7 +30,7 @@ namespace API.HTTP.Endpoints
             if (user == null)
             {
                 Program.Log.Info("Invalid login info");
-                Server.SendError(Response, HttpStatusCode.NoContent);
+                Server.SendError(HttpStatusCode.NoContent);
             }//else if(username or password incorrect)
             //{        Program.Log.Info("Wrong info");
             //         Response.Redirect("pagina met rood randje om wat fout is/ text met dat de gegevens niet kloppen");
@@ -40,7 +40,7 @@ namespace API.HTTP.Endpoints
             {
                 Program.Log.Info("Correct info");
                 Response.Redirect("home_vp.html");
-                Server.SendError(Response, HttpStatusCode.Redirect);
+                Server.SendError(HttpStatusCode.Redirect);
             }
         }
     }

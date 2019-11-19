@@ -16,7 +16,7 @@ namespace API.HTTP.Endpoints.ROOT
         // wat houd  HttpListenerResponse in?
         public override void GET(Dictionary<string, string> parameters)
         {
-            Server.SendHTML(Response, "/register.html");
+            Server.SendFile(Program.Config.HTMLSourceDir + "/register.html");
         }
 
         // POST is for creating new resources,
@@ -36,7 +36,7 @@ namespace API.HTTP.Endpoints.ROOT
             
             //als dus alles is ingevuld en gelukt is met database dan moet die door
             Response.Redirect("home_vp.html");
-            Server.SendError(Response, System.Net.HttpStatusCode.Redirect);
+            Server.SendError(System.Net.HttpStatusCode.Redirect);
 
             // moet ik een error implementeren? inprincipe conditions in js
 

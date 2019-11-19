@@ -24,7 +24,7 @@ namespace API.HTTP.Filters
 			{
 				Program.Log.Fine($"Denied unauthorized request to \"{Request.Url.LocalPath}\"");
 				Response.Redirect(Endpoint.GetUrl<Login>() + "?redirect=" + Uri.EscapeDataString(Request.RawUrl));
-				Server.SendError(Response, HttpStatusCode.Found);
+				Server.SendError(HttpStatusCode.Found);
 				Interrupt();
 			}
 		}

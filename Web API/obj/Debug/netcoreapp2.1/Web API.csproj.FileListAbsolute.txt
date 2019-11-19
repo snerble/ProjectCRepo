@@ -1,0 +1,11 @@
+C:\Users\amyno\Source\Repos\ProjectCRepo\Web API\bin\Debug\netcoreapp2.1\API.deps.json
+C:\Users\amyno\Source\Repos\ProjectCRepo\Web API\bin\Debug\netcoreapp2.1\API.runtimeconfig.json
+C:\Users\amyno\Source\Repos\ProjectCRepo\Web API\bin\Debug\netcoreapp2.1\API.runtimeconfig.dev.json
+C:\Users\amyno\Source\Repos\ProjectCRepo\Web API\bin\Debug\netcoreapp2.1\API.dll
+C:\Users\amyno\Source\Repos\ProjectCRepo\Web API\bin\Debug\netcoreapp2.1\API.pdb
+C:\Users\amyno\Source\Repos\ProjectCRepo\Web API\obj\Debug\netcoreapp2.1\Web API.csprojAssemblyReference.cache
+C:\Users\amyno\Source\Repos\ProjectCRepo\Web API\obj\Debug\netcoreapp2.1\Web API.csproj.CoreCompileInputs.cache
+C:\Users\amyno\Source\Repos\ProjectCRepo\Web API\obj\Debug\netcoreapp2.1\Web API.AssemblyInfoInputs.cache
+C:\Users\amyno\Source\Repos\ProjectCRepo\Web API\obj\Debug\netcoreapp2.1\Web API.AssemblyInfo.cs
+C:\Users\amyno\Source\Repos\ProjectCRepo\Web API\obj\Debug\netcoreapp2.1\API.dll
+C:\Users\amyno\Source\Repos\ProjectCRepo\Web API\obj\Debug\netcoreapp2.1\API.pdb

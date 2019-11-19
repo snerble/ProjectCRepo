@@ -12,7 +12,7 @@ namespace API.HTTP.Endpoints.ROOT
         public override void GET(Dictionary<string, string> parameters)
         {
             Response.Headers.Add("Content-Type", "text/html");
-            Server.Send(Response, File.ReadAllBytes(Program.Config.HTMLSourceDir + "/profile.html"));
+            Server.SendFile(Program.Config.HTMLSourceDir + "/profile.html");
             //Server.SendText(Response, "hello");
         }
     }
