@@ -31,7 +31,7 @@ h1, h2, h3, h4, h5, h6 {
 .sidenav a {
     padding: 6px 8px 6px 16px;
     text-decoration: none;
-    font-size: 25px;
+    font-size: 18px;
     color: #f4edeb;
     display: block;
 }
@@ -54,9 +54,14 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 16px;
     color: #f4edeb;
 }
+
+.nav-container {
+    content: "";
+    display: table;
+    clear: both;
+    padding: 0;
+}
 /* Hier eindigt de opmaak van de sidenav. */
-
-
 /* Alles wat niet in de sidenav zit moet dus rechts komen te staan; de rest van de inhoud komt in de div met de class "main" te staan. */
 .main {
     margin-left: 350px; /* Same as the width of the sidenav */
@@ -91,7 +96,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Hier begint de opmaak van het formulier voor een nieuwe taak. */
 form label {
-    color: #af5166;
+    color: black;
 }
 
 form input, select, textarea {

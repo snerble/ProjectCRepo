@@ -19,12 +19,6 @@ namespace API.HTTP
 	public abstract class Server
 	{
 		/// <summary>
-		/// A string denoting Epoch time in a format accepted by cookies.
-		/// </summary>
-		/// TODO Add some kind of Utils class that contains a `ToUTC_GMTString` function
-		private static string CookieExpiration { get; } = DateTimeOffset.FromUnixTimeSeconds(0).ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'");
-
-		/// <summary>
 		/// Source of http requests for this <see cref="Server"/>.
 		/// </summary>
 		private readonly BlockingCollection<HttpListenerContext> queue;
