@@ -51,6 +51,7 @@
             position: relative;
             width: 40%;
             margin-right: 10%;
+            margin-top: 5%;
             float: right;
         }
 
@@ -130,20 +131,10 @@
 
 
         /* Style voor de navigatiebar/ dashboard */
-        div.dashboard {
+      /* div.dashboard {
             background-color: #007D92;
             width: 300px;
             padding-left: 0%;
-        }
-
-        .logo {
-            display: inline-block;
-            vertical-align: top;
-            width: 100px;
-            height: 100px;
-            margin-right: 25px;
-            margin-top: 15px;
-            margin-left: 30%;
         }
 
         input[type=button] {
@@ -196,7 +187,7 @@
 
             input[type=button]:hover {
                 color: #af5166;
-            }
+            }*/
     </style>
     <script>
         function myFunction(id) {
@@ -213,23 +204,23 @@
     <div class="main">
         <h1>Profile</h1>
         <div class="profileBox">
+
+            <div class="container">
+                <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973461_960_720.png" alt="Avatar" class="image" style="width:100%">
+                <div class="middle">
+                    <label class="btn-upload">
+                        <input type="file" name="fileupload">
+                        <button class="btn">Upload profile picture</button>
+                    </label>
+                </div>
+            </div>
+
             <form id="profileform" method="post" name="profileform">
                 <label>Naam:</label><input name="name" type="text" id="name"><br />
                 <label>Functie</label><input name="username" type="text" id="username"><br />
                 <label>Email:</label><input name="email" type="text" id="email"><br />
                 <label>Wachtwoord:</label> <input name="password" type="password" id="password" />
                 <input type="submit" value="Verander wachtwoord" id="wwVeranderen" onclick="window.location.href = 'profile.html';" />
-
-
-                <div class="container">
-                    <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973461_960_720.png" alt="Avatar" class="image" style="width:100%">
-                    <div class="middle">
-                        <label class="btn-upload">
-                            <input type="file" name="fileupload">
-                            <button class="btn">Upload profile picture</button>
-                        </label>
-                    </div>
-                </div>
             </form>
         </div>
     </div>
@@ -238,7 +229,6 @@
         <img class="logo" src="Alldone Logo.png" />
         <div class="nav-container">
 
-            <p>Ingelogd als: vloerpersoneel</p>
 
             <input type="button" value="Dashboard" onclick="myFunction('Dashboard')" />
             <div id="Dashboard" class="dashboard w3-hide">
