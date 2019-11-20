@@ -60,7 +60,7 @@ namespace API.HTTP.Endpoints
                 Group = 1
             });
 
-            
+
 
             //Program.Log.Debug("Received post request.");
 
@@ -68,6 +68,7 @@ namespace API.HTTP.Endpoints
             //Server.SendError(Response, HttpStatusCode.Redirect);
 
             Server.SendError(System.Net.HttpStatusCode.Created);
+
             
         }
     }
