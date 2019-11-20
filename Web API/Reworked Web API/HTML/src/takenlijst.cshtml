@@ -74,13 +74,13 @@
         }
 
         input[type=button] {
-            font-size: 25px;
+            font-size: 15px;
             background: #007D92;
             border: none;
             color: #ffffff;
             font-weight: normal;
             cursor: pointer;
-            width: 300px;
+            /*width: 300px;*/
             padding: 10px 10px;
             outline: none;
             text-align: left;
@@ -124,7 +124,6 @@
             input[type=button]:hover {
                 color: #af5166;
             }
-    </style>
     </style>
     <script type="text/javascript">
 
@@ -184,7 +183,7 @@
                 <div></div>
                 <h5>@task.Title</h5>
                 <p>@task.Description</p>
-                <button onclick="deleteTask('@task.Title')">Delete</button>
+                <input type="button" value="Verwijder" id="btn" onclick="deleteTask('@task.Title')">
             </div>
                 
             }

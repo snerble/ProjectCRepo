@@ -32,7 +32,7 @@
             color: #ffffff;
             font-weight: normal;
             cursor: pointer;
-            width: 300px;
+            /*width: 300*/
             padding: 10px 10px;
             outline: none;
             text-align: left;
@@ -86,6 +86,26 @@
                 x.className = x.className.replace(" w3-show", "");
             }
         }
+
+        function returnToPreviousPage() {
+            window.history.back();
+        }
+
+        function resetForm() {
+            document.getElementById("taskform").reset();
+        }
+
+        function stayHere() {
+            //var xhr = new XMLHttpRequest;
+            //xhr.open("POST", document.documentURI, false);
+            //xhr.setRequestHeader("Accept", "text/html");
+            //xhr.send(null);
+
+            alert("Taak aangemaakt!");
+            return false;
+            
+        }
+
     </script>
 </head>
 <body>
@@ -112,7 +132,7 @@
     <!-- Dit is het formulier waar medewerkers de taak doorgeven -->
     <div class="main">
         <h1>Nieuwe taak</h1>
-        <form action="" id="taskform" method="post">
+        <form action="" id="taskform" method="post" onsubmit="">
             <label>Titel:</label><br>
             <input type="text" size="40" name="title" value="">
             <br><br>
@@ -122,10 +142,12 @@
             <br><br>
 
             <div class="add_img"><button>+</button></div><label style="color:#111; font-size:20px; margin-left: 20px;">Voeg bestand toe</label>
-    <br>
+            <br>
 
-    <input type="submit" value="Submit" id="btn">
-    </form>
+            <input type="submit" value="Voeg Taak toe" id="btn" onclick="">
+            <input type="button" value="Reset form" id="btn" onclick="resetForm()">
+
+        </form>
     </div>
 </body>
 </html>

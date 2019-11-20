@@ -60,13 +60,15 @@ namespace API.HTTP.Endpoints
                 Group = 1
             });
 
-            //Response.Redirect("/taakaanmaken");
+            
 
             //Program.Log.Debug("Received post request.");
 
             //Response.Redirect("");
             //Server.SendError(Response, HttpStatusCode.Redirect);
 
+            Server.SendError(System.Net.HttpStatusCode.Created);
+            
         }
     }
 }
