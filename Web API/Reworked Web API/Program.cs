@@ -56,6 +56,10 @@ namespace API
 				Log.Fatal($"Unexpected error: {e.GetType().Name}: " + e.Message, e, true);
 				Terminate(1);
 			}
+			// Set logging level
+			Log.Config($"Setting log level to '{Config["appSettings"]["logLevel"]}'");
+			Log.LogLevel = Level.GetLevel(Config["appSettings"]["logLevel"].Value<string>());
+
 			// Assign the reload event to OnConfigReload
 			Config.Reload += OnConfigReload;
 
@@ -97,9 +101,6 @@ namespace API
 		{
 			#region Apply AppSettings
 			dynamic appSettings = Config["appSettings"];
-
-			Log.Config($"Setting log level to '{appSettings.logLevel}'");
-			Log.LogLevel = Level.GetLevel((string)appSettings.logLevel);
 
 			// Create log files in release mode only
 			if (!DEBUG)
@@ -195,7 +196,8 @@ namespace API
 			{
 				static void restarter()
 				{
-					Log.Info("\nRESTARTING SERVER");
+					Log.Info("");
+					Log.Info("RESTARTING SERVER");
 					Log.Fine("Some values have been changed that require a soft restart.");
 					ClearThreads();
 					Database.Dispose();
