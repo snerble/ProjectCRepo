@@ -32,7 +32,12 @@ namespace API.HTTP.Endpoints
             Program.Log.Debug("Received post request.");
         }
 
+        public override void DELETE(Dictionary<string, string> parameters)
+        {
+            Program.Log.Info("Received DELETE request");
 
+            //Program.Database.Delete<Task>($"parameters["task"] = { Title }");
+        }
     }
 
 

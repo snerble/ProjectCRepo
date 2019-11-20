@@ -1,25 +1,32 @@
-﻿
-<!doctype html>
-<style>
-    body {
-        text-align: center;
-        font-family: Verdana, sans-serif;
-    }
-
-    form input {
-        border-radius: 5pt;
-        padding: 5pt;
-        margin: 10pt;
-    }
-</style>
-
-<html>
+﻿<!--<!doctype html>
+<html lang="en">
 <head>
+
+    <style>
+        body {
+            text-align: center;
+            font-family: Verdana, sans-serif;
+        }
+
+        form input {
+            border-radius: 5pt;
+            padding: 5pt;
+            margin: 10pt;
+        }
+
+
+    </style>
     <script type="text/javascript">
 
-        var xhr = new XMLHttpRequest();
+        function deleteTask(title) {
 
-  
+            var xhr = new XMLHttpRequest();
+            xhr.open("DELETE", document.documentURI + '?task=' + title, false);
+            xhr.setRequestHeader("Accept", "text/html");
+
+            xhr.send(null);
+
+        }
 
     </script>
 </head>
@@ -31,10 +38,187 @@
         <br>
         <span>@task.Description</span>
         <br>
-        <button onclick="deleteTask">Delete</button>
+        <button onclick="deleteTask('@task.Title')">Delete</button>
         <button>Rename</button>
         <br>
         <br>
     }
+</body>
+</html>-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Takenlijst</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="stylesheet.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+    <style>
+        /* Style voor de navigatiebar/ dashboard */
+        div.dashboard {
+            background-color: #007D92;
+            width: 300px;
+            padding-left: 0%;
+        }
+
+        .logo {
+            display: inline-block;
+            vertical-align: top;
+            width: 100px;
+            height: 100px;
+            margin-right: 25px;
+            margin-top: 15px;
+            margin-left: 30%;
+        }
+
+        input[type=button] {
+            font-size: 15px;
+            background: #007D92;
+            border: none;
+            color: #ffffff;
+            font-weight: normal;
+            cursor: pointer;
+            /*width: 300px;*/
+            padding: 10px 10px;
+            outline: none;
+            text-align: left;
+        }
+
+            input[type=button]:hover {
+                color: #af5166;
+            }
+
+            input[type=button].button2 {
+                font-size: 25px;
+                background: #7CB2D1;
+                border: none;
+                color: #ffffff;
+                font-weight: normal;
+                cursor: pointer;
+                width: 300px;
+                padding: 10px 10px;
+                outline: none;
+                text-align: left;
+            }
+
+            input[type=button]:hover {
+                color: #af5166;
+            }
+
+            input[type=button].button3 {
+                font-size: 20px;
+                background: none;
+                border: none;
+                color: #ffffff;
+                font-weight: normal;
+                cursor: pointer;
+                padding: 10px 10px;
+                outline: none;
+                text-align: center;
+                position: absolute;
+                bottom: 10px;
+            }
+
+            input[type=button]:hover {
+                color: #af5166;
+            }
+    </style>
+    <script type="text/javascript">
+
+        function myFunction(id) {
+            var x = document.getElementById(id);
+            if (x.className.indexOf("w3-show") == -1) {
+                x.className += " w3-show";
+            } else {
+                x.className = x.className.replace(" w3-show", "");
+            }
+        }
+
+        function deleteTask(title) {
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("DELETE", document.documentURI + '?task=' + title, false);
+            xhr.setRequestHeader("Accept", "text/html");
+
+            xhr.send(null);
+
+        }
+
+    </script>
+</head>
+<body>
+    <div class="sidenav">
+        <img class="logo" src="Alldone Logo.png" />
+        <div class="nav-container">
+
+            <input type="button" value="Dashboard" onclick="myFunction('Dashboard')" />
+            <div id="Dashboard" class="dashboard w3-hide">
+                <a href="takenlijst">Takenlijst</a>
+                <a href="taakaanmaken">Nieuwe taak aanmaken</a>
+                <a href="/task_list_vp.html">Ingeschreven taken</a>
+                <a href="/task_list_vp.html">Aangemaakte taken</a>
+
+            </div>
+
+            <input type="button" value="Mijn profiel" class="button2" onclick="window.location.href = 'profile.html'" />
+
+        </div>
+        <input type="button" value="Uitloggen" class="button3" onclick="window.location.href = 'logout.html'" />
+    </div>
+
+    <div class="main">
+        <h1>Takenlijst</h1>
+        <!--Sorteren
+        <select name="order" style="margin-left:20px;margin-bottom:40px;">
+            <option value=""></option>
+            <option value="pr_asc">Prioriteit hoog</option>
+            <option value="pr_des">Prioriteit laag</option>
+        </select>-->
+        <div class="task_list">
+           @foreach (var task in Model.Tasks)
+            {
+            <div class="task" style="cursor: pointer;">
+                <div></div>
+                <h5>@task.Title</h5>
+                <p>@task.Description</p>
+                <input type="button" value="Verwijder" id="btn" onclick="deleteTask('@task.Title')">
+            </div>
+                
+            }
+            <!--<div class="task" style="cursor: pointer;" onclick="window.location.href='task1_vp.html'">
+        <div class="info">
+            <h5 id="title">Bureau repareren</h5>
+            <p>Amy, Daphne</p>
+        </div>
+        <div class="priority">!!</div>
+    </div>
+
+    <div class="task" style="cursor: pointer;" onclick="window.location.href='task2_vp.html'">
+        <div class="info">
+            <h5 id="title">Meterkast repareren</h5>
+            <p>Cindy, Conor, Abel</p>
+        </div>
+        <div class="priority">!!!</div>
+    </div>
+
+    <div class="task" style="cursor: pointer;" onclick="window.location.href='task3_vp.html'">
+        <div class="info">
+            <h5 id="title">Lamp vervangen</h5>
+            <p>Abel</p>
+        </div>
+        <div class="priority">!</div>
+    </div>
+
+    <div class="task" style="cursor: pointer;" onclick="window.location.href='task4_vp.html'">
+        <div class="info">
+            <h5 id="title">Vloer vegen</h5>
+            <p>Open voor inschrijving</p>
+        </div>
+        <div class="priority"></div>
+    </div>-->
+        </div>
+    </div>
 </body>
 </html>
