@@ -10,6 +10,10 @@ function returnToPreviousPage() {
 setTimeout("preventBack()", 0);
 window.onunload = function () { null };
 
+/*document.getElementById("signup").addEventListener("click", function (event) {
+    event.preventDefault()
+});*/
+
 var name = document.getElementById("name").value;
 var email = document.getElementById("email").value;
 var password = document.getElementById("password").value;
@@ -87,10 +91,10 @@ function confirmPassword() {
 
 function validateAll() {
     if (!validateName() | !validateUsername() | !validateEmail() | !validatePassword() | !confirmPassword()) {
-        //returnToPreviousPage();
         return false;
     }
     else {
-        window.location = "Register1";
+        window.location = "Register1"; // moet ik dit veranderen?
+        return true;
     }
 }

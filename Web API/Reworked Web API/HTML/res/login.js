@@ -37,10 +37,10 @@ function validatePassword() {
 function validateAll() {
     if (!validateUsername() | !validatePassword()) {
         //window.location = "login_wrong.html"
-        returnToPreviousPage();
         return false;
     }
     else {
-        window.location = "Login1"
+        //window.location = "Login1";
+        return true;
     }
 }

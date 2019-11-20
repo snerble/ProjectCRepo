@@ -33,7 +33,7 @@ namespace API.HTTP.Endpoints
                 Server.SendError(HttpStatusCode.NoContent);
             }//else if(username or password incorrect)
             //{        Program.Log.Info("Wrong info");
-            //         Response.Redirect("pagina met rood randje om wat fout is/ text met dat de gegevens niet kloppen");
+            //         Response.Redirect("login_wrong.html");
             //         Server.SendError(Response, HttpStatusCode.Redirect);
             //}
             else

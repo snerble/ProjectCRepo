@@ -151,11 +151,11 @@
     <body>
 		<div class="main">
 			<h2>Welkom bij Alldone, Login</h2>
-			<form id="loginform" method="post" name="loginform">
+			<form id="loginform" method="post" name="loginform" onsubmit="return validateAll()">
                 <label>Gebruikersnaam:</label> <input type="text" name="username" id="username"/>
 			    <label>Wachtwoord:</label> <input type="password" name="password" id="password"/>
 			
-                <input type="submit" value="Login" id="submit" onclick="validateAll()"/>
+                <input type="submit" value="Login" id="submit"/>
                 <input type="button" value="Registreer" id="registreer" class="button2" onclick="window.location.href = 'Register1';"/>
 			    <p> Of </p>
                 <input type="button" value="Wachtwoord vergeten? klik hier" id="forgotPassword" class="button3" onclick="window.location.href = 'forgot_password.html';"/>
