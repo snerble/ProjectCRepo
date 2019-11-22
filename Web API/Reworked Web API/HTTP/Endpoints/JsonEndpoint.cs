@@ -4,6 +4,9 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using Newtonsoft.Json;
+using System.Reflection;
 
 namespace API.HTTP.Endpoints
 {
@@ -33,11 +36,39 @@ namespace API.HTTP.Endpoints
 				if (Request.ContentLength64 == 0) content = new JObject();
 				else
 				{
-					using var streamReader = new StreamReader(Request.InputStream, Request.ContentEncoding);
-					content = JObject.Parse(streamReader.ReadToEnd());
+					string body;
+					// If the data isn't a json, expect encoded data
+					if (Request.ContentType != "application/json")
+					{
+						// Send error if the request is missing encryption data
+						if (!Utils.IsRequestEncrypted(Request))
+						{
+							Server.SendError(HttpStatusCode.BadRequest);
+							return;
+						}
+
+						// Get iv and session from request headers and cookies
+						var iv = Convert.FromBase64String(Request.Headers.Get("Content-IV"));
+						var session = Request.Cookies["session"].Value;
+						
+						// Get all bytes from the request body
+						using var mem = new MemoryStream();
+						Request.InputStream.CopyTo(mem);
+						mem.Close();
+
+						// Decrypt the body
+						body = Encoding.UTF8.GetString(Utils.AESDecrypt(session, mem.ToArray(), iv));
+					}
+					else
+					{
+						// Read all text from inputstream
+						using var reader = new StreamReader(Request.InputStream, Request.ContentEncoding);
+						body = reader.ReadToEnd();
+					}
+					content = JObject.Parse(body);
 				}
 			}
-			catch (Exception)
+			catch (JsonReaderException)
 			{
 				// Send BadRequest if it doesn't contain a readable JSON
 				Server.SendError(HttpStatusCode.BadRequest);
@@ -47,6 +78,15 @@ namespace API.HTTP.Endpoints
 
 			// Invoke the right http method function
 			var method = GetType().GetMethod(Request.HttpMethod.ToUpper());
+
+			// If the method requires encrypted data but the request is unencrypted, send a 400 Bad Request.
+			if (method.GetCustomAttribute<RequiresEncryptionAttribute>() != null && !Utils.IsRequestEncrypted(Request))
+			{
+				Server.SendError(HttpStatusCode.BadRequest);
+				return;
+			}
+
+			// Invoke the method, or send a 501 not implemented
 			if (method == null) Server.SendError(HttpStatusCode.NotImplemented);
 			else method.Invoke(this, new object[] { content, parameters });
 		}
