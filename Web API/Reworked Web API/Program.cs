@@ -36,7 +36,7 @@ namespace API
 		private static Listener listener;
 
 		private static BlockingCollection<HttpListenerContext> JSONQueue;
-		private static BlockingCollection<HttpListenerContext> HTMLQueue;
+		private static BlockingCollection<HttpListenerContext> ResourceQueue;
 
 		static void Main()
 		{
@@ -71,8 +71,15 @@ namespace API
 			Log.Info("Listening on: " + string.Join(", ", addresses));
 
 			// Get custom queues
-			JSONQueue = listener.GetCustomQueue(x => x.Request.ContentType == "application/json");
-			HTMLQueue = listener.GetCustomQueue(x => x.Request.AcceptTypes != null && x.Request.AcceptTypes.Contains("text/html")); // TODO nuke resourceServer
+			JSONQueue = listener.GetCustomQueue(x =>
+				x.Request.ContentType == "application/json"
+				|| (x.Request.ContentType == "application/octet-stream"
+					&& x.Request.Cookies["session"] != null)
+			);
+			ResourceQueue = listener.GetCustomQueue(x =>
+				x.Request.AcceptTypes != null
+				&& !x.Request.AcceptTypes.Contains("text/html")
+			);
 
 			// Call the rest of the setup
 			Setup();
@@ -152,13 +159,13 @@ namespace API
 			}
 			for (int i = 0; i < (int)performance.htmlThreads; i++)
 			{
-				var server = new HTMLServer(HTMLQueue);
+				var server = new HTMLServer(listener.Queue);
 				Servers.Add(server);
 				server.Start();
 			}
 			for (int i = 0; i < (int)performance.resourceThreads; i++)
 			{
-				var server = new ResourceServer(listener.Queue);
+				var server = new ResourceServer(ResourceQueue);
 				Servers.Add(server);
 				server.Start();
 			}
@@ -191,12 +198,10 @@ namespace API
 			}
 
 			// Things that require a soft restart
-			if (changed?["dbSettings"] != null
-				|| changed?["performance"] != null)
+			if (changed?["dbSettings"] != null || changed?["performance"] != null)
 			{
 				static void restarter()
 				{
-					Log.Info("");
 					Log.Info("RESTARTING SERVER");
 					Log.Fine("Some values have been changed that require a soft restart.");
 					ClearThreads();
