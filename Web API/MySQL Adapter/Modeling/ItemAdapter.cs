@@ -103,7 +103,7 @@ namespace MySQL.Modeling
 		/// Serializes a <see cref="ItemAdapter"/> into a <see cref="JObject"/>.
 		/// </summary>
 		/// <param name="item">The <see cref="ItemAdapter"/> to serialize.</param>
-		public static implicit operator JToken(ItemAdapter item)
+		public static implicit operator JObject(ItemAdapter item)
 		{
 			var @out = new JObject();
 			// Populate JObject with all columns
