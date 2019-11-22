@@ -3,6 +3,7 @@ using API.HTTP.Filters;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,6 +15,14 @@ namespace API.HTTP
 	/// </summary>
 	public sealed class ResourceServer : Server
 	{
+		/// <summary>
+		/// Diagnostics timer for detailed log messages.
+		/// </summary>
+		private Stopwatch Timer { get; } = new Stopwatch();
+
+		/// <summary>
+		/// The max amount of bytes to include in a partial request
+		/// </summary>
 		private long PartialDataLimit => Program.Config["serverSettings"]["partialDataLimit"].Value<long>();
 
 		/// <summary>
@@ -24,6 +33,10 @@ namespace API.HTTP
 
 		protected override void Main()
 		{
+			// Print log and start diagnostics timer
+			Program.Log.Fine($"Processing {Request.HttpMethod} request for '{Request.Url.AbsolutePath}'");
+			Timer.Restart();
+
 			string url = Request.Url.AbsolutePath.ToLower();
 
 			// Apply redirects
@@ -99,6 +112,19 @@ namespace API.HTTP
 
 			// Send 404 if no endpoint is found
 			SendError(HttpStatusCode.NotFound);
+		}
+
+		/// <summary>
+		/// Writes a byte array to the specified <see cref="HttpListenerResponse"/>.
+		/// </summary>
+		/// <param name="data">The array of bytes to send.</param>
+		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
+		public override void Send(byte[] data, HttpStatusCode statusCode = HttpStatusCode.OK)
+		{
+			base.Send(data, statusCode);
+			// Write detailed log about response
+			Program.Log.Trace($"Sent {(int)statusCode} for {Request.HttpMethod} request for {Request.Url.AbsolutePath} " +
+				$"in {Utils.FormatTimer(Timer)} with {Utils.FormatDataLength(data.Length)}");
 		}
 	}
 }
