@@ -114,7 +114,7 @@ namespace API.HTTP
 		public void Interrupt() => thread.Interrupt();
 
 		/// <summary>
-		/// Writes a byte buffer to the specified <see cref="HttpListenerResponse"/>.
+		/// Writes a byte array to the specified <see cref="HttpListenerResponse"/>.
 		/// </summary>
 		/// <param name="data">The array of bytes to send.</param>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
