@@ -118,7 +118,6 @@ namespace API.HTTP
 					}
 					// Add to the default queue if no custom queue was satisfied
 					if (!foundQueue) Queue.Add(context);
-					Program.Log.Info("Received and enqueued a request.");
 				}
 			}
 			catch (ThreadInterruptedException) { } // lol if only ;_;
