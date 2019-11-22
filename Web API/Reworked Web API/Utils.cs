@@ -3,6 +3,7 @@ using API.Database;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -168,6 +169,52 @@ namespace API
 		/// <returns>The formatted time string.</returns>
 		public static string FormatTimeStamp(DateTimeOffset timeStamp)
 			=> timeStamp.ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'");
+
+		/// <summary>
+		/// Returns a formatted string depicting the elapsed time in either nanoseconds, microseconds or milliseconds
+		/// depending on the magnitude of elapsed time.
+		/// </summary>
+		/// <param name="timer">The <see cref="Stopwatch"/> instance whose elapsed time to format.</param>
+		public static string FormatTimer(Stopwatch timer)
+		{
+			timer.Stop();
+			try
+			{
+				if (timer.ElapsedTicks < 10) return timer.ElapsedTicks * 100 + " ns";
+				if (timer.ElapsedTicks < 10000) return timer.ElapsedTicks / 10 + " µs";
+				return timer.ElapsedMilliseconds + " ms";
+			}
+			finally
+			{
+				timer.Start();
+			}
+		}
+		/// <summary>
+		/// Returns a formatted string depicting an amount of data in multiples of the byte unit.
+		/// </summary>
+		/// <param name="length"></param>
+		/// <param name="decimals">The amount of fractional digits to include in the output</param>
+		/// <param name="asDecimal">If true, formats the size as decimal rather than a power of 2.</param>
+		public static string FormatDataLength(long length, int decimals = 2, bool asDecimal = false)
+		{
+			var magnitude = 0;
+			for (; magnitude <= 8; magnitude++)
+				if ((asDecimal ? Math.Pow(1000, magnitude + 1) : Math.Pow(2, 10 * (magnitude + 1))) >= length)
+					break;
+			var unit = (magnitude) switch
+			{
+				0 => "bytes",
+				1 => asDecimal ? "kB" : "KiB",
+				2 => asDecimal ? "MB" : "MiB",
+				3 => asDecimal ? "GB" : "GiB",
+				4 => asDecimal ? "TB" : "TiB",
+				5 => asDecimal ? "PB" : "PiB",
+				6 => asDecimal ? "EB" : "EiB",
+				7 => asDecimal ? "ZB" : "ZiB",
+				_ => asDecimal ? "YB" : "YiB"
+			};
+			return $"{Math.Round(length / (asDecimal ? Math.Pow(1000, magnitude) : Math.Pow(2, 10 * magnitude)), decimals)} {unit}";
+		}
 
 		/// <summary>
 		/// Adds a cookie to the response object.
