@@ -50,21 +50,22 @@ namespace Logging
 
 		public static List<Highlighter> Highlighters { get; } = new List<Highlighter>()
 		{
-			// Timestamps
-			new Highlighter(new Regex(@"((?:[01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])?", RegexOptions.Compiled),
-				ConsoleColor.DarkGreen),
 			// Strings
 			new Highlighter(new Regex("(\"|')((?:\\\\\\1|(?:(?!\\1).))*)(\"|')", RegexOptions.Compiled),
 				ConsoleColor.Red),
-			// Numbers
-			new Highlighter(new Regex(@"([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[eE]([+-]?\d+))?", RegexOptions.Compiled),
-				ConsoleColor.Blue),
+			// Timestamps
+			new Highlighter(new Regex(@"((?:[01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])?", RegexOptions.Compiled),
+				ConsoleColor.DarkGreen),
 			// Stacktrace
 			new Highlighter(new Regex(@"^\s+(at)\s((?:.(?!\sin\s))*.)(?:\s(in)\s((?:.(?!:line))*.)|)(?::line\s(\d+)|)", RegexOptions.Multiline | RegexOptions.Compiled),
 				ConsoleColor.DarkRed),
+			// Numbers
+			new Highlighter(new Regex(@"([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[eE]([+-]?\d+))?", RegexOptions.Compiled),
+				ConsoleColor.Blue),
+			// booleans
+			new Highlighter(new string[] { bool.TrueString.ToLower(), bool.FalseString.ToLower() }, new ConsoleColor[] { ConsoleColor.Blue }),
 			// Log level keywords
 			new Highlighter(Level.Levels.Select(x => x.Name), Level.Levels.Select(x => x.Color)),
-			//new Highlighter("(DEBUG)", ConsoleColor.Magenta),
 		};
 
 		/// <summary>
@@ -76,10 +77,16 @@ namespace Logging
 		/// Gets or sets the format used for log records.
 		/// </summary>
 		public string Format { get; set; } = "{asctime:HH:mm:ss} {classname,-20} {levelname,6}: {message}";
+
 		/// <summary>
 		/// Sets whether or not the log record stacktraces will use file info.
 		/// </summary>
 		public bool UseFileInfo { get; set; } = true;
+		/// <summary>
+		/// Gets or sets whether this <see cref="Logger"/> uses <see cref="Highlighter"/> instances to
+		/// color the output written to <see cref="Console.Out"/>.
+		/// </summary>
+		public bool UseConsoleHighlighting { get; set; } = true;
 
 		/// <summary>
 		/// Disables logging for this instance and without changing the logging level.
@@ -223,7 +230,7 @@ namespace Logging
 				lock (stream)
 				{
 					var record = GetRecord(level, message?.ToString(), stack, includeStackTrace);
-					if (stream == Console.Out) WriteConsoleRecord(record);
+					if (UseConsoleHighlighting && stream == Console.Out) WriteConsoleRecord(record);
 					else stream.WriteLine(record);
 					stream.Flush();
 				}
