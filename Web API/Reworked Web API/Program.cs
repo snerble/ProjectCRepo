@@ -47,7 +47,7 @@ namespace API
 			Console.Title = $"{assembly.Name} v{assembly.Version}";
 
 			Log.Info(DEBUG ? "Starting server in DEBUG mode" : "Starting server");
-			Log.Info("Loading configurations");
+			Log.Info("Loading configurations...");
 			try
 			{
 				Config = new AppConfig("config.json");
