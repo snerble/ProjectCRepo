@@ -29,7 +29,7 @@ namespace API
 #endif
 			;
 
-		public static Logger Log = new Logger(Level.ALL, "Global Logger", Console.Out);
+		public static Logger Log = new Logger(Level.ALL, "Global Logger", Console.Out) { UseConsoleHighlighting = false };
 		public static AppConfig Config;
 		public static AppDatabase Database;
 

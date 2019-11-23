@@ -62,7 +62,7 @@ namespace Logging
 			// Numbers
 			new Highlighter(new Regex(@"([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[eE]([+-]?\d+))?", RegexOptions.Compiled),
 				ConsoleColor.Blue),
-			// booleans
+			// Booleans
 			new Highlighter(new string[] { bool.TrueString.ToLower(), bool.FalseString.ToLower() }, new ConsoleColor[] { ConsoleColor.Blue }),
 			// Log level keywords
 			new Highlighter(Level.Levels.Select(x => x.Name), Level.Levels.Select(x => x.Color)),
