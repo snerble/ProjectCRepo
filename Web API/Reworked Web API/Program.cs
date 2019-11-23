@@ -41,6 +41,7 @@ namespace API
 
 		static void Main()
 		{
+			Console.ResetColor();
 			// Set window title
 			var assembly = Assembly.GetExecutingAssembly().GetName();
 			Console.Title = $"{assembly.Name} v{assembly.Version}";
@@ -254,6 +255,7 @@ namespace API
 			Log.Info("Terminating...");
 			ClearThreads();
 			Log.Dispose();
+			Console.ResetColor();
 			Environment.Exit(exitCode);
 		}
 	}
