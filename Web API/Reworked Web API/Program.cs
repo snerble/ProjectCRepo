@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Threading;
 
 namespace API
@@ -40,6 +41,10 @@ namespace API
 
 		static void Main()
 		{
+			// Set window title
+			var assembly = Assembly.GetExecutingAssembly().GetName();
+			Console.Title = $"{assembly.Name} v{assembly.Version}";
+
 			Log.Info(DEBUG ? "Starting server in DEBUG mode" : "Starting server");
 			Log.Info("Loading configurations");
 			try
