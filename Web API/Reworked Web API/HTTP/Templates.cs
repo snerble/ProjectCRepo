@@ -50,7 +50,7 @@ namespace API.HTTP
 			var templates = FileSearch(Config.HTMLSourceDir, true, x => Path.GetExtension(x).ToLower() == ".cshtml");
 			if (!templates.Any()) return;
 
-			Log.Config($"Compiling Razor templates...");
+			Log.Config($"Compiling Razor templates…");
 			var timer = new Stopwatch(); // Timer for diagnostics
 			foreach (var file in templates)
 			{

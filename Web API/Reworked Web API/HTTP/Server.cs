@@ -121,9 +121,12 @@ namespace API.HTTP
 		public virtual void Send(byte[] data, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
 			Response.StatusCode = (int)statusCode;
-			Response.ContentLength64 = data.Length;
-			using var outStream = Response.OutputStream;
-			outStream.Write(data, 0, data.Length);
+			if (data != null)
+			{
+				Response.ContentLength64 = data.Length;
+				Response.OutputStream.Write(data, 0, data.Length);
+			}
+			Response.Close();
 		}
 		/// <summary>
 		/// Writes plain text to the specified <see cref="HttpListenerResponse"/>.
@@ -162,9 +165,6 @@ namespace API.HTTP
 		/// </summary>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to specify.</param>
 		public virtual void SendError(HttpStatusCode statusCode)
-		{
-			Response.StatusCode = (int)statusCode;
-			Response.Close();
-		}
+			=> Send(null, statusCode);
 	}
 }

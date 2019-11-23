@@ -31,7 +31,7 @@ namespace API.HTTP
 		protected override void Main()
 		{
 			// Print log and start diagnostics timer
-			Program.Log.Fine($"Processing {Request.HttpMethod} request for '{Request.Url.AbsolutePath}'");
+			Program.Log.Fine($"Processing {Request.HttpMethod} request for '{Request.Url.AbsolutePath}'…");
 			Timer.Restart();
 
 			Response.ContentType = "application/json";
@@ -107,8 +107,11 @@ namespace API.HTTP
 			}
 			base.Send(data, statusCode);
 			// Write detailed log about response
-			Program.Log.Trace($"Sent {(int)statusCode} for {Request.HttpMethod} request for {Request.Url.AbsolutePath} " +
-				$"in {Utils.FormatTimer(Timer)} with {Utils.FormatDataLength(data.Length)}");
+			var logMessage = $"Processed  {Request.HttpMethod} request for '{Request.Url.AbsolutePath}' with status code {(int)statusCode} " +
+					$"in {Utils.FormatTimer(Timer)}{(data == null ? "" : $" and sent {Utils.FormatDataLength(data.Length)}")}.";
+			// Success status codes are seen as less important, thus are trace messages
+			if (((int)statusCode).ToString().StartsWith("2")) Program.Log.Trace(logMessage);
+			else Program.Log.Info(logMessage);
 		}
 	}
 }
