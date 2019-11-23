@@ -70,7 +70,7 @@ namespace API
 			Config.Reload += OnConfigReload;
 
 			// Create the HTTPListener
-			Log.Config("Creating listener…");
+			Log.Config("Creating listener...");
 			string[] addresses = Config["serverSettings"]["serverAddresses"].ToObject<string[]>();
 			addresses = addresses.Length == 0 ? new string[] { GetLocalIP(), "localhost" } : addresses;
 			listener = new Listener(addresses);
@@ -91,7 +91,7 @@ namespace API
 			Setup();
 
 			// Start listening
-			Log.Config("Starting listener…");
+			Log.Config("Starting listener...");
 			listener.Start();
 
 			// Create exiter thread that releases the exit mutex when enter is pressed
@@ -137,7 +137,7 @@ namespace API
 			}
 			#endregion
 
-			Log.Config("Creating database connection…");
+			Log.Config("Creating database connection...");
 			Database = new AppDatabase();
 			Log.Info($"Opened connection to '{Database.Connection.DataSource}'.");
 
@@ -252,7 +252,7 @@ namespace API
 		/// </summary>
 		static void Terminate(int exitCode = 0)
 		{
-			Log.Info("Terminating…");
+			Log.Info("Terminating...");
 			ClearThreads();
 			Log.Dispose();
 			Console.ResetColor();

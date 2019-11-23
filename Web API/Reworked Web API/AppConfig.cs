@@ -136,7 +136,7 @@ namespace API.Config
 			catch (Exception e)
 			{
 				Program.Log.Error($"Reload failed: {e.Message}", e, true);
-				Program.Log.Error($"Restoring previous config…");
+				Program.Log.Error($"Restoring previous config...");
 				Content = oldContent;
 				Save();
 				return;

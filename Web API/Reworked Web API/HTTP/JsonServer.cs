@@ -31,7 +31,7 @@ namespace API.HTTP
 		protected override void Main()
 		{
 			// Print log and start diagnostics timer
-			Program.Log.Fine($"Processing {Request.HttpMethod} request for '{Request.Url.AbsolutePath}'…");
+			Program.Log.Fine($"Processing {Request.HttpMethod} request for '{Request.Url.AbsolutePath}'...");
 			Timer.Restart();
 
 			Response.ContentType = "application/json";
