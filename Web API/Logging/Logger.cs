@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Logging.Highlighting;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -47,6 +48,25 @@ namespace Logging
 		/// </remarks>
 		public List<TextWriter> OutputStreams { get; } = new List<TextWriter>();
 
+		public static List<Highlighter> Highlighters { get; } = new List<Highlighter>()
+		{
+			// Timestamps
+			new Highlighter(new Regex(@"((?:[01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])?", RegexOptions.Compiled),
+				ConsoleColor.DarkGreen),
+			// Strings
+			new Highlighter(new Regex("(\"|')((?:\\\\\\1|(?:(?!\\1).))*)(\"|')", RegexOptions.Compiled),
+				ConsoleColor.Red),
+			// Numbers
+			new Highlighter(new Regex(@"([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[eE]([+-]?\d+))?", RegexOptions.Compiled),
+				ConsoleColor.Blue),
+			// Stacktrace
+			new Highlighter(new Regex(@"^\s+(at)\s((?:.(?!\sin\s))*.)(?:\s(in)\s((?:.(?!:line))*.)|)(?::line\s(\d+)|)", RegexOptions.Multiline | RegexOptions.Compiled),
+				ConsoleColor.DarkRed),
+			// Log level keywords
+			new Highlighter(Level.Levels.Select(x => x.Name), Level.Levels.Select(x => x.Color)),
+			//new Highlighter("(DEBUG)", ConsoleColor.Magenta),
+		};
+
 		/// <summary>
 		/// The current logging level. This can be changed at any time.
 		/// </summary>
@@ -55,7 +75,7 @@ namespace Logging
 		/// <summary>
 		/// Gets or sets the format used for log records.
 		/// </summary>
-		public string Format { get; set; } = "{asctime:HH:mm:ss} {classname,-15} {levelname,6}: {message}";
+		public string Format { get; set; } = "{asctime:HH:mm:ss} {classname,-20} {levelname,6}: {message}";
 		/// <summary>
 		/// Sets whether or not the log record stacktraces will use file info.
 		/// </summary>
@@ -116,7 +136,6 @@ namespace Logging
 		/// <param name="message">The value to write.</param>
 		/// <param name="stackTrace">Set whether to include a full stacktrace in the log record.</param>
 		public void Debug(object message, bool stackTrace = false) => Write(Level.DEBUG, message, stackTrace);
-
 		/// <summary>
 		/// Writes a message with the FATAL log level.
 		/// </summary>
@@ -130,7 +149,6 @@ namespace Logging
 		/// <param name="cause">The exception that caused this message.</param>
 		/// <param name="stackTrace">Set whether to include a full stacktrace in the log record.</param>
 		public void Fatal(object message, Exception cause, bool stackTrace = true) => Write(Level.FATAL, message, new StackTrace(cause, UseFileInfo), stackTrace);
-
 		/// <summary>
 		/// Writes a message with the ERROR log level.
 		/// </summary>
@@ -145,35 +163,30 @@ namespace Logging
 		/// <param name="cause">The exception that caused this message. This exception's traceback will be used.</param>
 		/// <param name="stackTrace">Set whether to include a full stacktrace in the log record.</param>
 		public void Error(object message, Exception cause, bool stackTrace = true) => Write(Level.ERROR, message, new StackTrace(cause, UseFileInfo), stackTrace);
-
 		/// <summary>
 		/// Writes a message with the WARN log level.
 		/// </summary>
 		/// <param name="message">The value to write.</param>
 		/// <param name="stackTrace">Set whether to include a full stacktrace in the log record.</param>
 		public void Warning(object message, bool stackTrace = false) => Write(Level.WARN, message, stackTrace);
-
 		/// <summary>
 		/// Writes a message with the INFO log level.
 		/// </summary>
 		/// <param name="message">The value to write.</param>
 		/// <param name="stackTrace">Set whether to include a full stacktrace in the log record.</param>
 		public void Info(object message, bool stackTrace = false) => Write(Level.INFO, message, stackTrace);
-
 		/// <summary>
 		/// Writes a message with the CONFIG log level.
 		/// </summary>
 		/// <param name="message">The value to write.</param>
 		/// <param name="stackTrace">Set whether to include a full stacktrace in the log record.</param>
 		public void Config(object message, bool stackTrace = false) => Write(Level.CONFIG, message, stackTrace);
-
 		/// <summary>
 		/// Writes a message with the FINE log level.
 		/// </summary>
 		/// <param name="message">The value to write.</param>
 		/// <param name="stackTrace">Set whether to include a full stacktrace in the log record.</param>
 		public void Fine(object message, bool stackTrace = false) => Write(Level.FINE, message, stackTrace);
-
 		/// <summary>
 		/// Writes a message with the TRACE log level.
 		/// </summary>
@@ -189,7 +202,6 @@ namespace Logging
 		/// <param name="message">The value to write.</param>
 		/// <param name="stackTrace">Set whether to include a full stacktrace in the log record.</param>
 		public void Write(Level level, object message, bool stackTrace = false) => Write(level, message, new StackTrace(UseFileInfo), stackTrace);
-
 		/// <summary>
 		/// Writes the log to the output streams if the level is lower or equal to the set logging level.
 		/// <para>This function is thread-safe due to it's stream locking.</para>
@@ -210,10 +222,30 @@ namespace Logging
 			{
 				lock (stream)
 				{
-					stream.WriteLine(GetRecord(level, message?.ToString(), stack, includeStackTrace));
+					var record = GetRecord(level, message?.ToString(), stack, includeStackTrace);
+					if (stream == Console.Out) WriteConsoleRecord(record);
+					else stream.WriteLine(record);
 					stream.Flush();
 				}
 			}
+		}
+
+		/// <summary>
+		/// Writes the given record to the console and highlights certain parts of the line.
+		/// </summary>
+		/// <param name="record">The record to write to the console.</param>
+		protected void WriteConsoleRecord(string record)
+		{
+			if (!Highlighters.Any()) return;
+			
+			// Create base highlighter collection instance
+			var highlights = Highlighters[0].GetHighlights(ref record);
+			// Combine all the other collections with the first
+			for (int i = 1; i < Highlighters.Count; i++)
+				highlights.AddRange(Highlighters[i].GetHighlights(ref record));
+
+			// Write the record using the highlight colors
+			highlights.Print();
 		}
 
 		/// <summary>
@@ -226,7 +258,6 @@ namespace Logging
 			_children.Add(logger);
 			logger._parents.Add(this);
 		}
-
 		/// <summary>
 		/// Removes a logger from this object's children.
 		/// </summary>
@@ -363,7 +394,6 @@ namespace Logging
 		/// </summary>
 		enum RecordAttributes
 		{
-			// TODO: Add documentation (wow im so exited)
 			asctime,
 			created,
 			className,
