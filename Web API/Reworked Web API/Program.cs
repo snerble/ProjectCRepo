@@ -65,6 +65,9 @@ namespace API
 			// Set logging level
 			Log.Config($"Setting log level to '{Config["appSettings"]["logLevel"]}'");
 			Log.LogLevel = Level.GetLevel(Config["appSettings"]["logLevel"].Value<string>());
+			// Toggle highlighting
+			Log.Config($"Setting '{nameof(Log.UseConsoleHighlighting)}' to {Config["appSettings"]["useConsoleColors"].ToString().ToLower()}");
+			Log.UseConsoleHighlighting = Config["appSettings"]["useConsoleColors"].Value<bool>();
 
 			// Assign the reload event to OnConfigReload
 			Config.Reload += OnConfigReload;
@@ -197,10 +200,16 @@ namespace API
 		private static void OnConfigReload(object sender, ReloadEventArgs e)
 		{
 			var changed = e.Diff.Changed;
-			if (changed?["appSettings"]?["logLevel"] != null) // loglevel changed
+			// Things that can change on the fly
+			if (changed?["appSettings"]?["logLevel"] != null)
 			{
-				Log.Config($"Setting log level to '{Config["appSettings"]["logLevel"]}'");
+				Log.Config($"Setting log level to '{Config["appSettings"]["logLevel"]}'...");
 				Log.LogLevel = Level.GetLevel(Config["appSettings"]["logLevel"].Value<string>());
+			}
+			if (changed?["appSettings"]?["useConsoleColors"] != null)
+			{
+				Log.Config($"Setting '{nameof(Log.UseConsoleHighlighting)}' to {Config["appSettings"]["useConsoleColors"].ToString().ToLower()}");
+				Log.UseConsoleHighlighting = Config["appSettings"]["useConsoleColors"].Value<bool>();
 			}
 
 			// Things that require a soft restart
