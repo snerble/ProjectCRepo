@@ -133,9 +133,9 @@ namespace Logging.Highlighting
 		/// <param name="item">The item to add.</param>
 		public void Add(HighlightedRegion item)
 		{
-			//// Remove existing elements that are contained by the new item
-			//var toRemove = this.Where(x => item.Contains(x)).ToList();
-			//foreach (var region in toRemove) Remove(region);
+			//// Remove existing elements that are identical in range to the new item
+			var toRemove = this.Where(x => item.Range.Equals(x.Range)).ToList();
+			foreach (var region in toRemove) Remove(region);
 
 			// Get the index to insert the new item into
 			int index = 0;
