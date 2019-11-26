@@ -54,7 +54,7 @@ namespace Logging.Highlighting
 		/// <param name="color">The colors to highlight the text, mapped to each keyword.</param>
 		public Highlighter(IEnumerable<string> keywords, IEnumerable<ConsoleColor> colors)
 		{
-			Regex = new Regex("[^A-z0-9](?:" + string.Join("|", keywords.Select(x => $"({x})")) + ")[^A-z0-9]*?");
+			Regex = new Regex("[^A-z0-9](?:" + string.Join("|", keywords.Select(x => $"({x})")) + ")(?![A-z0-9])");
 			Colors = Array.AsReadOnly(colors.ToArray());
 		}
 
