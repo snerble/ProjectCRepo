@@ -57,7 +57,9 @@ namespace Logging
 			new Highlighter(new Regex(@"((?:[01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])?", RegexOptions.Compiled),
 				ConsoleColor.DarkGreen),
 			// Stacktrace
-			new Highlighter(new Regex(@"^\s+(at)\s((?:.(?!\sin\s))*.)(?:\s(in)\s((?:.(?!:line))*.)|)(?::line\s(\d+)|)", RegexOptions.Multiline | RegexOptions.Compiled),
+			new Highlighter(new Regex(@"^\s+(at\s(?:.(?!\sin\s))*.)(?:\s(in)\s((?:.(?!:line))*.)|)(?::line\s\d+|)", RegexOptions.Multiline | RegexOptions.Compiled),
+				ConsoleColor.DarkRed,
+				ConsoleColor.Red,
 				ConsoleColor.DarkRed),
 			// Numbers
 			new Highlighter(new Regex(@"([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[eE]([+-]?\d+))?", RegexOptions.Compiled),
