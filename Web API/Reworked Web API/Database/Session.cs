@@ -12,6 +12,10 @@ namespace API.Database
 		[Primary]
 		public string Id { get; set; }
 		/// <summary>
+		/// Foreign key to a <see cref="Database.User"/> instance.
+		/// </summary>
+		public int User { get; set; }
+		/// <summary>
 		/// 256-bits <see cref="System.Security.Cryptography.Aes"/> key.
 		/// </summary>
 		public byte[] Key { get; set; }
