@@ -6,7 +6,7 @@ using System.Text;
 using API.Database;
 using Newtonsoft.Json.Linq;
 
-namespace API.HTTP.Endpoints.LoginTest
+namespace API.HTTP.Endpoints
 {
     [EndpointUrl("/login")]
     public sealed class login : JsonEndpoint
