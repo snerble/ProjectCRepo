@@ -15,10 +15,16 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
 
+    private String userData;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maak_taak);
+
+        Intent intent=getIntent();
+
+        userData = intent.getStringExtra("userdata");
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         mToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.open, R.string.close);
@@ -54,10 +60,12 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
                 break;
             case (R.id.task_list):
                 Intent intent3 = new Intent(getApplicationContext(), Takenlijst.class);
+                intent3.putExtra("userdata", userData);
                 startActivity(intent3);
                 break;
             case (R.id.profile):
                 Intent intent4 = new Intent(getApplicationContext(), Profiel.class);
+                intent4.putExtra("userdata", userData);
                 startActivity(intent4);
                 break;
             case(R.id.log_out):

@@ -17,6 +17,8 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
 
+    private String userData;
+
     private String title;
     private String users;
 
@@ -36,6 +38,8 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 
         Intent intent=getIntent();
+
+        userData = intent.getStringExtra("userdata");
 
         title = intent.getStringExtra("title");
         users = intent.getStringExtra("users");
@@ -65,14 +69,17 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
                 break;
             case (R.id.new_task):
                 Intent intent2 = new Intent(getApplicationContext(), MaakTaak.class);
+                intent2.putExtra("userdata", userData);
                 startActivity(intent2);
                 break;
             case (R.id.task_list):
                 Intent intent3 = new Intent(getApplicationContext(), Takenlijst.class);
+                intent3.putExtra("userdata", userData);
                 startActivity(intent3);
                 break;
             case (R.id.profile):
                 Intent intent4 = new Intent(getApplicationContext(), Profiel.class);
+                intent4.putExtra("userdata", userData);
                 startActivity(intent4);
                 break;
             case(R.id.log_out):

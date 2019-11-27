@@ -90,6 +90,7 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
                 break;
             case (R.id.new_task):
                 Intent intent2 = new Intent(getApplicationContext(), MaakTaak.class);
+                intent2.putExtra("userdata", userData);
                 startActivity(intent2);
                 break;
             case (R.id.task_list):

@@ -91,14 +91,17 @@ public class Profiel extends AppCompatActivity implements NavigationView.OnNavig
                 break;
             case (R.id.new_task):
                 Intent intent2 = new Intent(getApplicationContext(), MaakTaak.class);
+                intent2.putExtra("userdata", userData);
                 startActivity(intent2);
                 break;
             case (R.id.task_list):
                 Intent intent3 = new Intent(getApplicationContext(), Takenlijst.class);
+                intent3.putExtra("userdata", userData);
                 startActivity(intent3);
                 break;
             case (R.id.profile):
                 Intent intent4 = new Intent(getApplicationContext(), Profiel.class);
+                intent4.putExtra("userdata", userData);
                 startActivity(intent4);
                 break;
             case(R.id.log_out):
