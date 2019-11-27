@@ -14,7 +14,7 @@ namespace API.Database
 		/// <summary>
 		/// Foreign key to a <see cref="Database.User"/> instance.
 		/// </summary>
-		public int User { get; set; }
+		public int? User { get; set; } = null;
 		/// <summary>
 		/// 256-bits <see cref="System.Security.Cryptography.Aes"/> key.
 		/// </summary>
