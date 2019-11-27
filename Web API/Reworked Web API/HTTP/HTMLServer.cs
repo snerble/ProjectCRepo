@@ -1,9 +1,11 @@
 ﻿using API.Attributes;
 using API.HTTP.Endpoints;
 using API.HTTP.Filters;
+using MimeKit;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -17,6 +19,11 @@ namespace API.HTTP
 	public sealed class HTMLServer : Server
 	{
 		/// <summary>
+		/// Diagnostics timer for detailed log messages.
+		/// </summary>
+		private Stopwatch Timer { get; } = new Stopwatch();
+
+		/// <summary>
 		/// Creates a new instance of <see cref="HTMLServer"/>.
 		/// </summary>
 		/// <param name="queue">The source of requests for this <see cref="HTMLServer"/>.</param>
@@ -24,6 +31,10 @@ namespace API.HTTP
 
 		protected override void Main()
 		{
+			// Print log and start diagnostics timer
+			Program.Log.Fine($"Processing {Request.HttpMethod} request for '{Request.Url.AbsolutePath}'...");
+			Timer.Restart();
+
 			var url = Request.Url.AbsolutePath.ToLower();
 			
 			// Apply redirects
@@ -117,23 +128,31 @@ namespace API.HTTP
 				SendText("<html style=\"text-align: center\">" +
 					"<body style=\"background-color: black; margin: 0; padding: 0;\">" +
 					"<video controls style=\"width: 100%; max-height: 100vh;\">" +
-					$"<source src=\"{file}\" type=\"video/{Path.GetExtension(file)[1..]}\">" +
+					$"<source src=\"{file}\" type=\"{MimeTypes.GetMimeType(Path.GetExtension(file))}\">" +
 					"</video>" +
 					"</body>" +
 					"</html>");
 				return;
 			}
-			Send(File.ReadAllBytes(Program.Config.ResourceDir + Uri.UnescapeDataString(file)));
+			SendFile(Program.Config.ResourceDir + Uri.UnescapeDataString(file));
 		}
 
 		#region Overrides
 		/// <summary>
-		/// Writes a byte buffer to the specified <see cref="HttpListenerResponse"/>.
+		/// Writes a byte array to the specified <see cref="HttpListenerResponse"/>.
 		/// </summary>
-		/// <param name="buffer">The array of bytes to send.</param>
+		/// <param name="data">The array of bytes to send.</param>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
-		public override void Send(byte[] buffer, HttpStatusCode statusCode = HttpStatusCode.OK)
-			=> base.Send(buffer, StatusOverride ?? statusCode);
+		public override void Send(byte[] data, HttpStatusCode statusCode = HttpStatusCode.OK)
+		{
+			base.Send(data, StatusOverride ?? statusCode);
+			// Write detailed log about response
+			var logMessage = $"Processed  {Request.HttpMethod} request for '{Request.Url.AbsolutePath}' with status code {(int)statusCode} " +
+					$"in {Utils.FormatTimer(Timer)}{(data == null ? "" : $" and sent {Utils.FormatDataLength(data.Length)}")}.";
+			// Success status codes are seen as less important, thus are trace messages
+			if (((int)statusCode).ToString().StartsWith("2")) Program.Log.Trace(logMessage);
+			else Program.Log.Info(logMessage);
+		}
 		/// <summary>
 		/// Writes plain text to the specified <see cref="HttpListenerResponse"/>.
 		/// </summary>

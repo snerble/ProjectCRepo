@@ -1,4 +1,4 @@
-﻿using MySql.Data.MySqlClient;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -97,6 +97,19 @@ namespace MySQL.Modeling
 				column.SetValue(clone, column.GetValue(this));
 			// Return this instance since the clone is only used internally
 			return clone;
+		}
+
+		/// <summary>
+		/// Serializes a <see cref="ItemAdapter"/> into a <see cref="JObject"/>.
+		/// </summary>
+		/// <param name="item">The <see cref="ItemAdapter"/> to serialize.</param>
+		public static implicit operator JObject(ItemAdapter item)
+		{
+			var @out = new JObject();
+			// Populate JObject with all columns
+			foreach (var column in Utils.GetAllColumns(item.GetType()))
+				@out.Add(column.Name, new JValue(column.GetValue(item)));
+			return @out;
 		}
 
 		/// <summary>

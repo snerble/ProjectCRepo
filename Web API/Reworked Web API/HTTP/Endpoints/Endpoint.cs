@@ -95,7 +95,7 @@ namespace API.HTTP.Endpoints
 		{
 			string query;
 			// Post requests keep their query string inside their payload
-			if (request.HttpMethod.ToLower() == "post")
+			if (request.ContentType == "application/x-www-form-urlencoded")
 			{
 				using var reader = new StreamReader(request.InputStream);
 				query = reader.ReadToEnd();

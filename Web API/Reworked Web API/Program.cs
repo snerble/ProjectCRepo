@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Threading;
 
 namespace API
@@ -28,7 +29,7 @@ namespace API
 #endif
 			;
 
-		public static Logger Log = new Logger(Level.ALL, Console.Out);
+		public static Logger Log = new Logger(Level.ALL, "Global Logger", Console.Out) { UseConsoleHighlighting = false };
 		public static AppConfig Config;
 		public static AppDatabase Database;
 
@@ -36,12 +37,17 @@ namespace API
 		private static Listener listener;
 
 		private static BlockingCollection<HttpListenerContext> JSONQueue;
-		private static BlockingCollection<HttpListenerContext> HTMLQueue;
+		private static BlockingCollection<HttpListenerContext> ResourceQueue;
 
 		static void Main()
 		{
+			Console.ResetColor();
+			// Set window title
+			var assembly = Assembly.GetExecutingAssembly().GetName();
+			Console.Title = $"{assembly.Name} v{assembly.Version}";
+
 			Log.Info(DEBUG ? "Starting server in DEBUG mode" : "Starting server");
-			Log.Info("Loading configurations");
+			Log.Info("Loading configurations...");
 			try
 			{
 				Config = new AppConfig("config.json");
@@ -56,6 +62,13 @@ namespace API
 				Log.Fatal($"Unexpected error: {e.GetType().Name}: " + e.Message, e, true);
 				Terminate(1);
 			}
+			// Set logging level
+			Log.Config($"Setting log level to '{Config["appSettings"]["logLevel"]}'");
+			Log.LogLevel = Level.GetLevel(Config["appSettings"]["logLevel"].Value<string>());
+			// Toggle highlighting
+			Log.Config($"Setting '{nameof(Log.UseConsoleHighlighting)}' to {Config["appSettings"]["useConsoleColors"].ToString().ToLower()}");
+			Log.UseConsoleHighlighting = Config["appSettings"]["useConsoleColors"].Value<bool>();
+
 			// Assign the reload event to OnConfigReload
 			Config.Reload += OnConfigReload;
 
@@ -67,8 +80,15 @@ namespace API
 			Log.Info("Listening on: " + string.Join(", ", addresses));
 
 			// Get custom queues
-			JSONQueue = listener.GetCustomQueue(x => x.Request.ContentType == "application/json");
-			HTMLQueue = listener.GetCustomQueue(x => x.Request.AcceptTypes != null && x.Request.AcceptTypes.Contains("text/html")); // TODO nuke resourceServer
+			JSONQueue = listener.GetCustomQueue(x =>
+				x.Request.ContentType == "application/json"
+				|| (x.Request.ContentType == "application/octet-stream"
+					&& x.Request.Cookies["session"] != null)
+			);
+			ResourceQueue = listener.GetCustomQueue(x =>
+				x.Request.AcceptTypes != null
+				&& !x.Request.AcceptTypes.Contains("text/html")
+			);
 
 			// Call the rest of the setup
 			Setup();
@@ -97,9 +117,6 @@ namespace API
 		{
 			#region Apply AppSettings
 			dynamic appSettings = Config["appSettings"];
-
-			Log.Config($"Setting log level to '{appSettings.logLevel}'");
-			Log.LogLevel = Level.GetLevel((string)appSettings.logLevel);
 
 			// Create log files in release mode only
 			if (!DEBUG)
@@ -151,13 +168,13 @@ namespace API
 			}
 			for (int i = 0; i < (int)performance.htmlThreads; i++)
 			{
-				var server = new HTMLServer(HTMLQueue);
+				var server = new HTMLServer(listener.Queue);
 				Servers.Add(server);
 				server.Start();
 			}
 			for (int i = 0; i < (int)performance.resourceThreads; i++)
 			{
-				var server = new ResourceServer(listener.Queue);
+				var server = new ResourceServer(ResourceQueue);
 				Servers.Add(server);
 				server.Start();
 			}
@@ -183,19 +200,24 @@ namespace API
 		private static void OnConfigReload(object sender, ReloadEventArgs e)
 		{
 			var changed = e.Diff.Changed;
-			if (changed?["appSettings"]?["logLevel"] != null) // loglevel changed
+			// Things that can change on the fly
+			if (changed?["appSettings"]?["logLevel"] != null)
 			{
-				Log.Config($"Setting log level to '{Config["appSettings"]["logLevel"]}'");
+				Log.Config($"Setting log level to '{Config["appSettings"]["logLevel"]}'...");
 				Log.LogLevel = Level.GetLevel(Config["appSettings"]["logLevel"].Value<string>());
+			}
+			if (changed?["appSettings"]?["useConsoleColors"] != null)
+			{
+				Log.Config($"Setting '{nameof(Log.UseConsoleHighlighting)}' to {Config["appSettings"]["useConsoleColors"].ToString().ToLower()}");
+				Log.UseConsoleHighlighting = Config["appSettings"]["useConsoleColors"].Value<bool>();
 			}
 
 			// Things that require a soft restart
-			if (changed?["dbSettings"] != null
-				|| changed?["performance"] != null)
+			if (changed?["dbSettings"] != null || changed?["performance"] != null)
 			{
 				static void restarter()
 				{
-					Log.Info("\nRESTARTING SERVER");
+					Log.Info("RESTARTING SERVER");
 					Log.Fine("Some values have been changed that require a soft restart.");
 					ClearThreads();
 					Database.Dispose();
@@ -242,6 +264,7 @@ namespace API
 			Log.Info("Terminating...");
 			ClearThreads();
 			Log.Dispose();
+			Console.ResetColor();
 			Environment.Exit(exitCode);
 		}
 	}

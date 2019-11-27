@@ -75,6 +75,7 @@ namespace API.Config
 			TryAddItem(Content, "appSettings", new JObject());
 			TryAddItem(Content["appSettings"], "logLevel", Program.DEBUG ? Level.ALL.Name : Level.INFO.Name);
 			TryAddItem(Content["appSettings"], "logDir", "Logs");
+			TryAddItem(Content["appSettings"], "useConsoleColors", true);
 
 			// Build server settings
 			TryAddItem(Content, "serverSettings", new JObject());
