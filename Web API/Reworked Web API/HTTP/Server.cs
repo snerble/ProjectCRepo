@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MimeKit;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
@@ -6,10 +7,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
-using MimeKit;
-using System.Linq;
-using API.Attributes;
-using API.HTTP.Endpoints;
 
 namespace API.HTTP
 {
@@ -45,7 +42,7 @@ namespace API.HTTP
 		public Server(BlockingCollection<HttpListenerContext> queue)
 		{
 			this.thread = new Thread(Run);
-			thread.Name = GetType().Name + "::" + thread.ManagedThreadId;
+			thread.Name = GetType().Name + ":" + thread.ManagedThreadId;
 			this.queue = queue;
 			Program.Log.Config($"Created server {Name}");
 		}
