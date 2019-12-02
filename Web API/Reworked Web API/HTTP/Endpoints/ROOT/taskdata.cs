@@ -20,11 +20,7 @@ namespace API.HTTP.Endpoints
         {
             var tasks = Program.Database.Select<Task>();
             var taskJson = new JObject();
-
-            foreach (Task task in tasks)
-            {
-                taskJson.Add("results", new JArray(tasks.ToArray()));
-            }
+            taskJson.Add("results", new JArray(tasks.Select(x => (JObject)x).ToArray()));
 
             Server.SendJSON(taskJson);
         }
