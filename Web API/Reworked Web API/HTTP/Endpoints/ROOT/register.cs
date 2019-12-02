@@ -12,6 +12,8 @@ namespace API.HTTP.Endpoints
     public sealed class register : JsonEndpoint
     {
         public override void GET(JObject json, Dictionary<string, string> parameters)
+            => Server.SendError(HttpStatusCode.NotImplemented);
+        public override void POST(JObject json, Dictionary<string, string> parameters)
         {
             if (!json.TryGetValue("username", out JToken usernameToken))
             {
@@ -27,8 +29,15 @@ namespace API.HTTP.Endpoints
             string username = usernameToken.Value<string>();
             string password = passwordToken.Value<string>();
 
-            //check if username exists
-            //Send to database
+            var user = Program.Database.Select<User>($"username = '{username}' AND password = '{password}'").FirstOrDefault();
+
+            if(user == null)
+            {
+                var newUser = new User();
+                newUser.Username = username;
+                newUser.Password = password;
+                Program.Database.Insert<User>(newUser);
+            }
         }
     }
 }
