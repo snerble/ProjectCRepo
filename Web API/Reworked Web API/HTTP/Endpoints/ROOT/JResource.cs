@@ -13,6 +13,8 @@ namespace API.HTTP.Endpoints
 	{
 		public override void GET(JObject json, Dictionary<string, string> parameters)
 		{
+			json = new JObject(parameters);
+
 			// Validate all option parameters
 			if (!ValidateParams(json, ValidationMode.Options,
 					("Id", x => x.Type == JTokenType.Integer),
