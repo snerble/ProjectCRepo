@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MimeKit;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
@@ -6,10 +7,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
-using MimeKit;
-using System.Linq;
-using API.Attributes;
-using API.HTTP.Endpoints;
 
 namespace API.HTTP
 {
@@ -45,7 +42,7 @@ namespace API.HTTP
 		public Server(BlockingCollection<HttpListenerContext> queue)
 		{
 			this.thread = new Thread(Run);
-			thread.Name = GetType().Name + "::" + thread.ManagedThreadId;
+			thread.Name = GetType().Name + ":" + thread.ManagedThreadId;
 			this.queue = queue;
 			Program.Log.Config($"Created server {Name}");
 		}
@@ -83,6 +80,7 @@ namespace API.HTTP
 					}
 					catch (Exception e)
 					{
+						e = e.InnerException ?? e;
 						Program.Log.Error($"{e.GetType().Name} in {GetType().Name}.Main(): {e.Message}", e, true);
 					}
 					// If it isn't already closed, send an internal server error
@@ -116,16 +114,19 @@ namespace API.HTTP
 		public void Interrupt() => thread.Interrupt();
 
 		/// <summary>
-		/// Writes a byte buffer to the specified <see cref="HttpListenerResponse"/>.
+		/// Writes a byte array to the specified <see cref="HttpListenerResponse"/>.
 		/// </summary>
-		/// <param name="buffer">The array of bytes to send.</param>
+		/// <param name="data">The array of bytes to send.</param>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
-		public virtual void Send(byte[] buffer, HttpStatusCode statusCode = HttpStatusCode.OK)
+		public virtual void Send(byte[] data, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
 			Response.StatusCode = (int)statusCode;
-			Response.ContentLength64 = buffer.Length;
-			using var outStream = Response.OutputStream;
-			outStream.Write(buffer, 0, buffer.Length);
+			if (data != null)
+			{
+				Response.ContentLength64 = data.Length;
+				Response.OutputStream.Write(data, 0, data.Length);
+			}
+			Response.Close();
 		}
 		/// <summary>
 		/// Writes plain text to the specified <see cref="HttpListenerResponse"/>.
@@ -143,9 +144,10 @@ namespace API.HTTP
 		public virtual void SendJSON(JObject json, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
 			Response.ContentType = "application/json";
-			Response.StatusCode = (int)statusCode;
-			using var writer = new JsonTextWriter(new StreamWriter(Response.OutputStream));
-			json.WriteTo(writer);
+			var mem = new MemoryStream();
+			using (var writer = new JsonTextWriter(new StreamWriter(mem)))
+				json.WriteTo(writer);
+			Send(mem.ToArray(), statusCode);
 		}
 		/// <summary>
 		/// Sends all the data of the specified file and automatically provides the correct MIME type to the client.
@@ -163,9 +165,6 @@ namespace API.HTTP
 		/// </summary>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to specify.</param>
 		public virtual void SendError(HttpStatusCode statusCode)
-		{
-			Response.StatusCode = (int)statusCode;
-			Response.Close();
-		}
+			=> Send(null, statusCode);
 	}
 }
