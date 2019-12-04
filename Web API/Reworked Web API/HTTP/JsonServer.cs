@@ -95,7 +95,7 @@ namespace API.HTTP
 		/// </remarks>
 		public override void Send(byte[] data, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
-			if (Utils.IsRequestEncrypted(Request))
+			if (data != null && Utils.IsRequestEncrypted(Request))
 			{
 				Response.StatusCode = (int)statusCode;
 				Response.ContentType = "application/octet-stream";

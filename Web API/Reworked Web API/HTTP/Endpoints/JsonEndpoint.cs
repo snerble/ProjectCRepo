@@ -150,7 +150,7 @@ namespace API.HTTP.Endpoints
 			var outJson = new JObject();
 			if (mode == ValidationMode.Required && missing.Any()) outJson.Add("missing", new JArray(missing));
 			if (mode == ValidationMode.Options && missing.Count == predicates.Count())
-				outJson.Add("missing", new JObject() { "options", new JArray(missing) });
+				outJson.Add("missing", new JObject() { { "options", new JArray(missing) } });
 
 			// Get every param where their predicate returns false
 			var failed = invalid.Where(x => predicates.First(y => x == y.Item1).Item2(json.GetValue(x)));
