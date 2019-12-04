@@ -9,7 +9,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace API
 {
@@ -42,6 +41,7 @@ namespace API
 		/// </summary>
 		public static List<Session> Sessions { get; } = new List<Session>();
 
+#nullable enable
 		/// <summary>
 		/// Gets a <see cref="Session"/> from the cache or the database.
 		/// </summary>
@@ -67,8 +67,11 @@ namespace API
 			}
 			return session;
 		}
-
-#nullable enable
+		
+		/// <summary>
+		/// Returns whether or not a request is encrypted by looking at it's headers.
+		/// </summary>
+		/// <param name="request">The request to check for encryption.</param>
 		public static bool IsRequestEncrypted(HttpListenerRequest request)
 		{
 			if (request is null) throw new ArgumentNullException(nameof(request));
