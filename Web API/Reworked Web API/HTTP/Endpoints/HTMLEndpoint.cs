@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using API.Database;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Reflection;
 
 namespace API.HTTP.Endpoints
 {
@@ -17,17 +20,53 @@ namespace API.HTTP.Endpoints
 	public abstract class HTMLEndpoint : Endpoint
 	{
 		/// <summary>
+		/// Gets the <see cref="User"/> instance that is requesting this endpoint.
+		/// </summary>
+		protected User CurrentUser { get; private set; }
+		/// <summary>
+		/// Gets whether or not the client who requested this endpoint is logged in.
+		/// </summary>
+		protected bool IsLoggedIn => CurrentUser != null;
+
+		/// <summary>
 		/// Extracts the parameters from the request object and calls the specified HTTP method function.
 		/// </summary>
 		protected override void Main()
 		{
+			// Get the session from the cookies (if it exists)
+			var sessionId = Request.Cookies["session"]?.Value;
+			var session = sessionId == null ? null : Utils.GetSession(sessionId);
+
 			// Get the url (or payload) parameters
 			var parameters = SplitQuery(Request);
 
 			// Invoke the right http method function
 			var method = GetType().GetMethod(Request.HttpMethod.ToUpper());
-			if (method == null) Server.SendError(HttpStatusCode.NotImplemented);
-			else method.Invoke(this, new object[] { parameters });
+			if (method == null)
+			{
+				// Send a 501 not implemented if the method does exist
+				Server.SendError(HttpStatusCode.NotImplemented);
+			}
+			else
+			{
+				// Check if the endpoint requires login info
+				if (method.GetCustomAttribute<RequiresLoginAttribute>() != null)
+				{
+					if (session != null && session.User.HasValue)
+					{
+						// Get the user associated with the session
+						CurrentUser = Program.Database.Select<User>($"`id` = {session.User}").FirstOrDefault();
+					}
+					if (IsLoggedIn)
+					{
+						// Send a 401 status code if the login data is missing
+						Server.SendError(HttpStatusCode.Unauthorized);
+						return;
+					}
+				}
+				// Run the requested endpoint method
+				method.Invoke(this, new object[] { parameters });
+			}
 		}
 
 		/// <summary>

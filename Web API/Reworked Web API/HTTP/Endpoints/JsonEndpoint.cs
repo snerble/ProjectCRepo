@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using System.Reflection;
+using API.Database;
 
 namespace API.HTTP.Endpoints
 {
@@ -24,10 +25,23 @@ namespace API.HTTP.Endpoints
 	public abstract class JsonEndpoint : Endpoint
 	{
 		/// <summary>
+		/// Gets the <see cref="User"/> instance that is requesting this endpoint.
+		/// </summary>
+		protected User CurrentUser { get; private set; }
+		/// <summary>
+		/// Gets whether or not the client who requested this endpoint is logged in.
+		/// </summary>
+		protected bool IsLoggedIn => CurrentUser != null;
+
+		/// <summary>
 		/// Extracts the parameters and JSON from the request object and calls the specified HTTP method function.
 		/// </summary>
 		protected override void Main()
 		{
+			// Get the session from the cookies (if it exists)
+			var sessionId = Request.Cookies["session"]?.Value;
+			var session = sessionId == null ? null : Utils.GetSession(sessionId);
+
 			// Read the inputstream of the request and try to convert it to a JObject
 			JObject content;
 			try
@@ -49,7 +63,6 @@ namespace API.HTTP.Endpoints
 
 						// Get iv and session from request headers and cookies
 						var iv = Convert.FromBase64String(Request.Headers.Get("Content-IV"));
-						var session = Request.Cookies["session"].Value;
 						
 						// Get all bytes from the request body
 						using var mem = new MemoryStream();
@@ -76,19 +89,38 @@ namespace API.HTTP.Endpoints
 			}
 			var parameters = SplitQuery(Request);
 
-			// Invoke the right http method function
+			// Get the right method from the endpoint using Reflection
 			var method = GetType().GetMethod(Request.HttpMethod.ToUpper());
-
-			// If the method requires encrypted data but the request is unencrypted, send a 400 Bad Request.
-			if (method.GetCustomAttribute<RequiresEncryptionAttribute>() != null && !Utils.IsRequestEncrypted(Request))
+			if (method == null)
 			{
-				Server.SendError(HttpStatusCode.BadRequest);
-				return;
+				// Send a 501 not implemented if the method does exist
+				Server.SendError(HttpStatusCode.NotImplemented);
 			}
-
-			// Invoke the method, or send a 501 not implemented
-			if (method == null) Server.SendError(HttpStatusCode.NotImplemented);
-			else method.Invoke(this, new object[] { content, parameters });
+			else if (method.GetCustomAttribute<RequiresEncryptionAttribute>() != null && !Utils.IsRequestEncrypted(Request))
+			{
+				// If the method requires encrypted data but the request is unencrypted, send a 400 Bad Request.
+				Server.SendError(HttpStatusCode.BadRequest);
+			}
+			else
+			{
+				// Check if the endpoint requires login info
+				if (method.GetCustomAttribute<RequiresLoginAttribute>() != null)
+				{
+					if (session != null && session.User.HasValue)
+					{
+						// Get the user associated with the session
+						CurrentUser = Program.Database.Select<User>($"`id` = {session.User}").FirstOrDefault();
+					}
+					if (IsLoggedIn)
+					{
+						// Send a 401 status code if the login data is missing
+						Server.SendError(HttpStatusCode.Unauthorized);
+						return;
+					}
+				}
+				// Run the requested endpoint method
+				method.Invoke(this, new object[] { content, parameters });
+			}
 		}
 
 		/// <summary>
