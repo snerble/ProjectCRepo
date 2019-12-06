@@ -22,11 +22,19 @@ namespace API.HTTP.Endpoints
 		/// <summary>
 		/// Gets the <see cref="User"/> instance that is requesting this endpoint.
 		/// </summary>
-		protected User CurrentUser { get; private set; }
-		/// <summary>
-		/// Gets whether or not the client who requested this endpoint is logged in.
-		/// </summary>
-		protected bool IsLoggedIn => CurrentUser != null;
+		protected User CurrentUser
+		{
+			get
+			{
+				// Skip if the session is null or does not have a userid
+				if (CurrentSession == null || !CurrentSession.User.HasValue) return null;
+				// Set the cache with a user from the database if it isn't already set
+				if (_CurrentUser == null) _CurrentUser = Program.Database.Select<User>($"`id` = {CurrentSession.User}").FirstOrDefault();
+				// Return the cache
+				return _CurrentUser;
+			}
+		}
+		private User _CurrentUser;
 		/// <summary>
 		/// Gets the <see cref="Session"/> instance associated with the <see cref="Endpoint.Request"/>.
 		/// </summary>
@@ -37,6 +45,9 @@ namespace API.HTTP.Endpoints
 		/// </summary>
 		protected override void Main()
 		{
+			// Set current user cache to null
+			_CurrentUser = null;
+
 			// Get the session from the cookies (if it exists)
 			var sessionId = Request.Cookies["session"]?.Value;
 			CurrentSession = sessionId == null ? null : Utils.GetSession(sessionId);
@@ -56,12 +67,8 @@ namespace API.HTTP.Endpoints
 				// Check if the endpoint requires login info
 				if (GetType().GetCustomAttribute<RequiresLoginAttribute>() != null)
 				{
-					if (CurrentSession != null && CurrentSession.User.HasValue)
-					{
-						// Get the user associated with the session
-						CurrentUser = Program.Database.Select<User>($"`id` = {CurrentSession.User}").FirstOrDefault();
-					}
-					if (!IsLoggedIn)
+					// Get the current user from the property
+					if (CurrentUser == null)
 					{
 						// Send a 401 status code if the login data is missing
 						Server.SendError(HttpStatusCode.Unauthorized);
