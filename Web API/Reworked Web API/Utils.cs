@@ -55,7 +55,7 @@ namespace API
 			if (session == null)
 			{
 				session = Program.Database.Select<Session>($"`id` = '{sessionId}'").FirstOrDefault();
-				if (session == null) return null;
+				if (session == null || session.User == null) return session;
 				Sessions.Add(session);
 			}
 			// Remove session if expired
@@ -65,6 +65,34 @@ namespace API
 				Sessions.Remove(session);
 				return null;
 			}
+			return session;
+		}
+
+		/// <summary>
+		/// Returns and uploads a new <see cref="Session"/> with an optional attached <see cref="User"/> object.
+		/// <para>If <paramref name="user"/> is null, the <see cref="Session"/> will not be cached.</para>
+		/// </summary>
+		/// <param name="user">The user to attach to the new <see cref="Session"/>.</param>
+		public static Session CreateSession(User? user = null)
+		{
+			// Begin transaction just to play it safe
+			var transaction = Program.Database.Connection.BeginTransaction();
+
+			// Create the session object and give it a new AES key and GUID
+			using var aes = Aes.Create();
+			var session = new Session()
+			{
+				Id = string.Concat(Guid.NewGuid().ToByteArray().Select(x => x.ToString("x2"))),
+				User = user?.Id,
+				Key = aes.Key
+			};
+
+			// Upload the new session
+			Program.Database.Insert(session);
+
+			// Commit changes in the database
+			transaction.Commit();
+
 			return session;
 		}
 		
