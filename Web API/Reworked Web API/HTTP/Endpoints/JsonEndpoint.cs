@@ -32,6 +32,10 @@ namespace API.HTTP.Endpoints
 		/// Gets whether or not the client who requested this endpoint is logged in.
 		/// </summary>
 		protected bool IsLoggedIn => CurrentUser != null;
+		/// <summary>
+		/// Gets the <see cref="Session"/> instance associated with the <see cref="Endpoint.Request"/>.
+		/// </summary>
+		protected Session CurrentSession { get; private set; }
 
 		/// <summary>
 		/// Extracts the parameters and JSON from the request object and calls the specified HTTP method function.
@@ -40,7 +44,7 @@ namespace API.HTTP.Endpoints
 		{
 			// Get the session from the cookies (if it exists)
 			var sessionId = Request.Cookies["session"]?.Value;
-			var session = sessionId == null ? null : Utils.GetSession(sessionId);
+			CurrentSession = sessionId == null ? null : Utils.GetSession(sessionId);
 
 			// Read the inputstream of the request and try to convert it to a JObject
 			JObject content;
@@ -70,7 +74,7 @@ namespace API.HTTP.Endpoints
 						mem.Close();
 
 						// Decrypt the body
-						body = Encoding.UTF8.GetString(Utils.AESDecrypt(session, mem.ToArray(), iv));
+						body = Encoding.UTF8.GetString(Utils.AESDecrypt(CurrentSession, mem.ToArray(), iv));
 					}
 					else
 					{
@@ -106,10 +110,10 @@ namespace API.HTTP.Endpoints
 				// Check if the endpoint requires login info
 				if (GetType().GetCustomAttribute<RequiresLoginAttribute>() != null)
 				{
-					if (session != null && session.User.HasValue)
+					if (CurrentSession != null && CurrentSession.User.HasValue)
 					{
 						// Get the user associated with the session
-						CurrentUser = Program.Database.Select<User>($"`id` = {session.User}").FirstOrDefault();
+						CurrentUser = Program.Database.Select<User>($"`id` = {CurrentSession.User}").FirstOrDefault();
 					}
 					if (!IsLoggedIn)
 					{
