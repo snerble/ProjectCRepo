@@ -1,4 +1,5 @@
 ﻿using API.Database;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -100,5 +101,65 @@ namespace API.HTTP.Endpoints
 		/// </summary>
 		/// <param name="parameters">A dictionary containing all url parameters.</param>
 		public virtual void PATCH(Dictionary<string, string> parameters) => Server.SendError(HttpStatusCode.NotImplemented);
+
+		/// <summary>
+		/// Validates an array of parameters by checking if they are present and match the predicate. A response is
+		/// immediately sent to the client if this function returns false.
+		/// </summary>
+		/// <param name="parameters">The dictionary from which to get the values.</param>
+		/// <param name="predicates">An array of tuples containing the parameter name and a predicate.</param>
+		/// <returns>True if the validation succeeded. False otherwise.</returns>
+		protected static bool ValidateParams(Dictionary<string, string> parameters, params (string, Func<string, bool>)[] predicates)
+			=> ValidateParams(parameters, ValidationMode.Required, predicates);
+		/// <summary>
+		/// Validates an array of parameters by checking if they are present and match the predicate. A response is
+		/// immediately sent to the client if this function returns false.
+		/// </summary>
+		/// <param name="parameters">The dictionary from which to get the values.</param>
+		/// <param name="mode">The type of validation checking to use.</param>
+		/// <param name="predicates">An array of tuples containing the parameter name and a predicate.</param>
+		/// <returns>True if the validation succeeded. False otherwise.</returns>
+		protected static bool ValidateParams(Dictionary<string, string> parameters, ValidationMode mode, params (string, Func<string, bool>)[] predicates)
+		{
+			if (mode == ValidationMode.Required)
+			{
+				// Check if none are missing if the mode is 'Required'
+				if (predicates.Any(x => !parameters.ContainsKey(x.Item1)))
+					return false;
+			}
+			else if (mode == ValidationMode.Options)
+			{
+				// Check if at least one parameter is present if the mode is 'Options'
+				if (predicates.All(x => !parameters.ContainsKey(x.Item1)))
+					return false;
+			}
+
+			// Check predicates for every value that isn't missing
+			foreach (var (name, predicate) in predicates.Where(x => !parameters.ContainsKey(x.Item1)))
+				if (!predicate(parameters[name]))
+					return false;
+
+			// Return true to indicate successfull validation
+			return true;
+		}
+
+		/// <summary>
+		/// Specifies how the parameter validation will behave.
+		/// </summary>
+		protected enum ValidationMode
+		{
+			/// <summary>
+			/// All specified parameters are required and must pass validation.
+			/// </summary>
+			Required,
+			/// <summary>
+			/// At least one of the specified parameters are required and all given parameters must pass validation.
+			/// </summary>
+			Options,
+			/// <summary>
+			/// None of the parameters are required, but all given parameters must pass validation.
+			/// </summary>
+			Optional
+		}
 	}
 }
