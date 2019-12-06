@@ -216,10 +216,19 @@ namespace API.HTTP
 					base.SendError(statusCode);
 					return;
 				}
+
+				// If it is a redirect, simply send a 302 Redirect status code
+				if (errorPage.IsRedirect)
+				{
+					Response.Redirect(errorPage.Url);
+					SendError(HttpStatusCode.PermanentRedirect);
+					return;
+				}
+
 				// Cache the status code for infinite loop detection
 				PreviousCode = statusCode;
-				// Overrride the next status code and parse the error page url instead and send that endpoint
-				StatusOverride = statusCode;
+				// If specified, overrride the next status code and parse the error page url instead and send that endpoint
+				if (errorPage.KeepStatusCode) StatusOverride = statusCode;
 				try
 				{
 					Main(errorPage.Url);
