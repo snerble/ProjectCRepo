@@ -67,17 +67,36 @@ namespace API
 			}
 			return session;
 		}
+		/// <summary>
+		/// Returns and uploads a new <see cref="Session"/> with an optional attached <see cref="User"/> object.\
+		/// </summary>
+		/// <param name="userId">The user to attach to the new <see cref="Session"/>.</param>
+		/// <remarks>
+		/// It is recommended that this method is called during a database transaction, since the session
+		/// should not be uploaded if it is lost.
+		/// </remarks>
+		public static Session CreateSession(int userId)
+		{
+			// Get the user
+			var user = Program.Database.Select<User>($"`id` = {userId}").FirstOrDefault();
 
+			// Throw exception if the user does not exist
+			if (user == null) throw new ArgumentException("No such user with id " + userId);
+
+			// Invoke overloaded method
+			return CreateSession(user);
+		}
 		/// <summary>
 		/// Returns and uploads a new <see cref="Session"/> with an optional attached <see cref="User"/> object.
-		/// <para>If <paramref name="user"/> is null, the <see cref="Session"/> will not be cached.</para>
+		/// <para>If <paramref name="user"/> is null, the new <see cref="Session"/> will not be cached.</para>
 		/// </summary>
 		/// <param name="user">The user to attach to the new <see cref="Session"/>.</param>
+		/// <remarks>
+		/// It is recommended that this method is called during a database transaction, since the session
+		/// should not be uploaded if it is lost.
+		/// </remarks>
 		public static Session CreateSession(User? user = null)
 		{
-			// Begin transaction just to play it safe
-			var transaction = Program.Database.Connection.BeginTransaction();
-
 			// Create the session object and give it a new AES key and GUID
 			using var aes = Aes.Create();
 			var session = new Session()
@@ -90,9 +109,7 @@ namespace API
 			// Upload the new session
 			Program.Database.Insert(session);
 
-			// Commit changes in the database
-			transaction.Commit();
-
+			// Return the new session
 			return session;
 		}
 		

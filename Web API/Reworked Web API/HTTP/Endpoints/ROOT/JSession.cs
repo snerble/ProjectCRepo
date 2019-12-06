@@ -14,16 +14,12 @@ namespace API.HTTP.Endpoints
 	{
 		public override void GET(JObject json, Dictionary<string, string> parameters)
 		{
-			// Create new Session
-			using var aes = Aes.Create();
-			var session = new Session()
-			{
-				Id = string.Concat(Guid.NewGuid().ToByteArray().Select(x => x.ToString("x2"))),
-				Key = aes.Key
-			};
-
 			// Start transaction and commit once the session was sent
 			var transaction = Program.Database.Connection.BeginTransaction();
+
+			// Create new Session
+			var session = Utils.CreateSession();
+
 			// Upload session and cache
 			Program.Database.Insert(session);
 			
