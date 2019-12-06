@@ -1,10 +1,6 @@
 ﻿using API.Database;
-using Newtonsoft.Json.Linq;
-using RazorEngine;
-using RazorEngine.Templating;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 
@@ -21,16 +17,19 @@ namespace API.HTTP.Endpoints
 
 		public override void POST(Dictionary<string, string> parameters)
 		{
-			// Get required parameters
-			string username = parameters?["username"];
-			string password = parameters?["password"];
-
-			if (username == null || password == null)
+			// Validate parameters (this one only checks if username and password are specified)
+			if (!ValidateParams(parameters,
+					("username", null),
+					("password", null)))
 			{
 				// Send bad request status code if the required parameters are missing
 				Server.SendError(HttpStatusCode.BadRequest);
 				return;
 			}
+
+			// Get required parameters
+			string username = parameters["username"];
+			string password = parameters["password"];
 
 			// Get user from database
 			var user = Program.Database.Select<User>($"`username` = '{username}' AND `password` = '{password}'").FirstOrDefault();
@@ -41,10 +40,19 @@ namespace API.HTTP.Endpoints
 				// Begin a transaction so that we won't upload the session if SendError threw an exception.
 				var transaction = Program.Database.Connection.BeginTransaction();
 
-				// Create a new session
-				var session = Utils.CreateSession(user);
-				// Set a new session cookie
-				Utils.AddCookie(Response, "session", session.Id);
+				// If the request already had a session, update the userId
+				if (CurrentSession != null)
+				{
+					CurrentSession.User = user.Id;
+					Program.Database.Update(CurrentSession);
+				}
+				else
+				{
+					// Create a new session
+					var session = Utils.CreateSession(user);
+					// Set a new session cookie
+					Utils.AddCookie(Response, "session", session.Id);
+				}
 
 				// Get and unescape the redirect url from the parameters (if present)
 				var redirect = Request.QueryString.AllKeys.Contains("redir") ? Request.QueryString["redir"] : null;
