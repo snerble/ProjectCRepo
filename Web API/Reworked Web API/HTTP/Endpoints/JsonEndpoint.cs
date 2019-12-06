@@ -183,7 +183,7 @@ namespace API.HTTP.Endpoints
 
 			// Check predicates for every value that isn't missing
 			var invalid = new List<string>();
-			foreach (var (name, predicate) in predicates.Where(x => !missing.Contains(x.Item1)))
+			foreach (var (name, predicate) in predicates.Where(x => x.Item2 != null && !missing.Contains(x.Item1)))
 				if (!predicate(json[name]))
 					invalid.Add(name);
 

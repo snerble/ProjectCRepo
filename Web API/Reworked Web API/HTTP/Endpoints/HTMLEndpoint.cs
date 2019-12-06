@@ -135,7 +135,7 @@ namespace API.HTTP.Endpoints
 			}
 
 			// Check predicates for every value that isn't missing
-			foreach (var (name, predicate) in predicates.Where(x => !parameters.ContainsKey(x.Item1)))
+			foreach (var (name, predicate) in predicates.Where(x => x.Item2 != null && !parameters.ContainsKey(x.Item1)))
 				if (!predicate(parameters[name]))
 					return false;
 
