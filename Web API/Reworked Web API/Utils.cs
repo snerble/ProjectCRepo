@@ -46,7 +46,7 @@ namespace API
 		/// Gets a <see cref="Session"/> from the cache or the database.
 		/// </summary>
 		/// <param name="sessionId">The id of the session to get.</param>
-		public static Session GetSession(string sessionId)
+		public static Session? GetSession(string sessionId)
 		{
 			if (sessionId is null) throw new ArgumentNullException(nameof(sessionId));
 
