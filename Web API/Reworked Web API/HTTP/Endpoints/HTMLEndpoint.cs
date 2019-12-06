@@ -50,14 +50,14 @@ namespace API.HTTP.Endpoints
 			else
 			{
 				// Check if the endpoint requires login info
-				if (method.GetCustomAttribute<RequiresLoginAttribute>() != null)
+				if (GetType().GetCustomAttribute<RequiresLoginAttribute>() != null)
 				{
 					if (session != null && session.User.HasValue)
 					{
 						// Get the user associated with the session
 						CurrentUser = Program.Database.Select<User>($"`id` = {session.User}").FirstOrDefault();
 					}
-					if (IsLoggedIn)
+					if (!IsLoggedIn)
 					{
 						// Send a 401 status code if the login data is missing
 						Server.SendError(HttpStatusCode.Unauthorized);
