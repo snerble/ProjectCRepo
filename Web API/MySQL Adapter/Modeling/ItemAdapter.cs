@@ -105,6 +105,8 @@ namespace MySQL.Modeling
 		/// <param name="item">The <see cref="ItemAdapter"/> to serialize.</param>
 		public static implicit operator JObject(ItemAdapter item)
 		{
+			if (item == null) return null;
+
 			var @out = new JObject();
 			// Populate JObject with all columns
 			foreach (var column in Utils.GetAllColumns(item.GetType()))
