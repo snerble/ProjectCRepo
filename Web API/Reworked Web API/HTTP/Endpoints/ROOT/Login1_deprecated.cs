@@ -9,7 +9,7 @@ using System.Linq;
 namespace API.HTTP.Endpoints
 {
     [EndpointUrl("/Login1")]
-    public class Login1 : HTMLEndpoint
+    public class Login1_deprecated : HTMLEndpoint
     {
         public override void GET(Dictionary<string, string> parameters)
         {
