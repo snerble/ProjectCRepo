@@ -25,7 +25,7 @@ namespace API.Attributes
 		/// Gets or sets what requests are affected by this <see cref="RedirectAttribute"/> using
 		/// <see cref="ServerAttributeTargets"/> flags. <see cref="ServerAttributeTargets.All"/> by default.
 		/// </summary>
-		public ServerAttributeTargets ValidOn { get; set; }
+		public ServerAttributeTargets ValidOn { get; set; } = ServerAttributeTargets.All;
 		/// <summary>
 		/// Gets or sets what requests are not affected by this <see cref="RedirectAttribute"/> using
 		/// <see cref="ServerAttributeTargets"/> flags. <see cref="ServerAttributeTargets.None"/> by default.
