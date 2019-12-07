@@ -115,6 +115,9 @@ namespace API
 		/// </summary>
 		static void Setup()
 		{
+			// Dispose existing database connections
+			Utils.DisposeDatabases();
+
 			#region Apply AppSettings
 			dynamic appSettings = Config["appSettings"];
 
@@ -141,8 +144,7 @@ namespace API
 			#endregion
 
 			Log.Config("Creating database connection...");
-			Database = new AppDatabase();
-			Log.Info($"Opened connection to '{Database.Connection.DataSource}'.");
+			Database = Utils.GetDatabase();
 
 			try
 			{

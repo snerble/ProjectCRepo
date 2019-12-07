@@ -10,8 +10,8 @@ namespace API.HTTP.Endpoints
     {
         public override void GET(Dictionary<string, string> parameters)
         {
-            var user = Program.Database.Select<User>().LastOrDefault();
-            var tasks = Program.Database.Select<Task>().ToList();
+            var user = Database.Select<User>().LastOrDefault();
+            var tasks = Database.Select<Task>().ToList();
 
             //Templates worden naar client gestuurd, url wordt van endpoint gehaald
             Server.SendText(
@@ -36,7 +36,7 @@ namespace API.HTTP.Endpoints
         {
             Program.Log.Info("Received DELETE request");
 
-            //Program.Database.Delete<Task>($"parameters["task"] = { Title }");
+            //Database.Delete<Task>($"parameters["task"] = { Title }");
         }
     }
 

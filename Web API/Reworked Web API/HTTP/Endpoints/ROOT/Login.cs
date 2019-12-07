@@ -37,19 +37,19 @@ namespace API.HTTP.Endpoints
 			mockUser.Password = mockUser.GetPasswordHash();
 
 			// Try to get the user from database
-			var user = Program.Database.Select<User>($"`username` = '{mockUser.Username}' AND `password` = '{mockUser.Password}'").FirstOrDefault();
+			var user = Database.Select<User>($"`username` = '{mockUser.Username}' AND `password` = '{mockUser.Password}'").FirstOrDefault();
 
 			// Login is successfull if the query matched something in the database
 			if (user != null)
 			{
 				// Begin a transaction so that we won't upload the session if SendError threw an exception.
-				var transaction = Program.Database.Connection.BeginTransaction();
+				var transaction = Database.Connection.BeginTransaction();
 
 				// If the request already had a session, update the userId
 				if (CurrentSession != null)
 				{
 					CurrentSession.User = user.Id;
-					Program.Database.Update(CurrentSession);
+					Database.Update(CurrentSession);
 				}
 				else
 				{

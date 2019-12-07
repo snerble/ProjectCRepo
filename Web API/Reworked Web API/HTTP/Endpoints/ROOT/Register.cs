@@ -28,7 +28,7 @@ namespace API.HTTP.Endpoints.ROOT
 			var password = parameters["password"];
 
 			// Check if the user does not already exist
-			if (Program.Database.Select<User>($"`username` = '{username}'").Any())
+			if (Database.Select<User>($"`username` = '{username}'").Any())
 			{
 				// Send 409 Conflict status code to indicate a duplicate
 				Server.SendError(HttpStatusCode.Conflict);
@@ -41,7 +41,7 @@ namespace API.HTTP.Endpoints.ROOT
 			user.Password = user.GetPasswordHash();
 
 			// Upload the new user to the database
-			Program.Database.Insert(user);
+			Database.Insert(user);
 
 			// Redirect the client to the login
 			Response.Redirect(GetUrl<Login>());
