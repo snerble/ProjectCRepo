@@ -338,6 +338,8 @@ namespace MySQL
 		public long Update<T>(T item) where T : ItemAdapter
 		{
 			using var command = GetUpdate(item);
+			// If the command is uninitialized, return 0
+			if (command.CommandText.Length == 0) return 0;
 			return command.ExecuteNonQuery();
 		}
 		/// <summary>
@@ -351,6 +353,8 @@ namespace MySQL
 		public long Update<T>(ICollection<T> items) where T : ItemAdapter
 		{
 			using var command = GetUpdate(items);
+			// If the command is uninitialized, return 0
+			if (command.CommandText.Length == 0) return 0;
 			return command.ExecuteNonQuery();
 		}
 
