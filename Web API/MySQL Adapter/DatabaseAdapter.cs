@@ -131,9 +131,9 @@ namespace MySQL
 			foreach (var item in items)
 			{
 				query.Append($"UPDATE `{tableName}` SET ");
-				query.Append(string.Join(",", columns.Keys.Select(x => $"{x.Name} = @{x.Name}_{i}")));
+				query.Append(string.Join(",", columns.Keys.Select(x => $"`{x.Name}` = @{x.Name}_{i}")));
 				query.Append(" WHERE ");
-				query.Append(string.Join(" AND ", columns.Keys.Select(x => $"{x.Name} = @{x.Name}_c{i}")));
+				query.Append(string.Join(" AND ", columns.Keys.Select(x => $"`{x.Name}` = @{x.Name}_c{i}")));
 				query.Append(';');
 				i++;
 			}
