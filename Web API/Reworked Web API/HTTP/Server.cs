@@ -30,9 +30,12 @@ namespace API.HTTP
 		public string Name => thread.Name;
 
 		/// <summary>
-		/// The 
+		/// Gets the <see cref="HttpListenerRequest"/> sent by a client.
 		/// </summary>
 		protected HttpListenerRequest Request { get; private set; }
+		/// <summary>
+		/// Gets the <see cref="HttpListenerResponse"/> directed to a client.
+		/// </summary>
 		protected HttpListenerResponse Response { get; private set; }
 
 		/// <summary>
