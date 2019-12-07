@@ -64,7 +64,7 @@ namespace API
 					" expired sessions."
 				);
 				// Set the cleanup timestamp 2 hours into the future
-				SessionCleanup = SessionCleanup.AddHours(2);
+				SessionCleanup = DateTime.UtcNow.AddHours(2);
 			}
 
 			// Get session from cache or database
