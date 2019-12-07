@@ -31,8 +31,13 @@ namespace API.HTTP.Endpoints
 			string username = parameters["username"];
 			string password = parameters["password"];
 
-			// Get user from database
-			var user = Program.Database.Select<User>($"`username` = '{username}' AND `password` = '{password}'").FirstOrDefault();
+			// Create a new user object (so we can use the hashing method from the user class)
+			var mockUser = new User() { Username = username, Password = password };
+			// Hash it's password
+			mockUser.Password = mockUser.GetPasswordHash();
+
+			// Try to get the user from database
+			var user = Program.Database.Select<User>($"`username` = '{mockUser.Username}' AND `password` = '{mockUser.Password}'").FirstOrDefault();
 
 			// Login is successfull if the query matched something in the database
 			if (user != null)
