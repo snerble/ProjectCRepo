@@ -9,8 +9,8 @@ namespace API.HTTP.Endpoints
     {
         public override void GET(Dictionary<string, string> parameters)
         {
-            //var user = Program.Database.Select<User>().LastOrDefault();
-            //var task = Program.Database.Select<Task>().ToArray();
+            //var user = Database.Select<User>().LastOrDefault();
+            //var task = Database.Select<Task>().ToArray();
 
             //Templates worden naar client gestuurd, url wordt van endpoint gehaald
             Server.SendText(
@@ -29,15 +29,15 @@ namespace API.HTTP.Endpoints
 
         public override void POST(Dictionary<string, string> parameters)
         {
-                var users = Program.Database.Select<User>().ToList();
+                var users = Database.Select<User>().ToList();
             foreach (var user in users)
                 Program.Log.Info(user);
 
-            var tasks = Program.Database.Select<Task>().ToList();
+            var tasks = Database.Select<Task>().ToList();
             foreach (var task in tasks)
                 Program.Log.Info(task);
 
-            /*Program.Database.Insert(new User()
+            /*Database.Insert(new User()
             {
                 Id = 2,
                 Username = "Cindy",
@@ -45,14 +45,14 @@ namespace API.HTTP.Endpoints
                 Token = 0,
             });
 
-            /*Program.Database.Insert(new Group()
+            /*Database.Insert(new Group()
             {
                 Id = 1,
                 Creator = 2,
                 Name = "Groep 1"
             });*/
 
-            Program.Database.Insert(new Task()
+            Database.Insert(new Task()
             {
                 Creator = 2,
                 Title = parameters["title"],

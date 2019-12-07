@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Threading;
 
 namespace API
 {
@@ -17,6 +18,11 @@ namespace API
 	/// </summary>
 	static class Utils
 	{
+		/// <summary>
+		/// A dictionary containing instances of <see cref="AppDatabase"/> mapped to a <see cref="Thread"/> ID.
+		/// </summary>
+		private static Dictionary<int, AppDatabase> Databases { get; } = new Dictionary<int, AppDatabase>();
+
 		/// <summary>
 		/// Gets an array of all <see cref="RedirectAttribute"/>s listed in the server properties.
 		/// </summary>
@@ -46,6 +52,51 @@ namespace API
 		/// </summary>
 		private static DateTime SessionCleanup = DateTime.UnixEpoch;
 
+		/// <summary>
+		/// Returns an <see cref="AppDatabase"/> instance unique to the current calling thread.
+		/// <para>If no <see cref="AppDatabase"/> exist yet for the current thread, a new instance will be created.</para>
+		/// </summary>
+		/// <seealso cref="DisposeDatabases"/>
+		public static AppDatabase GetDatabase()
+		{
+			// Lock the databases property to prevent conflicts from the DisposeDatabases method
+			lock (Databases)
+			{
+				// Get the id of the thread that called this method
+				var threadId = Thread.CurrentThread.ManagedThreadId;
+
+				// Create a new AppDatabase if it doesn't exist yet
+				if (!Databases.ContainsKey(threadId))
+				{
+					Databases.Add(threadId, new AppDatabase());
+					Program.Log.Fine($"Opened connection to '{Databases[threadId].Connection.DataSource}'.");
+				}
+
+				// Return an AppDatabase from the cache
+				return Databases[threadId];
+			}
+		}
+		/// <summary>
+		/// Disposes all cached <see cref="AppDatabase"/>s and clears the cache.
+		/// </summary>
+		public static void DisposeDatabases()
+		{
+			// Lock the databases property to prevent conflicts from the GetDatabase method
+			lock (Databases)
+			{
+				// Close all connections
+				foreach (var database in Databases.Values)
+				{
+					Program.Log.Info($"Closing connection to '{database.Connection.DataSource}'...");
+					lock (database) // Lock each database to ensure a Server instance can complete its task before it is disposed.
+						database.Dispose();
+				}
+				// Clear all elements from the cache
+				Databases.Clear();
+			}
+
+		}
+
 #nullable enable
 		/// <summary>
 		/// Gets a <see cref="Session"/> from the cache or the database.
@@ -60,7 +111,7 @@ namespace API
 			{
 				Program.Log.Fine("Running session cleanup...");
 				Program.Log.Fine("Deleted " +
-					Program.Database.Delete<Session>("`expires` < UNIX_TIMESTAMP()") +
+					GetDatabase().Delete<Session>("`expires` < UNIX_TIMESTAMP()") +
 					" expired sessions."
 				);
 				// Set the cleanup timestamp 2 hours into the future
@@ -71,14 +122,14 @@ namespace API
 			var session = Sessions.FirstOrDefault(x => x.Id == sessionId);
 			if (session == null)
 			{
-				session = Program.Database.Select<Session>($"`id` = '{sessionId}'").FirstOrDefault();
+				session = GetDatabase().Select<Session>($"`id` = '{sessionId}'").FirstOrDefault();
 				if (session == null || session.User == null) return session;
 				Sessions.Add(session);
 			}
 			// Remove session if expired
 			if (DateTimeOffset.FromUnixTimeSeconds(session.Expires) <= DateTime.UtcNow)
 			{
-				Program.Database.Delete(session);
+				GetDatabase().Delete(session);
 				Sessions.Remove(session);
 				return null;
 			}
@@ -95,7 +146,7 @@ namespace API
 		public static Session CreateSession(int userId)
 		{
 			// Get the user
-			var user = Program.Database.Select<User>($"`id` = {userId}").FirstOrDefault();
+			var user = GetDatabase().Select<User>($"`id` = {userId}").FirstOrDefault();
 
 			// Throw exception if the user does not exist
 			if (user == null) throw new ArgumentException("No such user with id " + userId);
@@ -124,7 +175,7 @@ namespace API
 			};
 
 			// Upload the new session
-			Program.Database.Insert(session);
+			GetDatabase().Insert(session);
 
 			// Return the new session
 			return session;
@@ -151,7 +202,7 @@ namespace API
 		/// <param name="iv">The initalization vector of the encoded message.</param>
 		/// <returns>The decoded message.</returns>
 		public static byte[] AESDecrypt(string sessionId, byte[] encoded, byte[] iv)
-			=> AESDecrypt(GetSession(sessionId), encoded, iv);
+			=> AESDecrypt(GetSession(sessionId) ?? throw new ArgumentException("The specified session Id is invalid."), encoded, iv);
 		/// <summary>
 		/// Uses the <see cref="Aes"/> cipher and decrypts an encoded message from a session
 		/// using the specified initialization vector.
@@ -190,7 +241,7 @@ namespace API
 		/// <param name="iv">A byte array of exactly 32 bytes to which the initialization vector will be copied.</param>
 		/// <returns>The encoded data.</returns>
 		public static byte[] AESEncrypt(string sessionId, byte[] data, out byte[] iv)
-			=> AESEncrypt(GetSession(sessionId), data, out iv);
+			=> AESEncrypt(GetSession(sessionId) ?? throw new ArgumentException("The specified session Id is invalid."), data, out iv);
 		/// <summary>
 		/// Uses the <see cref="Aes"/> cipher and encrypts the data using the specified key.
 		/// </summary>

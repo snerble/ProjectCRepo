@@ -34,7 +34,7 @@ namespace API.HTTP.Endpoints
 				// Skip if the session is null or does not have a userid
 				if (CurrentSession == null || !CurrentSession.User.HasValue) return null;
 				// Set the cache with a user from the database if it isn't already set
-				if (_CurrentUser == null) _CurrentUser = Program.Database.Select<User>($"`id` = {CurrentSession.User}").FirstOrDefault();
+				if (_CurrentUser == null) _CurrentUser = Database.Select<User>($"`id` = {CurrentSession.User}").FirstOrDefault();
 				// Return the cache
 				return _CurrentUser;
 			}
@@ -44,6 +44,10 @@ namespace API.HTTP.Endpoints
 		/// Gets the <see cref="Session"/> instance associated with the <see cref="Endpoint.Request"/>.
 		/// </summary>
 		protected Session CurrentSession { get; private set; }
+		/// <summary>
+		/// Gets the <see cref="AppDatabase"/> of the current thread.
+		/// </summary>
+		protected AppDatabase Database => Utils.GetDatabase();
 
 		/// <summary>
 		/// Extracts the parameters and JSON from the request object and calls the specified HTTP method function.

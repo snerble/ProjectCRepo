@@ -20,7 +20,7 @@ namespace API.HTTP.Filters
 			if (session != null && session.User.HasValue)
 			{
 				// If a user was found and it's accesslevel is admin, allow the endpoint parsing to continue
-				var user = Program.Database.Select<User>($"`id` = {session.User}").FirstOrDefault();
+				var user = Utils.GetDatabase().Select<User>($"`id` = {session.User}").FirstOrDefault();
 				if (user != null && user.AccessLevel == AccessLevel.Admin)
 					return;
 			}
