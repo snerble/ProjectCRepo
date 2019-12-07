@@ -1,5 +1,6 @@
 ﻿using API.Database;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 
 namespace API.HTTP.Endpoints.ROOT
@@ -14,8 +15,8 @@ namespace API.HTTP.Endpoints.ROOT
         {
 			// Validate the presence of all required parameters
 			if (!ValidateParams(parameters,
-					("username", null),
-					("password", null)))
+					("username", x => x.Any()), // Username may not be empty
+					("password", x => x.Length == 128))) // Password must be 128 characters long (thus must be hashed with sha512)
 			{
 				// Send a 400 Bad Request if any required parameters are missing
 				Server.SendError(HttpStatusCode.BadRequest);
@@ -25,6 +26,14 @@ namespace API.HTTP.Endpoints.ROOT
 			// Get all required parameters
 			var username = parameters["username"];
 			var password = parameters["password"];
+
+			// Check if the user does not already exist
+			if (Program.Database.Select<User>($"`username` = '{username}'").Any())
+			{
+				// Send 409 Conflict status code to indicate a duplicate
+				Server.SendError(HttpStatusCode.Conflict);
+				return;
+			}
 
 			// Create the new user object
 			var user = new User() { Username = username, Password = password };
