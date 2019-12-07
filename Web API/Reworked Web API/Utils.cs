@@ -40,6 +40,11 @@ namespace API
 		/// Cache of active sessions handled by the server to save on database queries.
 		/// </summary>
 		public static List<Session> Sessions { get; } = new List<Session>();
+		/// <summary>
+		/// A timestamp in unix time marking when the next call to <see cref="GetSession(string)"/>
+		/// should perform a cleanup query.
+		/// </summary>
+		private static DateTime SessionCleanup = DateTime.UnixEpoch;
 
 #nullable enable
 		/// <summary>
@@ -49,6 +54,18 @@ namespace API
 		public static Session? GetSession(string sessionId)
 		{
 			if (sessionId is null) throw new ArgumentNullException(nameof(sessionId));
+
+			// Run cleanup query if the cleanup timestamp has been passed
+			if (SessionCleanup < DateTime.UtcNow)
+			{
+				Program.Log.Fine("Running session cleanup...");
+				Program.Log.Fine("Deleted " +
+					Program.Database.Delete<Session>("`expires` < UNIX_TIMESTAMP()") +
+					" expired sessions."
+				);
+				// Set the cleanup timestamp 2 hours into the future
+				SessionCleanup = SessionCleanup.AddHours(2);
+			}
 
 			// Get session from cache or database
 			var session = Sessions.FirstOrDefault(x => x.Id == sessionId);
