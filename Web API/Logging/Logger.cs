@@ -227,11 +227,17 @@ namespace Logging
 			foreach (var logger in Children) logger.Write(level, message, stack, includeStackTrace);
 			if (LogLevel.Value < level.Value) return;
 
+			// Get the formatted log record
+			var record = GetRecord(level, message?.ToString(), stack, includeStackTrace);
+
+			// Always write the record to the Trace class
+			System.Diagnostics.Trace.WriteLine(record);
+			
+			// Write the log record to every stream
 			foreach (var stream in OutputStreams)
 			{
 				lock (stream)
 				{
-					var record = GetRecord(level, message?.ToString(), stack, includeStackTrace);
 					if (UseConsoleHighlighting && stream == Console.Out) WriteConsoleRecord(record);
 					else stream.WriteLine(record);
 					stream.Flush();
