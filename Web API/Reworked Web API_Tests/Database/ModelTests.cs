@@ -32,10 +32,6 @@ namespace API.Database.Tests
 		/// Gets the <see cref="AppDatabase"/> instance used by the unit tests.
 		/// </summary>
 		public static AppDatabase Database { get; private set; }
-		/// <summary>
-		/// Gets a <see cref="DateTimeOffset"/> instance specifying when the unit tests started.
-		/// </summary>
-		public static DateTimeOffset Begin { get; } = DateTimeOffset.UtcNow;
 
 		/// <summary>
 		/// Gets the <see cref="MySqlTransaction"/> instance that is used for all unit tests.
