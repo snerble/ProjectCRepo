@@ -25,7 +25,7 @@ namespace API.HTTP.Endpoints
 	public abstract class JsonEndpoint : Endpoint
 	{
 		/// <summary>
-		/// Gets the <see cref="User"/> instance that is requesting this endpoint.
+		/// Gets the <see cref="User"/> instance associated with the session that is requesting this endpoint.
 		/// </summary>
 		protected User CurrentUser
 		{

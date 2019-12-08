@@ -21,7 +21,7 @@ namespace API.HTTP.Endpoints
 	public abstract class HTMLEndpoint : Endpoint
 	{
 		/// <summary>
-		/// Gets the <see cref="User"/> instance that is requesting this endpoint.
+		/// Gets the <see cref="User"/> instance associated with the session that is requesting this endpoint.
 		/// </summary>
 		protected User CurrentUser
 		{
