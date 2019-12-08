@@ -12,7 +12,7 @@ namespace API.Config
 	/// Custom class implementing <see cref="ConfigBase"/>.
 	/// Provides the configuration features nescessary for the Web API project.
 	/// </summary>
-	sealed class AppConfig : ConfigBase
+	public sealed class AppConfig : ConfigBase
 	{
 		/// <summary>
 		/// Gets whether this <see cref="AppConfig"/> instance reloads it's content when it's file is changed.

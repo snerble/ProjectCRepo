@@ -16,7 +16,7 @@ using System.Threading;
 
 namespace API
 {
-	class Program
+	public class Program
 	{
 		/// <summary>
 		/// True when the program is running in debug mode. False otherwise.
@@ -30,8 +30,8 @@ namespace API
 			;
 
 		public static Logger Log = new Logger(Level.ALL, "Global Logger", Console.Out) { UseConsoleHighlighting = false };
-		public static AppConfig Config;
 		public static AppDatabase Database;
+		public static AppConfig Config;
 
 		private static readonly List<Server> Servers = new List<Server>();
 		private static Listener listener;
