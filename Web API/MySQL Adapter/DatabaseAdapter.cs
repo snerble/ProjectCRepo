@@ -133,7 +133,7 @@ namespace MySQL
 				query.Append($"UPDATE `{tableName}` SET ");
 				query.Append(string.Join(",", columns.Keys.Select(x => $"`{x.Name}` = @{x.Name}_{i}")));
 				query.Append(" WHERE ");
-				query.Append(string.Join(" AND ", columns.Keys.Select(x => $"`{x.Name}` = @{x.Name}_c{i}")));
+				query.Append(string.Join(" AND ", columns.Select(x => $"`{x.Key.Name}` {(x.Value.GetValue(item) == null ? "IS" : "=")} @{x.Key.Name}_c{i}")));
 				query.Append(';');
 				i++;
 			}
@@ -149,7 +149,6 @@ namespace MySQL
 				}
 				i++;
 			}
-
 			return command;
 		}
 
@@ -283,35 +282,50 @@ namespace MySQL
 
 			// Run command and get the scalar
 			command.ExecuteNonQuery();
-			if (discardIndex) return -1;
 			var scalar = command.LastInsertedId;
-			if (scalar == -1) return -1; // skip other things if it is -1
 
-			// Get the auto increment property/column
-			var columns = Utils.GetAllColumns<T>().ToDictionary(x => Utils.GetColumnData(x));
-			var autoIncrement = Utils.GetColumns<AutoIncrementAttribute>(columns.Values).FirstOrDefault();
-			if (autoIncrement != null)
+			// Try-Finally block so we can cache stuff in the finally block
+			try
 			{
-				var autoIncType = Nullable.GetUnderlyingType(autoIncrement.PropertyType) ?? autoIncrement.PropertyType;
-				long i = 0;
-				// Assign the insert index to every item (if their auto increment value is null)
-				foreach (var item in items)
+				// skip other things if it is -1 or if we want to discard the new index
+				if (scalar == -1 || discardIndex) return -1;
+
+				// Get the auto increment property/column
+				var columns = Utils.GetAllColumns<T>().ToDictionary(x => Utils.GetColumnData(x));
+				var autoIncrement = Utils.GetColumns<AutoIncrementAttribute>(columns.Values).FirstOrDefault();
+				if (autoIncrement != null)
 				{
-					// Set the autoIncrement column to the existing value, or scalar + i if it is null
-					object oldValue = autoIncrement.GetValue(item);
-					if (oldValue != null) // skip if the auto increment was already assigned
+					var autoIncType = Nullable.GetUnderlyingType(autoIncrement.PropertyType) ?? autoIncrement.PropertyType;
+					long i = 0;
+					// Assign the insert index to every item (if their auto increment value is null)
+					foreach (var item in items)
 					{
-						var oldValueLong = Convert.ToInt64(oldValue);
-						if (oldValueLong > scalar + i)
-							i = scalar - oldValueLong;
-						continue;
+						// Set the autoIncrement column to the existing value, or scalar + i if it is null
+						object oldValue = autoIncrement.GetValue(item);
+						if (oldValue != null) // if the auto increment was already assigned
+						{
+							var oldValueLong = Convert.ToInt64(oldValue);
+							// if the value is larger than 0, skip assigning the auto increment value
+							if (oldValueLong > 0)
+							{
+								if (oldValueLong > scalar + i)
+									i = scalar - oldValueLong;
+								continue;
+							}
+						}
+						// Convert the scalar to the type of the auto increment property and set it
+						autoIncrement.SetValue(item, Convert.ChangeType(scalar + i, autoIncType));
+						i++;
 					}
-					// Convert the scalar to the type of the auto increment property and set it
-					autoIncrement.SetValue(item, Convert.ChangeType(scalar + i, autoIncType));
-					i++;
 				}
+				return scalar;
 			}
-			return scalar;
+			finally
+			{
+				// Cache all inserted items
+				foreach (var item in items)
+					item.Cache();
+			}
 		}
 
 		/// <summary>
@@ -355,7 +369,13 @@ namespace MySQL
 			using var command = GetUpdate(items);
 			// If the command is uninitialized, return 0
 			if (command.CommandText.Length == 0) return 0;
-			return command.ExecuteNonQuery();
+			// Run the query
+			var updated = command.ExecuteNonQuery();
+			// Reset the itemAdapter's internal cache
+			foreach (var item in items)
+				item.Cache();
+			// Return the amount of updated rows
+			return updated;
 		}
 
 		/// <summary>
