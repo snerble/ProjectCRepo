@@ -78,7 +78,7 @@ namespace MySQL.Modeling
 		}
 
 		[IgnoreProperty]
-		public bool IsChanged => clone == null ? false : !Equals(clone);
+		internal bool IsChanged => clone == null ? false : !Equals(clone);
 		internal ItemAdapter clone = null;
 		/// <summary>
 		/// Stores a clone of this instance internally for use in the update methods of <see cref="DatabaseAdapter"/>.
