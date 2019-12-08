@@ -16,7 +16,7 @@ namespace API
 	/// <summary>
 	/// A static class containing various static utilities for this project.
 	/// </summary>
-	static class Utils
+	public static class Utils
 	{
 		/// <summary>
 		/// A dictionary containing instances of <see cref="AppDatabase"/> mapped to a <see cref="Thread"/> ID.
