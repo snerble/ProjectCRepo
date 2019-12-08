@@ -230,17 +230,20 @@ namespace Logging
 			// Get the formatted log record
 			var record = GetRecord(level, message?.ToString(), stack, includeStackTrace);
 
-			// Always write the record to the Trace class
-			System.Diagnostics.Trace.WriteLine(record);
-			
-			// Write the log record to every stream
-			foreach (var stream in OutputStreams)
+			// Write the record to the the Trace class if no outputstreams are available
+			if (!OutputStreams.Any())
+				System.Diagnostics.Trace.WriteLine(record);
+			else
 			{
-				lock (stream)
+				// Write the log record to every stream
+				foreach (var stream in OutputStreams)
 				{
-					if (UseConsoleHighlighting && stream == Console.Out) WriteConsoleRecord(record);
-					else stream.WriteLine(record);
-					stream.Flush();
+					lock (stream)
+					{
+						if (UseConsoleHighlighting && stream == Console.Out) WriteConsoleRecord(record);
+						else stream.WriteLine(record);
+						stream.Flush();
+					}
 				}
 			}
 		}
