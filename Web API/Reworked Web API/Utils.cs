@@ -310,26 +310,26 @@ namespace API
 		/// </summary>
 		/// <param name="length"></param>
 		/// <param name="decimals">The amount of fractional digits to include in the output</param>
-		/// <param name="asDecimal">If true, formats the size as decimal rather than a power of 2.</param>
-		public static string FormatDataLength(long length, int decimals = 2, bool asDecimal = false)
+		/// <param name="asBinaryUnit">If true, formats the size as a binary unit rather than as an SI unit.</param>
+		public static string FormatDataLength(long length, int decimals = 2, bool asBinaryUnit = true)
 		{
 			var magnitude = 0;
 			for (; magnitude <= 8; magnitude++)
-				if ((asDecimal ? Math.Pow(1000, magnitude + 1) : Math.Pow(2, 10 * (magnitude + 1))) >= length)
+				if ((asBinaryUnit ? Math.Pow(1000, magnitude + 1) : Math.Pow(2, 10 * (magnitude + 1))) >= length)
 					break;
 			var unit = (magnitude) switch
 			{
 				0 => "bytes",
-				1 => asDecimal ? "kB" : "KiB",
-				2 => asDecimal ? "MB" : "MiB",
-				3 => asDecimal ? "GB" : "GiB",
-				4 => asDecimal ? "TB" : "TiB",
-				5 => asDecimal ? "PB" : "PiB",
-				6 => asDecimal ? "EB" : "EiB",
-				7 => asDecimal ? "ZB" : "ZiB",
-				_ => asDecimal ? "YB" : "YiB"
+				1 => asBinaryUnit ? "KiB" : "kB",
+				2 => asBinaryUnit ? "MiB" : "MB",
+				3 => asBinaryUnit ? "GiB" : "GB",
+				4 => asBinaryUnit ? "TiB" : "TB",
+				5 => asBinaryUnit ? "PiB" : "PB",
+				6 => asBinaryUnit ? "EiB" : "EB",
+				7 => asBinaryUnit ? "ZiB" : "ZB",
+				_ => asBinaryUnit ? "YiB" : "YB"
 			};
-			return $"{Math.Round(length / (asDecimal ? Math.Pow(1000, magnitude) : Math.Pow(2, 10 * magnitude)), decimals)} {unit}";
+			return $"{Math.Round(length / (asBinaryUnit ? Math.Pow(2, 10 * magnitude) : Math.Pow(1000, magnitude)), decimals)} {unit}";
 		}
 
 		/// <summary>
