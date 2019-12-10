@@ -105,45 +105,6 @@ namespace API.Database.Tests
 			Log.Info("Ping: " + Utils.FormatTimer(timer));
 		}
 
-		#region Sample getters
-		/// <summary>
-		/// Returns an array of <see cref="User"/> instances with varying data.
-		/// </summary>
-		private User[] GetSampleUsers()
-		{
-			// Create an array of users
-			var users = new User[]
-			{
-				new User() { Username = "UnitTest_User", Password = "UnitTest_SamplePassword" },
-				new User() { Username = "UnitTest_User_Admin", Password = "UnitTest_SamplePassword", AccessLevel = AccessLevel.Admin },
-				new User() { Username = "UnitTest_User_Unicode_" + UnicodeSample, Password = UnicodeSample },
-				new User() { Username = "UnitTest_User_Emoji_" + EmojiSample, Password = EmojiSample },
-			};
-			// Hash all passwords
-			foreach (var user in users)
-				user.Password = user.GetPasswordHash();
-			return users;
-		}
-		/// <summary>
-		/// Returns an array of <see cref="Group"/> instances with varying data.
-		/// </summary>
-		private Group[] GetSampleGroups()
-		{
-			// Insert a user to satisfy the Creator foreign key and get it's new id, if it isn't already set
-			if (ForeignUserId == -1)
-				ForeignUserId = (int)Database.Insert(new User() { Username = "UnitTest_GroupCreator" });
-
-			// Return a new array of groups
-			return new Group[]
-			{
-				new Group() { Creator = ForeignUserId, Name = "UnitTest_Group", Description = "UnitTest_SampleDescription" },
-				new Group() { Creator = ForeignUserId, Name = "UnitTest_Group_NullDescription", Description = null },
-				new Group() { Creator = ForeignUserId, Name = "UnitTest_Group_Unicode_" + UnicodeSample, Description = UnicodeSample },
-				new Group() { Creator = ForeignUserId, Name = "UnitTest_Group_Emoji_" + EmojiSample, Description = EmojiSample },
-			};
-		}
-		#endregion
-
 		/// <summary>
 		/// Gets or sets the id of the <see cref="User"/> that is used to satisfy all foreign keys
 		/// to the users table.
@@ -240,7 +201,7 @@ namespace API.Database.Tests
 					{ // Set the expiration based on the index (each item expires 1 hour after the prior)
 						x.Expires = DateTimeOffset.Now.ToUnixTimeSeconds() + 3600 * (i + 1);
 						return x;
-					}).ToArray();
+					}).OrderBy(x => x).ToArray();
 				case nameof(Resource):
 					return new[] {
 					new Resource() { Filename = "UnitTest_Resource", Data = new byte[0], Hash = "d41d8cd98f00b204e9800998ecf8427e" },
@@ -253,15 +214,17 @@ namespace API.Database.Tests
 			};
 		}
 
+		#region Generic Tests
 		[TestMethod]
-		[Description("Tests if various ItemAdapter objects can successfully be updated.")]
+		[TestCategory("Generic")]
+		[Description("Tests if various ItemAdapter samples can successfully be updated.")]
 		[DataRow(typeof(User), DisplayName = nameof(User))]
 		[DataRow(typeof(Group), DisplayName = nameof(Group))]
 		[DataRow(typeof(Task), DisplayName = nameof(Task))]
 		[DataRow(typeof(Comment), DisplayName = nameof(Comment))]
 		[DataRow(typeof(Session), DisplayName = nameof(Session))]
 		[DataRow(typeof(Resource), DisplayName = nameof(Resource))]
-		public void Generic_Update(Type type)
+		public void Update(Type type)
 		{
 			// Assert that the type is an ItemAdapter
 			Assert.IsTrue(type.IsSubclassOf(typeof(ItemAdapter)), $"The type '{type.FullName}' does not extend '{typeof(ItemAdapter).FullName}'.");
@@ -300,8 +263,6 @@ namespace API.Database.Tests
 				_ => null
 			};
 
-			Func<User, bool, long> func = Database.Insert<User>;
-
 			// Assert that the action was set
 			Assert.IsNotNull(updateAction, $"The test for type '{type.FullName}' is not implemented.");
 
@@ -328,191 +289,89 @@ namespace API.Database.Tests
 		}
 
 		[TestMethod]
+		[TestCategory("Generic")]
+		[Description("Tests if various ItemAdapter samples can successfully be inserted into the database.")]
 		[DataRow(typeof(User), DisplayName = nameof(User))]
 		[DataRow(typeof(Group), DisplayName = nameof(Group))]
 		[DataRow(typeof(Task), DisplayName = nameof(Task))]
 		[DataRow(typeof(Comment), DisplayName = nameof(Comment))]
 		[DataRow(typeof(Session), DisplayName = nameof(Session))]
 		[DataRow(typeof(Resource), DisplayName = nameof(Resource))]
-		public void Generic_Insert(Type type)
+		public void Insert(Type type)
 		{
+			// Assert that the type is an ItemAdapter
+			Assert.IsTrue(type.IsSubclassOf(typeof(ItemAdapter)), $"The type '{type.FullName}' does not extend '{typeof(ItemAdapter).FullName}'.");
+
 			// Get a sample and check if it can be inserted without throwing MySqlException
 			var sample = GetSample(type);
-			try
+			InvokeGenericMethod<long>((Func<ICollection<ItemAdapter>, bool, long>)Database.Insert, type, sample, false);
+		}
+
+		[TestMethod]
+		[TestCategory("Generic")]
+		[Description("Tests if various ItemAdapter samples can successfully be selected from the database.")]
+		[DataRow(typeof(User), DisplayName = nameof(User))]
+		[DataRow(typeof(Group), DisplayName = nameof(Group))]
+		[DataRow(typeof(Task), DisplayName = nameof(Task))]
+		[DataRow(typeof(Comment), DisplayName = nameof(Comment))]
+		[DataRow(typeof(Session), DisplayName = nameof(Session))]
+		[DataRow(typeof(Resource), DisplayName = nameof(Resource))]
+		public void Select(Type type)
+		{
+			// Assert that the type is an ItemAdapter
+			Assert.IsTrue(type.IsSubclassOf(typeof(ItemAdapter)), $"The type '{type.FullName}' does not extend '{typeof(ItemAdapter).FullName}'.");
+
+			Func<dynamic, string> getCondition = type.Name switch
 			{
-				InvokeGenericMethod<long>((Func<ICollection<ItemAdapter>, bool, long>)Database.Insert, type, sample, false);
-			}
-			catch (MySqlException)
-			{
-				Assert.Fail("The insert query failed to upload the sample.");
-			}
-		}
+				var t when t == nameof(User)
+						|| t == nameof(Group)
+						|| t == nameof(Task)
+						|| t == nameof(Comment)
+						|| t == nameof(Resource)
+					=> x => $"`id` = {x.Id}",
+				nameof(Session) => x => $"`id` = '{x.Id}'",
+				_ => null
+			};
 
-		#region User Model Tests
-		[TestMethod]
-		[Priority(0)]
-		[TestCategory("User Table")]
-		[Description("Tests if a set of sample users can be uploaded into the database.")]
-		public void User_Insert()
-		{
-			// Create sample users
-			var user_noId = new User() { Username = "UnitTest_User_NoId" }; // Auto increment id replacement test user
-			var user_presetId = new User() { Id = 1, Username = "UnitTest_User_PresetId" }; // Auto increment predefined id test user
-			var user_hashTest = new User() { Username = "UnitTest_User_HashTest", Password = "HashTest" }; // Password hashing test user
-			user_hashTest.Password = user_hashTest.GetPasswordHash();
+			// Assert that the condition getter was set
+			Assert.IsNotNull(getCondition, $"The test for type '{type.FullName}' is not implemented.");
 
-			// Check if the hashing method produces the expected result
-			Assert.AreEqual(user_hashTest.Password,
-				   "cd7af020b76daf1f42f3cf9d0046293dcb17da9ee95b111bb0550e9906f2e4d5b820f18b74fdb19673585a22e17752459718d91dc87ae21a63d370bfa7ab3d9b"
-			);
+			// Get and insert the sample
+			var sample = GetSample(type);
+			InvokeGenericMethod<long>((Func<ICollection<ItemAdapter>, bool, long>)Database.Insert, type, sample, false);
 
-			Database.Insert(GetSampleUsers()); // Test the sample can be inserted
-			Database.Insert(user_presetId); // Insert to keep the predefined primary key value
-			Database.Insert(user_noId); // Insert to replace the primary key with a new value
+			// Select the sample using a condition created from the condition getter
+			var selected = InvokeGenericMethod<IEnumerable<ItemAdapter>>(
+				(Func<string, IEnumerable<ItemAdapter>>)Database.Select<ItemAdapter>,
+				type,
+				string.Join(" OR ", sample.Select(x => getCondition(x)))).ToArray();
 
-			// Id may no longer be null after inserting
-			Assert.IsNotNull(user_noId.Id);
-			// Check if the user with the preset id was found in the database
-			Assert.AreEqual(Database.Select<User>("`id` = 1").FirstOrDefault(), user_presetId);
+			Assert.AreEqual(sample.Length, selected.Length);
+			Assert.IsTrue(selected.SequenceEqual(sample), "The selected data does not match the sample.");
 		}
 
 		[TestMethod]
-		[Priority(0)]
-		[TestCategory("User Table")]
-		[Description("Tests if a set of sample users can successfully be selected from the database.")]
-		public void User_Select()
+		[TestCategory("Generic")]
+		[Description("Tests if various ItemAdapter samples can successfully be deleted from the database.")]
+		[DataRow(typeof(User), DisplayName = nameof(User))]
+		[DataRow(typeof(Group), DisplayName = nameof(Group))]
+		[DataRow(typeof(Task), DisplayName = nameof(Task))]
+		[DataRow(typeof(Comment), DisplayName = nameof(Comment))]
+		[DataRow(typeof(Session), DisplayName = nameof(Session))]
+		[DataRow(typeof(Resource), DisplayName = nameof(Resource))]
+		public void Delete(Type type)
 		{
-			// Get sample users
-			var users = GetSampleUsers();
-			// Insert the sample
-			Database.Insert(users);
-			// Select the new users from the database
-			var selectedUsers = Database.Select<User>(string.Join(" OR ", users.Select(x => $"`id` = {x.Id}"))).ToArray();
-
-			// Assert that the selected users match the sample array
-			Assert.IsTrue(selectedUsers.Length == users.Length);
-			foreach (var (selectedUser, user) in selectedUsers.Zip(users))
-				Assert.AreEqual(selectedUser, user);
-		}
-
-		[TestMethod]
-		[Priority(0)]
-		[TestCategory("User Table")]
-		[Description("Tests if a set of sample users can be deleted from the database.")]
-		public void User_Delete()
-		{
-			// Get sample users
-			var users = GetSampleUsers();
-			// Insert the sample
-			Database.Insert(users);
+			// Get and insert the sample
+			var sample = GetSample(type);
+			InvokeGenericMethod<long>((Func<ICollection<ItemAdapter>, bool, long>)Database.Insert, type, sample, false);
 
 			// Delete the sample and get the amount of deleted users
-			long deleted = Database.Delete(users);
+			long deleted = InvokeGenericMethod<long>((Func<ICollection<ItemAdapter>, long>)Database.Delete, type, new[] { sample });
 
-			// Check if the amount of deleted users is equal to the sample size
-			Assert.AreEqual(users.Length, deleted);
-		}
-
-		[TestMethod]
-		[Priority(0)]
-		[TestCategory("User Table")]
-		[Description("Tests if set of sample users' data can be swapped and updated.")]
-		public void User_Update()
-		{
-			// Get sample users
-			var users = GetSampleUsers();
-			var users_copy = users.Select(x => x.Clone() as User).ToArray();
-			// Insert the sample
-			Database.Insert(users);
-
-			// Counter for how many users were changed
-			long changed = 0;
-			// Swap the usernames and passwords
-			for (int i = 0; i < users.Length; i++)
-			{
-				// Skip users that are equal to one another
-				if (users[i] == users[^(i + 1)]) continue;
-				changed++;
-				users[i].Username = users_copy[^(i + 1)].Username;
-				users[i].Password = users_copy[^(i + 1)].Password;
-				users[i].AccessLevel = users_copy[^(i + 1)].AccessLevel;
-			}
-			// Update all users
-			long updated = Database.Update(users);
-
-			// Assert that the amount of updated rows is equal to the amount of changed sample users
-			Assert.AreEqual(changed, updated);
+			Assert.AreEqual(sample.Length, deleted, "The query did not delete the expected amount of rows.");
 		}
 		#endregion
 
-		#region Group Model Tests
-		[TestMethod]
-		[Priority(1)]
-		[TestCategory("Group Table")]
-		[Description("Tests if a set of sample groups can be uploaded into the database.")]
-		public void Group_Insert()
-		{
-			// Get the standard sample
-			var sample = GetSampleGroups();
-
-			// Create sample to test the auto increment column
-			var group_noId = new Group() { Creator = ForeignUserId, Name = "UnitTest_Group_NoId" }; // Auto increment id replacement test
-			var group_presetId = new Group() { Creator = ForeignUserId, Id = 1, Name = "UnitTest_Group_PresetId" }; // Auto increment predefined id test
-
-			Database.Insert(sample); // Test the sample can be inserted
-			Database.Insert(group_presetId); // Insert to keep the predefined primary key value
-			Database.Insert(group_noId); // Insert to replace the primary key with a new value
-
-			Assert.IsNotNull(group_noId.Id, "The id was not replaced during after query.");
-			Assert.AreEqual(Database.Select<Group>("`id` = 1").FirstOrDefault(), group_presetId,
-				"The item with the preset id could not be found in the database.");
-		}
-
-		[TestMethod]
-		[Priority(1)]
-		[TestCategory("Group Table")]
-		[Description("Tests if a set of sample groups can successfully be selected from the database.")]
-		public void Group_Select()
-		{
-			// Get sample groups
-			var groups = GetSampleGroups();
-			// Insert the sample
-			Database.Insert(groups);
-			// Select the new users from the database
-			var selectedGroups = Database.Select<Group>(string.Join(" OR ", groups.Select(x => $"`id` = {x.Id}"))).ToArray();
-
-			Assert.IsTrue(selectedGroups.SequenceEqual(groups), "The selected data does not match the sample.");
-		}
-
-		[TestMethod]
-		[Priority(1)]
-		[TestCategory("Group Table")]
-		[Description("Tests if a set of sample groups can be deleted from the database.")]
-		public void Group_Delete()
-		{
-			// Insert the sample
-			var groups = GetSampleGroups();
-			Database.Insert(groups);
-
-			// Delete the sample and get the amount of deleted users
-			long deleted = Database.Delete(groups);
-
-			Assert.AreEqual(groups.Length, deleted, "The query did not delete the expected amount of rows.");
-		}
-		#endregion
-
-		/// <summary>
-		/// Invokes a generic function with the specified <see cref="Type"/> and returns the result.
-		/// </summary>
-		/// <param name="func">The generic function to invoke.</param>
-		/// <param name="type">The type to use as generic type parameter.</param>
-		private static T InvokeGenericMethod<T>(Func<T> func, Type type)
-		{
-			// Cast the generic type to a specific type
-			var concreteMethod = func.Method.GetGenericMethodDefinition().MakeGenericMethod(new[] { type });
-			// Invoke and return the new concretely typed method
-			return (T)concreteMethod.Invoke(func.Target, null);
-		}
 		/// <summary>
 		/// Invokes a generic function with the specified <see cref="Type"/> and parameter and
 		/// returns the result.
