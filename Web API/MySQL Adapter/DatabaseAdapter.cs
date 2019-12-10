@@ -224,7 +224,7 @@ namespace MySQL
 		/// Returns all entries of the given data model in an <see cref="IEnumerable{T}"/>.
 		/// </summary>
 		/// <typeparam name="T">A subclass of <see cref="ItemAdapter"/>.</typeparam>
-		public IEnumerable<T> Select<T>(string condition = null) where T : ItemAdapter, new()
+		public IEnumerable<T> Select<T>(string condition = null) where T : ItemAdapter
 		{
 			using var command = GetSelect<T>(condition);
 			using var reader = command.ExecuteReader();
@@ -240,7 +240,8 @@ namespace MySQL
 				// Loop through items
 				while (reader.Read())
 				{
-					T outObj = new T();
+					T outObj = Activator.CreateInstance(typeof(T)) as T;
+					//T outObj = new T();
 					for (int i = 0; i < reader.FieldCount; i++)
 					{
 						var property = columns[fields[i]];
