@@ -133,7 +133,7 @@ namespace MySQL
 				query.Append($"UPDATE `{tableName}` SET ");
 				query.Append(string.Join(",", columns.Keys.Select(x => $"`{x.Name}` = @{x.Name}_{i}")));
 				query.Append(" WHERE ");
-				query.Append(string.Join(" AND ", columns.Select(x => $"`{x.Key.Name}` {(x.Value.GetValue(item) == null ? "IS" : "=")} @{x.Key.Name}_c{i}")));
+				query.Append(string.Join(" AND ", columns.Select(x => $"`{x.Key.Name}` {(x.Value.GetValue(item.clone) == null ? "IS" : "=")} @{x.Key.Name}_c{i}")));
 				query.Append(';');
 				i++;
 			}
