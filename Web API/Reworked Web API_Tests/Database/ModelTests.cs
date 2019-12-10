@@ -125,6 +125,13 @@ namespace API.Database.Tests
 		/// Returns an array of <see cref="ItemAdapter"/> instances of the specified type, whose values
 		/// mustn't cause issues for it's unit tests.
 		/// </summary>
+		/// <typeparam name="T">A type extending <see cref="ItemAdapter"/>.</typeparam>
+		private T[] GetSample<T>() where T : ItemAdapter
+			=> GetSample(typeof(T)) as T[];
+		/// <summary>
+		/// Returns an array of <see cref="ItemAdapter"/> instances of the specified type, whose values
+		/// mustn't cause issues for it's unit tests.
+		/// </summary>
 		/// <param name="type">A <see cref="Type"/> object extending <see cref="ItemAdapter"/>.</param>
 		private ItemAdapter[] GetSample(Type type)
 		{
