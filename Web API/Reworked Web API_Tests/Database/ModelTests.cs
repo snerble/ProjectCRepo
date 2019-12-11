@@ -48,7 +48,6 @@ namespace API.Database.Tests
 		/// </summary>
 		public static string EmojiSample { get; } = "🤔🤔🤔🤔🤔🤔🤔🤔🤔🤔";
 
-
 		/// <summary>
 		/// Initializes resources used across all unit tests.
 		/// </summary>
