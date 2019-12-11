@@ -26,25 +26,13 @@ namespace API.HTTP.Endpoints
 	public abstract class JsonEndpoint : Endpoint
 	{
 		/// <summary>
-		/// Gets the <see cref="User"/> instance associated with the session that is requesting this endpoint.
+		/// Gets or sets the <see cref="User"/> instance associated with the session that is requesting this endpoint.
 		/// </summary>
-		protected User CurrentUser
-		{
-			get
-			{
-				// Skip if the session is null or does not have a userid
-				if (CurrentSession == null || !CurrentSession.User.HasValue) return null;
-				// Set the cache with a user from the database if it isn't already set
-				if (_CurrentUser == null) _CurrentUser = Database.Select<User>($"`id` = {CurrentSession.User}").FirstOrDefault();
-				// Return the cache
-				return _CurrentUser;
-			}
-		}
-		private User _CurrentUser;
+		public User CurrentUser { get; set; }
 		/// <summary>
-		/// Gets the <see cref="Session"/> instance associated with the <see cref="Endpoint.Request"/>.
+		/// Gets or sets the <see cref="Session"/> instance associated with the <see cref="Endpoint.Request"/>.
 		/// </summary>
-		protected Session CurrentSession { get; private set; }
+		public Session CurrentSession { get; set; }
 		/// <summary>
 		/// Gets the <see cref="AppDatabase"/> of the current thread.
 		/// </summary>

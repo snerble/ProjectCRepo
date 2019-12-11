@@ -41,6 +41,12 @@ namespace API
 		public static ReadOnlyCollection<ErrorPageAttribute> ErrorPages { get; } = Array.AsReadOnly(
 				Assembly.GetExecutingAssembly().GetCustomAttributes<ErrorPageAttribute>() as ErrorPageAttribute[]
 			);
+		/// <summary>
+		/// Gets an array of all <see cref="RequiresLoginAttribute"/>s listed in the server properties.
+		/// </summary>
+		public static ReadOnlyCollection<RequiresLoginAttribute> LoginRequirements { get; } = Array.AsReadOnly(
+				Assembly.GetExecutingAssembly().GetCustomAttributes<RequiresLoginAttribute>() as RequiresLoginAttribute[]
+			);
 
 		/// <summary>
 		/// Cache of active sessions handled by the server to save on database queries.
