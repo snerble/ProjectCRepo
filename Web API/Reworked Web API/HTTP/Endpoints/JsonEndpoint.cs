@@ -8,6 +8,7 @@ using System.Text;
 using Newtonsoft.Json;
 using System.Reflection;
 using API.Database;
+using API.Attributes;
 
 namespace API.HTTP.Endpoints
 {

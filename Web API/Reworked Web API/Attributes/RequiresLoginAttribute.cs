@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace API.HTTP.Endpoints
+namespace API.Attributes
 {
 	/// <summary>
 	/// Indicates that an <see cref="Endpoint"/> requires valid login info in order to respond.
