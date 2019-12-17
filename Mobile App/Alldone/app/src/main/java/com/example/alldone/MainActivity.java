@@ -36,6 +36,15 @@ public class MainActivity extends AppCompatActivity {
         final EditText username = (EditText)findViewById(R.id.user);
         final EditText password = (EditText)findViewById(R.id.password);
         final Button login = (Button)findViewById(R.id.buttonLogin);
+        final Button regist = (Button)findViewById(R.id.buttonToRegist);
+
+        regist.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent toRegist = new Intent(getApplicationContext(), Register.class);
+                startActivity(toRegist);
+            }
+        });
 
         login.setOnClickListener(new View.OnClickListener() {
          @Override
