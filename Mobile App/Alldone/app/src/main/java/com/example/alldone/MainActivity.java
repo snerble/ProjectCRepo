@@ -1,149 +1,164 @@
 package com.example.alldone;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ProgressBar;
-
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private EditText editTextUsername;
-    private EditText editTextPassword;
-    private Button login;
-    private Button toRegister;
-    private ProgressDialog progressDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+    String msg = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /*if(SharedPrefManager.getInstance(this).isLoggedIn()){
-            finish();
-            startActivity(new Intent(this, Takenlijst.class));
-            return;
-        } */
+        final EditText username = (EditText)findViewById(R.id.username);
+        final EditText password = (EditText)findViewById(R.id.password);
+        final Button login = (Button)findViewById(R.id.buttonLogin);
 
-        editTextUsername = (EditText)findViewById(R.id.username);
-        editTextPassword = (EditText)findViewById(R.id.password);
-        login = (Button)findViewById(R.id.buttonLogin);
-        toRegister = (Button)findViewById(R.id.buttonToRegist);
+        login.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               /* Intent intent0 = new Intent(getApplicationContext(), Takenlijst2.class);
+                intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent0);*/
 
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Please wait...");
-
-        toRegister.setOnClickListener(this);
-        login.setOnClickListener(this);
-    }
-
-    public void toRegister() {
-        Intent intent1 = new Intent(getApplicationContext(), Register.class);
-        intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent1.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
-        startActivity(intent1);
-    }
-
-    private void login() {
-        /*if(username.getText().toString().equals("admin") && password.getText().toString().equals("admin")) {
-            Toast.makeText(getApplicationContext(), "Je bent ingelogd",Toast.LENGTH_SHORT).show();
-            Intent intent0 = new Intent(getApplicationContext(), Takenlijst.class);
-            intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
-            startActivity(intent0);
-        }
-        else {
-            Toast.makeText(getApplicationContext(), "Verkeerde gebruikersnaam en/of wachtwoord",Toast.LENGTH_SHORT).show();
-        }*/
-            final String username = editTextUsername.getText().toString().trim();
-            final String password = editTextPassword.getText().toString().trim();
-
-            progressDialog.show();
-
-            StringRequest stringRequest = new StringRequest(
-                    Request.Method.POST,
-                    constants.URL_LOGIN,
-                    new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-                            progressDialog.dismiss();
-                            try {
-                                JSONObject obj = new JSONObject(response);
-                                if(!obj.getBoolean("error")){
-                                    SharedPrefManager.getInstance(getApplicationContext())
-                                            .login(
-                                                    obj.getInt("id"),
-                                                    obj.getString("username"),
-                                                    obj.getString("email")
-                                            );
-                                    startActivity(new Intent(getApplicationContext(), Takenlijst1.class));
-                                    finish();
-                                }else{
-                                    Toast.makeText(
-                                            getApplicationContext(),
-                                            obj.getString("message"),
-                                            Toast.LENGTH_LONG
-                                    ).show();
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            progressDialog.dismiss();
-
-                            Toast.makeText(
-                                    getApplicationContext(),
-                                    error.getMessage(),
-                                    Toast.LENGTH_LONG
-                            ).show();
-                        }
-                    }
-            ){
-                @Override
-                protected Map<String, String> getParams() throws AuthFailureError {
-                    Map<String, String> params = new HashMap<>();
-                    params.put("username", username);
-                    params.put("password", password);
-                    return params;
+                JSONObject jObj = null;
+                try {
+                    jObj = new JSONObject()
+                            .put("username", username.getText())
+                            .put("password", password.getText());
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
 
-            };
+                jObj.toString();
 
-            RequestHandler.getInstance(this).addToRequestQueue(stringRequest);
+                final JSONObject finalJObj = jObj;
+                Thread e = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Response response = Connection.Send("login", "POST", finalJObj.toString());
+
+                        response.PrettyPrint();
+                        if(response.IsSuccessful()) {
+                            msg = "Je bent ingelogd";
+                            Intent intent0 = new Intent(getApplicationContext(), GroupTasklists.class);
+                            startActivity(intent0);
+                            MainActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), msg,Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                        else {
+                            msg = "Er is iets fout gegaan";
+                            MainActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), msg,Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                        //NetworkingShit(finalJObj);
+                    }
+                });
+                e.start();
+            }
+        });
     }
 
-    @Override
-    public void onClick(View view) {
-        if (view == toRegister) {
-            toRegister();
-        }
+    public void NetworkingShit(JSONObject json) {
+        HttpURLConnection urlConnection = null;
+        try{
+            //URL url = new URL("http://145.137.122.181/login");
+            //URL url = new URL("http://145.137.121.146/login");
+            //URL url = new URL("http://145.137.121.58/login");
+            //URL url = new URL("http://145.137.123.185/login");
+            URL url = new URL("http://192.168.188.62/login");
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.setDoInput(true);
+            urlConnection.setDoOutput(true);
+            urlConnection.connect();
+            System.out.println("Connected.");
 
-        if (view == login) {
-            login();
+            DataOutputStream os = new DataOutputStream(urlConnection.getOutputStream());
+            os.writeBytes(json.toString());
+            os.flush();
+            os.close();
+
+
+            switch(urlConnection.getResponseCode()){
+                case 200:
+                    break;
+
+                default:
+                    return;
+            }
+
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(
+                            new DataInputStream(
+                                    urlConnection.getInputStream()
+                            )
+                    )
+            );
+            String jsonString = null;
+            StringBuilder sb = new StringBuilder();
+            while ((jsonString = br.readLine()) != null)
+                sb.append(jsonString);
+            br.close();
+
+            if(sb.toString() != null) {
+                msg = "Je bent ingelogd";
+                Intent intent0 = new Intent(getApplicationContext(), GroupTasklists.class);
+                intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent0.putExtra("userdata", sb.toString());
+
+                startActivity(intent0);
+            }
+            else {
+                msg = "Verkeerde gebruikersnaam en/of wachtwoord";
+            }
+            MainActivity.this.runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Toast.makeText(getApplicationContext(), msg,Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+            );
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (urlConnection != null)
+                urlConnection.disconnect();
         }
     }
 }

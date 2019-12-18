@@ -1,0 +1,49 @@
+@using System.IO
+
+@{
+	int pageCount = Model.pages.Length;
+	int imageCount = pageCount - 1 == Model.page ? (Model.images.Count-1) % Model.limit + 1 : Model.limit;
+	var displayImages = Model.images.GetRange(Model.limit * Model.page, imageCount);
+
+	var pageNavStyle = pageCount > 1 ? "" : "display: none";
+}
+
+<!doctype html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="images.css"/>
+	</head>
+	<body>
+		<div class="pagenav" style="@pageNavStyle">
+			@foreach (var pageLink in Model.pages)
+			{
+				int index = Model.pages.IndexOf(pageLink);
+				@if (index == Model.page)
+				{
+					<span id="current">@(index)</span>
+				}
+				else
+				{
+					<a href="@pageLink">@(index)</a>
+				}
+			}
+		</div>
+		@foreach (var image in displayImages)
+		{
+			<div class="item">
+			@if (Model.VideoExtensions.Contains(Path.GetExtension(image).ToLower()))
+			{
+				var type = "video/" + Path.GetExtension(image).ToLower().Substring(1);
+				<video autoplay controls muted loop>
+					<source src="/@image" type=@type/>
+				</video>
+			}
+			else
+			{
+				<img src="/@image"/>
+				<div class="desc">@(Path.GetFileName(image))</div>
+			}
+			</div>
+		}
+	</body>
+</html>
