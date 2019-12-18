@@ -1,9 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
-using RazorEngine;
-using RazorEngine.Templating;
+﻿using API.Database;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Net;
 
 namespace API.HTTP.Endpoints
@@ -12,127 +10,71 @@ namespace API.HTTP.Endpoints
 	/// Sends a page containing a login form
 	/// </summary>
 	[EndpointUrl("/login")]
-	public sealed class HTMLLogin : HTMLEndpoint
+	public sealed class Login : HTMLEndpoint
 	{
 		public override void GET(Dictionary<string, string> parameters)
-			=> Server.SendText(Response, Templates.RunTemplate(GetUrl<HTMLLogin>() + ".cshtml", Request, parameters));
+			=> Server.SendFile(Program.Config.HTMLSourceDir + "/login.html");
 
 		public override void POST(Dictionary<string, string> parameters)
 		{
-			Program.Log.Debug("Received post request.");
-
-			// Try to get the values or send an error
-			if (!parameters.TryGetValue("username", out string username)) { Server.SendError(Response, HttpStatusCode.BadRequest); return; }
-			if (!parameters.TryGetValue("password", out string password)) { Server.SendError(Response, HttpStatusCode.BadRequest); return; }
-
-			// Send 401 unauthorized if the login info is incorrect
-			if (username == "vp" && password == "vp")
+			// Validate parameters (this one only checks if username and password are specified)
+			if (!ValidateParams(parameters,
+					("username", null),
+					("password", null)))
 			{
-				Server.AddCookie(Response, "username", username);
-				Server.AddCookie(Response, "token", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-				Server.AddCookie(Response, "permission", "User");
-			}
-			else if (username == "ts" && password == "ts")
-			{
-				Server.AddCookie(Response, "username", username);
-				Server.AddCookie(Response, "token", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-				Server.AddCookie(Response, "permission", "Moderator");
-			}
-			else if (username == "mg" && password == "mg")
-			{
-				Server.AddCookie(Response, "username", username);
-				Server.AddCookie(Response, "token", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-				Server.AddCookie(Response, "permission", "Admin");
-			}
-			else Server.SendError(Response, HttpStatusCode.Unauthorized);
-
-			// Try to get redirect url, or use default homepage
-			parameters.TryGetValue("redirect", out string redirectUrl);
-			if (redirectUrl == null || redirectUrl.Length == 0) redirectUrl = GetUrl<ImageHost>();
-			else redirectUrl = Uri.UnescapeDataString(redirectUrl);
-			
-			Response.Redirect(redirectUrl);
-			Server.SendError(Response, HttpStatusCode.Redirect);
-		}
-	}
-
-	/// <summary>
-	/// API endpoint that sets login cookies when you give the right login information.
-	/// </summary>
-	[EndpointUrl("/login")]
-	public sealed class Login : JsonEndpoint
-	{
-		public override void GET(JObject json, Dictionary<string, string> parameters)
-		{
-			// Temp endpoint piping
-			if (parameters.ContainsKey("username")) json["username"] = parameters["username"];
-			if (parameters.ContainsKey("password")) json["password"] = parameters["password"];
-
-			// Try to get the values, or send an error
-			if (!json.TryGetValue("username", out JToken usernameToken)) { Server.SendError(Response, HttpStatusCode.BadRequest); return; }
-			if (!json.TryGetValue("password", out JToken passwordToken)) { Server.SendError(Response, HttpStatusCode.BadRequest); return; }
-
-			// Convert JTokens
-			string username = usernameToken.Value<string>();
-			string password = passwordToken.Value<string>();
-
-			// Check if username and password are correct
-			// TODO Use database for this
-			if (username == "vp" && password == "vp")
-			{
-				Server.AddCookie(Response, "username", username);
-				Server.AddCookie(Response, "token", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-				Server.AddCookie(Response, "permission", "User");
-				Server.SendError(Response, HttpStatusCode.NoContent);
+				// Send bad request status code if the required parameters are missing
+				Server.SendError(HttpStatusCode.BadRequest);
 				return;
 			}
-			if (username == "ts" && password == "ts")
+
+			// Get required parameters
+			string username = parameters["username"];
+			string password = parameters["password"];
+
+			// Create a new user object (so we can use the hashing method from the user class)
+			var mockUser = new User() { Username = username, Password = password };
+			// Hash it's password
+			mockUser.Password = mockUser.GetPasswordHash();
+
+			// Try to get the user from database
+			var user = Database.Select<User>($"`username` = '{mockUser.Username}' AND `password` = '{mockUser.Password}'").FirstOrDefault();
+
+			// Login is successfull if the query matched something in the database
+			if (user != null)
 			{
-				Server.AddCookie(Response, "username", username);
-				Server.AddCookie(Response, "token", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-				Server.AddCookie(Response, "permission", "Moderator");
-				Server.SendError(Response, HttpStatusCode.NoContent);
-				return;
+				// Begin a transaction so that we won't upload the session if SendError threw an exception.
+				var transaction = Database.Connection.BeginTransaction();
+
+				// If the request already had a session, update the userId
+				if (CurrentSession != null)
+				{
+					CurrentSession.User = user.Id;
+					Database.Update(CurrentSession);
+				}
+				else
+				{
+					// Create a new session
+					var session = Utils.CreateSession(user);
+					// Set a new session cookie
+					Utils.AddCookie(Response, "session", session.Id);
+				}
+
+				// Get and unescape the redirect url from the parameters (if present)
+				var redirect = Request.QueryString.AllKeys.Contains("redir") ? Request.QueryString["redir"] : null;
+
+				// Redirect to the url specified in the parameters, or the home page
+				Response.Redirect(redirect ?? "/home_vp.html");
+				Server.SendError(HttpStatusCode.Redirect);
+
+				// Apply changes
+				transaction.Commit();
 			}
-			if (username == "mg" && password == "mg")
+			else
 			{
-				Server.AddCookie(Response, "username", username);
-				Server.AddCookie(Response, "token", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-				Server.AddCookie(Response, "permission", "Admin");
-				Server.SendError(Response, HttpStatusCode.NoContent);
-				return;
+				// Redirect to the incorrect login html page if the login data was invalid
+				Response.Redirect("login_wrong.html");
+				Server.SendError(HttpStatusCode.Redirect);
 			}
-			Server.SendError(Response, HttpStatusCode.Unauthorized);
-		}
-	}
-
-	/// <summary>
-	/// Delegate HTML endpoint for the <see cref="Login"/> endpoint.
-	/// </summary>
-	[EndpointUrl("/logout")]
-	public sealed class HTMLLogout : HTMLEndpoint
-	{
-		public override void GET(Dictionary<string, string> parameters)
-		{
-			new Logout().Invoke(Request, Response);
-		}
-	}
-
-	/// <summary>
-	/// API endpoint that removes the login cookies.
-	/// </summary>
-	[EndpointUrl("/logout")]
-	public sealed class Logout : JsonEndpoint
-	{
-		public static string Expiration = DateTimeOffset.FromUnixTimeSeconds(0).ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'");
-
-		public override void GET(JObject json, Dictionary<string, string> parameters)
-		{
-			Server.AddCookie(Response, "username", "deleted; expires=" + Expiration);
-			Server.AddCookie(Response, "token", "deleted; expires=" + Expiration);
-			Server.AddCookie(Response, "permission", "deleted; expires=" + Expiration);
-			Response.Redirect("/");
-			Server.SendError(Response, HttpStatusCode.Redirect);
 		}
 	}
 }

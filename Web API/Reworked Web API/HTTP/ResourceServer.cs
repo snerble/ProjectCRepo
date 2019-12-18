@@ -1,8 +1,11 @@
-﻿using API.HTTP.Filters;
+﻿using API.Attributes;
+using API.HTTP.Filters;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 
 namespace API.HTTP
@@ -12,8 +15,15 @@ namespace API.HTTP
 	/// </summary>
 	public sealed class ResourceServer : Server
 	{
+		/// <summary>
+		/// Diagnostics timer for detailed log messages.
+		/// </summary>
+		private Stopwatch Timer { get; } = new Stopwatch();
+
+		/// <summary>
+		/// The max amount of bytes to include in a partial request
+		/// </summary>
 		private long PartialDataLimit => Program.Config["serverSettings"]["partialDataLimit"].Value<long>();
-		private string ResourceDir => Program.Config.ResourceDir;
 
 		/// <summary>
 		/// Creates a new instance of <see cref="ResourceServer"/>.
@@ -21,29 +31,58 @@ namespace API.HTTP
 		/// <param name="queue">The source of requests for this <see cref="ResourceServer"/>.</param>
 		public ResourceServer(BlockingCollection<HttpListenerContext> queue) : base(queue) { }
 
-		protected override void Main(HttpListenerRequest request, HttpListenerResponse response)
+		protected override void Main()
 		{
-			string url = request.Url.AbsolutePath;
+			// Print log and start diagnostics timer
+			Program.Log.Fine($"Processing {Request.HttpMethod} request for '{Request.Url.AbsolutePath}'...");
+			Timer.Restart();
+
+			string url = Request.Url.AbsolutePath.ToLower();
+
+			// Apply redirects
+			var redirect = Utils.Redirects.FirstOrDefault(x => (x.ValidOn & ServerAttributeTargets.Resource) != 0 && x.Target == url);
+			if (redirect != null)
+			{
+				// Send a 301 Permanent Redirect
+				Response.Redirect(redirect.Redirect);
+				SendError(HttpStatusCode.PermanentRedirect);
+				return;
+			}
+
+			// Apply aliases
+			var alias = Utils.Aliases.FirstOrDefault(x => (x.ValidOn & ServerAttributeTargets.Resource) != 0 && (x.Target == url || x.Alias == url));
+			if (alias != null)
+			{
+				if (alias.HideTarget && url == alias.Target)
+				{
+					// Send 404 Not Found if the target was requested but should be hidden
+					SendError(HttpStatusCode.NotFound);
+					return;
+				}
+				// Replace the requested url with the actual target url
+				url = alias.Target;
+			}
 
 			// Find all url filters
 			foreach (var filterType in Filter.GetFilters(url))
 			{
 				var filter = Activator.CreateInstance(filterType) as Filter;
 				// If invoke returned false, then further url parsing should be interrupted.
-				if (!filter.Invoke(request, response)) return;
+				if (!filter.Invoke(Request, Response, this)) return;
 			}
 
 			// Add bytes accept range header to advertise partial request support.
-			response.AddHeader("Accept-Ranges", $"bytes");
+			Response.AddHeader("Accept-Ranges", $"bytes");
 
 			// Try to find the resource and send it
-			string file = ResourceDir + Uri.UnescapeDataString(url);
+			string file = Program.Config.ResourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file))
 			{
+				Response.AddHeader("Date", Utils.FormatTimeStamp(File.GetLastWriteTimeUtc(file)));
 				// If a range was specified, create and send a partial response
-				if (request.Headers.Get("Range") != null)
+				if (Request.Headers.Get("Range") != null)
 				{
-					string rangeStr = request.Headers.Get("Range");
+					string rangeStr = Request.Headers.Get("Range");
 					string[] range = rangeStr.Replace("bytes=", "").Split('-');
 
 					var fs = File.OpenRead(file);
@@ -62,17 +101,33 @@ namespace API.HTTP
 					int read = fs.Read(buffer, 0, buffer.Length);
 					fs.Dispose();
 
-					response.AddHeader("Content-Range", $"bytes {start}-{start+read-1}/{filesize}");
-					Send(response, buffer, HttpStatusCode.PartialContent);
+					Response.AddHeader("Content-Range", $"bytes {start}-{start+read-1}/{filesize}");
+					Send(buffer, HttpStatusCode.PartialContent);
 					return;
 				}
 
-				SendFile(response, file);
+				SendFile(file);
 				return;
 			}
 
 			// Send 404 if no endpoint is found
-			SendError(response, HttpStatusCode.NotFound);
+			SendError(HttpStatusCode.NotFound);
+		}
+
+		/// <summary>
+		/// Writes a byte array to the specified <see cref="HttpListenerResponse"/>.
+		/// </summary>
+		/// <param name="data">The array of bytes to send.</param>
+		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
+		public override void Send(byte[] data, HttpStatusCode statusCode = HttpStatusCode.OK)
+		{
+			base.Send(data, statusCode);
+			// Write detailed log about response
+			var logMessage = $"Processed  {Request.HttpMethod} request for '{Request.Url.AbsolutePath}' with status code {(int)statusCode} " +
+					$"in {Utils.FormatTimer(Timer)}{(data == null ? "" : $" and sent {Utils.FormatDataLength(data.Length)}")}.";
+			// Success status codes are seen as less important, thus are trace messages
+			if (((int)statusCode).ToString().StartsWith("2")) Program.Log.Trace(logMessage);
+			else Program.Log.Info(logMessage);
 		}
 	}
 }

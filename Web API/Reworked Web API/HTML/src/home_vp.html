@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dashboard Vloerpersoneel</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="stylesheet.css">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+    <script>
+        function myFunction(id) {
+            var x = document.getElementById(id);
+            if (x.className.indexOf("w3-show") == -1) {
+                x.className += " w3-show";
+            } else {
+                x.className = x.className.replace(" w3-show", "");
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="sidenav">
+        <img class="logo" src="Alldone Logo.png" />
+        <div class="container">
+
+            <input type="button" value="Dashboard" onclick="myFunction('Dashboard')" />
+            <div id="Dashboard" class="dashboard w3-hide">
+                <a href="takenlijst">Takenlijst</a>
+                <a href="taakaanmaken">Nieuwe taak aanmaken</a>
+                <a href="task_list_vp.html">Ingeschreven taken</a>
+                <a href="task_list_vp.html">Aangemaakte taken</a>
+
+            </div>
+
+            <input type="button" value="Mijn profiel" class="button2" onclick="window.location.href = 'profile.html'" />
+
+        </div>
+        <input type="button" value="Uitloggen" class="button3" onclick="window.location.href = 'logout.html'" />
+    </div>
+    <div class="main">
+        <h1>Dashboard</h1>
+    </div>
+</body>
+</html>

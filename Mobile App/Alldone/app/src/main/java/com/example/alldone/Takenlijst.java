@@ -33,6 +33,8 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
 
     private static final String TAG = "Takenlijst";
 
+    private String userData;
+
     private ArrayList<String> titleList = new ArrayList<>();
     private ArrayList<String> usersList = new ArrayList<>();
     private ArrayList<String> priorityList = new ArrayList<>();
@@ -158,6 +160,7 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
                 break;
             case (R.id.new_task):
                 Intent intent2 = new Intent(getApplicationContext(), MaakTaak.class);
+                intent2.putExtra("userdata", userData);
                 startActivity(intent2);
                 break;
             case (R.id.task_list):
@@ -166,6 +169,7 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
                 break;
             case (R.id.profile):
                 Intent intent4 = new Intent(getApplicationContext(), Profiel.class);
+                intent4.putExtra("userdata", userData);
                 startActivity(intent4);
                 break;
             case(R.id.log_out):

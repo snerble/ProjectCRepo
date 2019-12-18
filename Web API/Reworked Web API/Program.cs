@@ -3,17 +3,20 @@ using API.Database;
 using API.HTTP;
 using Config.Exceptions;
 using Logging;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Threading;
 
 namespace API
 {
-	class Program
+	public class Program
 	{
 		/// <summary>
 		/// True when the program is running in debug mode. False otherwise.
@@ -26,37 +29,97 @@ namespace API
 #endif
 			;
 
-		public static Logger Log = new Logger(Level.ALL, Console.Out);
+		public static Logger Log = new Logger(Level.ALL, "Global Logger", Console.Out) { UseConsoleHighlighting = false };
+		public static AppDatabase Database;
 		public static AppConfig Config;
 
 		private static readonly List<Server> Servers = new List<Server>();
 		private static Listener listener;
-		private static AppDatabase Database;
+
+		private static BlockingCollection<HttpListenerContext> JSONQueue;
+		private static BlockingCollection<HttpListenerContext> ResourceQueue;
 
 		static void Main()
 		{
+			Console.ResetColor();
+			// Set window title
+			var assembly = Assembly.GetExecutingAssembly().GetName();
+			Console.Title = $"{assembly.Name} v{assembly.Version}";
+
 			Log.Info(DEBUG ? "Starting server in DEBUG mode" : "Starting server");
-			Log.Info("Loading configurations");
+			Log.Info("Loading configurations...");
 			try
 			{
 				Config = new AppConfig("config.json");
 			}
-			catch(ConfigException e)
+			catch (ConfigException e)
 			{
 				Log.Fatal($"{e.GetType().Name}: {e.Message}", e, false);
 				Terminate(14001);
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				Log.Fatal($"Unexpected error: {e.GetType().Name}: " + e.Message, e, true);
 				Terminate(1);
 			}
+			// Set logging level
+			Log.Config($"Setting log level to '{Config["appSettings"]["logLevel"]}'");
+			Log.LogLevel = Level.GetLevel(Config["appSettings"]["logLevel"].Value<string>());
+			// Toggle highlighting
+			Log.Config($"Setting '{nameof(Log.UseConsoleHighlighting)}' to {Config["appSettings"]["useConsoleColors"].ToString().ToLower()}");
+			Log.UseConsoleHighlighting = Config["appSettings"]["useConsoleColors"].Value<bool>();
+
+			// Assign the reload event to OnConfigReload
+			Config.Reload += OnConfigReload;
+
+			// Create the HTTPListener
+			Log.Config("Creating listener...");
+			string[] addresses = Config["serverSettings"]["serverAddresses"].ToObject<string[]>();
+			addresses = addresses.Length == 0 ? new string[] { GetLocalIP(), "localhost" } : addresses;
+			listener = new Listener(addresses);
+			Log.Info("Listening on: " + string.Join(", ", addresses));
+
+			// Get custom queues
+			JSONQueue = listener.GetCustomQueue(x =>
+				x.Request.ContentType == "application/json"
+				|| (x.Request.ContentType == "application/octet-stream"
+					&& x.Request.Cookies["session"] != null)
+			);
+			ResourceQueue = listener.GetCustomQueue(x =>
+				x.Request.AcceptTypes != null
+				&& !x.Request.AcceptTypes.Contains("text/html")
+			);
+
+			// Call the rest of the setup
+			Setup();
+
+			// Start listening
+			Log.Config("Starting listener...");
+			listener.Start();
+
+			// Create exiter thread that releases the exit mutex when enter is pressed
+			new Thread(() =>
+			{
+				Console.ReadLine();
+				ExitLock.Release();
+			})
+			{ Name = "Program Exiter" }.Start();
+
+			// Wait until the exit mutex is released, then terminate
+			ExitLock.Wait();
+			Terminate(ExitCode);
+		}
+
+		/// <summary>
+		/// Repeatable part of the program setup. Note that the threads and database must first be disposed or null.
+		/// </summary>
+		static void Setup()
+		{
+			// Dispose existing database connections
+			Utils.DisposeDatabases();
 
 			#region Apply AppSettings
 			dynamic appSettings = Config["appSettings"];
-
-			Log.Config($"Setting log level to '{appSettings.logLevel}'");
-			Log.LogLevel = Level.GetLevel((string)appSettings.logLevel);
 
 			// Create log files in release mode only
 			if (!DEBUG)
@@ -81,8 +144,7 @@ namespace API
 			#endregion
 
 			Log.Config("Creating database connection...");
-			Database = new AppDatabase();
-			Log.Info($"Opened connection to '{Database.Connection.DataSource}'.");
+			Database = Utils.GetDatabase();
 
 			try
 			{
@@ -97,19 +159,8 @@ namespace API
 				Terminate(1);
 			}
 
-			#region Setup Server
-			dynamic serverSettings = Config["serverSettings"];
+			#region Setup Threads
 			dynamic performance = Config["performance"];
-
-			Log.Config("Creating listener...");
-			string[] addresses = serverSettings.serverAddresses.ToObject<string[]>();
-			addresses = addresses.Length == 0 ? new string[] { GetLocalIP(), "localhost" } : addresses;
-			listener = new Listener(addresses);
-			Log.Info("Listening on: " + string.Join(", ", addresses));
-
-			// Get custom queues
-			var JSONQueue = listener.GetCustomQueue(x => x.Request.ContentType == "application/json");
-			var HTMLQueue = listener.GetCustomQueue(x => x.Request.AcceptTypes != null && x.Request.AcceptTypes.Contains("text/html"));
 
 			for (int i = 0; i < (int)performance.apiThreads; i++)
 			{
@@ -119,23 +170,64 @@ namespace API
 			}
 			for (int i = 0; i < (int)performance.htmlThreads; i++)
 			{
-				var server = new HTMLServer(HTMLQueue);
+				var server = new HTMLServer(listener.Queue);
 				Servers.Add(server);
 				server.Start();
 			}
 			for (int i = 0; i < (int)performance.resourceThreads; i++)
 			{
-				var server = new ResourceServer(listener.Queue);
+				var server = new ResourceServer(ResourceQueue);
 				Servers.Add(server);
 				server.Start();
 			}
-
-			Log.Config("Starting listener...");
-			listener.Start();
 			#endregion
+		}
 
-			Console.ReadLine();
-			Terminate(0);
+		/// <summary>
+		/// Starts a new thread that disposes of all other threads used by the program.
+		/// </summary>
+		private static void ClearThreads()
+		{
+			foreach (var server in Servers)
+			{
+				server.Interrupt();
+				server.Join();
+			}
+			Servers.Clear();
+		}
+
+		/// <summary>
+		/// Event that handles new config settings.
+		/// </summary>
+		private static void OnConfigReload(object sender, ReloadEventArgs e)
+		{
+			var changed = e.Diff.Changed;
+			// Things that can change on the fly
+			if (changed?["appSettings"]?["logLevel"] != null)
+			{
+				Log.Config($"Setting log level to '{Config["appSettings"]["logLevel"]}'...");
+				Log.LogLevel = Level.GetLevel(Config["appSettings"]["logLevel"].Value<string>());
+			}
+			if (changed?["appSettings"]?["useConsoleColors"] != null)
+			{
+				Log.Config($"Setting '{nameof(Log.UseConsoleHighlighting)}' to {Config["appSettings"]["useConsoleColors"].ToString().ToLower()}");
+				Log.UseConsoleHighlighting = Config["appSettings"]["useConsoleColors"].Value<bool>();
+			}
+
+			// Things that require a soft restart
+			if (changed?["dbSettings"] != null || changed?["performance"] != null)
+			{
+				static void restarter()
+				{
+					Log.Info("RESTARTING SERVER");
+					Log.Fine("Some values have been changed that require a soft restart.");
+					ClearThreads();
+					Database.Dispose();
+					Setup();
+					Log.Info("RESTART SUCCESSFUL");
+				}
+				new Thread(restarter) { Name = "Restarter" }.Start();
+			}
 		}
 
 		/// <summary>
@@ -151,19 +243,31 @@ namespace API
 			return endPoint.Address.ToString();
 		}
 
+		static int exitcode = 0;
+		static readonly SemaphoreSlim ExitLock = new SemaphoreSlim(0, 1);
+		/// <summary>
+		/// Specifies the program exit code and terminates the program when set.
+		/// </summary>
+		public static int ExitCode
+		{
+			private get { return exitcode; }
+			set
+			{
+				exitcode = value;
+				ExitLock.Release();
+			}
+		}
+
 		/// <summary>
 		/// Ends the program with the specified exit code.
 		/// </summary>
 		static void Terminate(int exitCode = 0)
 		{
 			Log.Info("Terminating...");
-			listener?.Stop();
-			foreach (var server in Servers)
-			{
-				server.Interrupt();
-				server.Join();
-			}
+			ClearThreads();
+			Utils.DisposeDatabases();
 			Log.Dispose();
+			Console.ResetColor();
 			Environment.Exit(exitCode);
 		}
 	}

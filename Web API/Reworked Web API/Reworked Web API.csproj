@@ -23,4 +23,8 @@
     <ProjectReference Include="..\MySQL Adapter\MySQL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="HTTP\Endpoints\Login\" />
+  </ItemGroup>
+
 </Project>

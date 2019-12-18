@@ -18,24 +18,30 @@ namespace API.HTTP.Filters
 	public abstract class Filter
 	{
 		/// <summary>
-		/// Gets or sets the request object passed to this <see cref="Filter"/> instance.
+		/// Gets the request object passed to this <see cref="Filter"/>.
 		/// </summary>
-		public HttpListenerRequest Request { get; set; }
+		public HttpListenerRequest Request { get; private set; }
 		/// <summary>
-		/// Gets or sets the response object passed to this <see cref="Filter"/> instance.
+		/// Gets the response object passed to this <see cref="Filter"/>.
 		/// </summary>
-		public HttpListenerResponse Response { get; set; }
+		public HttpListenerResponse Response { get; private set; }
+		/// <summary>
+		/// Gets the <see cref="HTTP.Server"/> instance that created this <see cref="Filter"/>.
+		/// </summary>
+		public Server Server { get; private set; }
 
 		/// <summary>
 		/// Performs the primary function of this <see cref="Filter"/>.
 		/// </summary>
 		/// <param name="request">The <see cref="HttpListenerRequest"/> object to pass to this <see cref="Filter"/>.</param>
 		/// <param name="response">The <see cref="HttpListenerResponse"/> object to pass to this <see cref="Filter"/>.</param>
+		/// <param name="server">The <see cref="HTTP.Server"/> instance that created this <see cref="Filter"/>.</param>
 		/// <returns>False if this <see cref="Filter"/> requests to interrupt the parsing of the URL. Otherwise true.</returns>
-		public bool Invoke(HttpListenerRequest request, HttpListenerResponse response)
+		public bool Invoke(HttpListenerRequest request, HttpListenerResponse response, Server server)
 		{
 			Request = request;
 			Response = response;
+			Server = server;
 			try { Main(); }
 			catch (FilterInterrupt) { return false; }
 			return true;

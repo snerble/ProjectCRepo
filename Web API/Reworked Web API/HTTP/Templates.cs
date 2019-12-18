@@ -55,7 +55,7 @@ namespace API.HTTP
 			foreach (var file in templates)
 			{
 				timer.Restart();
-				var name = '/' + Path.GetRelativePath(Config.HTMLSourceDir, file).Replace('\\', '/');
+				var name = '/' + Path.GetRelativePath(Config.HTMLSourceDir, file).Replace('\\', '/').ToLower();
 				// Skip already compiled templates
 				if (Engine.Razor.IsTemplateCached(name, null)) continue;
 				Engine.Razor.Compile(File.ReadAllText(file), name);
@@ -82,7 +82,8 @@ namespace API.HTTP
 				{"parameters", parameters }
 			});
 			
-			return Engine.Razor.Run(file, null, model, viewBag);
+			
+            return Engine.Razor.Run(file, null, model, viewBag);
 		}
 	}
 }

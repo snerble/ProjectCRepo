@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MimeKit;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
@@ -6,7 +7,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
-using MimeKit;
 
 namespace API.HTTP
 {
@@ -30,13 +30,22 @@ namespace API.HTTP
 		public string Name => thread.Name;
 
 		/// <summary>
+		/// Gets the <see cref="HttpListenerRequest"/> sent by a client.
+		/// </summary>
+		protected HttpListenerRequest Request { get; private set; }
+		/// <summary>
+		/// Gets the <see cref="HttpListenerResponse"/> directed to a client.
+		/// </summary>
+		protected HttpListenerResponse Response { get; private set; }
+
+		/// <summary>
 		/// Creates a new instance of <see cref="Server"/>.
 		/// </summary>
 		/// <param name="queue">The source of <see cref="HttpListenerContext"/> objects to parse.</param>
 		public Server(BlockingCollection<HttpListenerContext> queue)
 		{
 			this.thread = new Thread(Run);
-			thread.Name = GetType().Name + "::" + thread.ManagedThreadId;
+			thread.Name = GetType().Name + ":" + thread.ManagedThreadId;
 			this.queue = queue;
 			Program.Log.Config($"Created server {Name}");
 		}
@@ -51,30 +60,39 @@ namespace API.HTTP
 			{
 				while (!queue.IsCompleted)
 				{
+					// Wait for a new request
 					var context = queue.Take();
+					Request = context.Request;
+					Response = context.Response;
 
 					// Always deny requests with invalid urls
-					if (context.Request.Url.AbsolutePath.Contains(".."))
+					if (Request.Url.AbsolutePath.Contains(".."))
 					{
-						SendError(context.Response, HttpStatusCode.Forbidden);
+						SendError(HttpStatusCode.Forbidden);
 						continue;
 					}
 
 					// Try to execute main function
 					try
 					{
-						Main(context.Request, context.Response);
+						Main();
+					}
+					catch (ThreadInterruptedException)
+					{
+						return;
 					}
 					catch (Exception e)
 					{
+						e = e.InnerException ?? e;
 						Program.Log.Error($"{e.GetType().Name} in {GetType().Name}.Main(): {e.Message}", e, true);
 					}
-					finally
-					{
-						// If it isn't already closed, send an internal server error
-						try { SendError(context.Response, HttpStatusCode.InternalServerError); }
-						catch (ObjectDisposedException) { }
-					}
+					// If it isn't already closed, send an internal server error
+					try { SendError(HttpStatusCode.InternalServerError); }
+					catch (HttpListenerException) { } // connection was closed
+					catch (ObjectDisposedException) { } // connection is already closed
+
+					Request = null;
+					Response = null;
 				}
 			}
 			catch (ThreadInterruptedException) { }
@@ -83,9 +101,7 @@ namespace API.HTTP
 		/// <summary>
 		/// The function that is called when this <see cref="Server"/> instance received a request.
 		/// </summary>
-		/// <param name="request">The <see cref="HttpListenerRequest"/> that represents a client's request for a resource.</param>
-		/// <param name="response">The <see cref="HttpListenerResponse"/> object that will be sent to the client in response to the client's request.</param>
-		protected abstract void Main(HttpListenerRequest request, HttpListenerResponse response);
+		protected abstract void Main();
 
 		/// <summary>
 		/// Starts the underlying thread.
@@ -101,73 +117,63 @@ namespace API.HTTP
 		public void Interrupt() => thread.Interrupt();
 
 		/// <summary>
-		/// Writes a byte buffer to the specified <see cref="HttpListenerResponse"/>.
+		/// Writes a byte array to the specified <see cref="HttpListenerResponse"/>.
 		/// </summary>
-		/// <param name="response">The <see cref="HttpListenerResponse"/> to send data to.</param>
-		/// <param name="buffer">The array of bytes to send.</param>
+		/// <param name="data">The array of bytes to send.</param>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
-		public static void Send(HttpListenerResponse response, byte[] buffer, HttpStatusCode statusCode = HttpStatusCode.OK)
+		public virtual void Send(byte[] data, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
-			response.StatusCode = (int)statusCode;
-			response.ContentLength64 = buffer.Length;
-			using var outStream = response.OutputStream;
-			outStream.Write(buffer, 0, buffer.Length);
+			Response.StatusCode = (int)statusCode;
+			if (data != null)
+			{
+				Response.ContentLength64 = data.Length;
+				Response.OutputStream.Write(data, 0, data.Length);
+			}
+			Response.Close();
 		}
 		/// <summary>
 		/// Writes plain text to the specified <see cref="HttpListenerResponse"/>.
 		/// </summary>
-		/// <param name="response">The <see cref="HttpListenerResponse"/> to send data to.</param>
 		/// <param name="text">The string of text to send.</param>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
 		/// <param name="encoding">The encoding of the text. <see cref="Encoding.UTF8"/> by default.</param>
-		public static void SendText(HttpListenerResponse response, string text, HttpStatusCode statusCode = HttpStatusCode.OK, Encoding encoding = null)
-			=> Send(response, (encoding ?? Encoding.UTF8).GetBytes(text), statusCode);
+		public virtual void SendText(string text, HttpStatusCode statusCode = HttpStatusCode.OK, Encoding encoding = null)
+			=> Send((encoding ?? Encoding.UTF8).GetBytes(text), statusCode);
 		/// <summary>
 		/// Writes a <see cref="JObject"/> to the specified <see cref="HttpListenerResponse"/>.
 		/// </summary>
-		/// <param name="response">The <see cref="HttpListenerResponse"/> to send data to.</param>
 		/// <param name="json">The <see cref="JObject"/> to send to the client.</param>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
-		public static void SendJSON(HttpListenerResponse response, JObject json, HttpStatusCode statusCode = HttpStatusCode.OK)
+		public virtual void SendJSON(JObject json, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
-			response.ContentType = "application/json";
-			response.StatusCode = (int)statusCode;
-			using var writer = new JsonTextWriter(new StreamWriter(response.OutputStream));
-			json.WriteTo(writer);
+			if (json == null)
+			{
+				Send(null, statusCode);
+				return;
+			}
+
+			Response.ContentType = "application/json";
+			var mem = new MemoryStream();
+			using (var writer = new JsonTextWriter(new StreamWriter(mem)))
+				json.WriteTo(writer);
+			Send(mem.ToArray(), statusCode);
 		}
 		/// <summary>
 		/// Sends all the data of the specified file and automatically provides the correct MIME type to the client.
 		/// </summary>
-		/// <param name="response">The <see cref="HttpListenerResponse"/> to send data to.</param>
 		/// <param name="path">The path to the file to send.</param>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
-		public static void SendFile(HttpListenerResponse response, string path, HttpStatusCode statusCode = HttpStatusCode.OK)
+		public virtual void SendFile(string path, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
 			if (!File.Exists(path)) throw new FileNotFoundException("File does not exist.", path);
-			response.ContentType = MimeTypes.GetMimeType(Path.GetExtension(path));
-			Send(response, File.ReadAllBytes(path), statusCode);
+			Response.ContentType = MimeTypes.GetMimeType(Path.GetExtension(path));
+			Send(File.ReadAllBytes(path), statusCode);
 		}
 		/// <summary>
-		/// Sends just a <see cref="HttpStatusCode"/> to the client.
+		/// Sends just an <see cref="HttpStatusCode"/> to the client.
 		/// </summary>
-		/// <remarks>
-		/// Simply sets the statuscode of the response and closes it's outputstream.
-		/// </remarks>
-		/// <param name="response">The <see cref="HttpListenerResponse"/> to send the errorcode to.</param>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to specify.</param>
-		public static void SendError(HttpListenerResponse response, HttpStatusCode statusCode)
-		{
-			response.StatusCode = (int)statusCode;
-			response.Close();
-		}
-
-		/// <summary>
-		/// Adds a cookie to the response object.
-		/// </summary>
-		/// <param name="response">The response object to add a cookie to.</param>
-		/// <param name="name">The name of the cookie.</param>
-		/// <param name="value">The value of the cookie.</param>
-		public static void AddCookie(HttpListenerResponse response, string name, object value)
-			=> response.Headers.Add("Set-Cookie", $"{name}={value}");
+		public virtual void SendError(HttpStatusCode statusCode)
+			=> Send(null, statusCode);
 	}
 }

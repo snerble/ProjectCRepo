@@ -181,6 +181,7 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
                 break;
             case (R.id.profile):
                 Intent intent4 = new Intent(getApplicationContext(), Profiel.class);
+                intent4.putExtra("userdata", userData);
                 startActivity(intent4);
                 break;
             case(R.id.log_out):

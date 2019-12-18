@@ -2,11 +2,24 @@ package com.example.alldone;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import android.widget.EditText;
 
@@ -17,37 +30,88 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     public Button toLogin;
     private ProgressDialog progressDialog;
 
+    String msg = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        editTextUsername = findViewById(R.id.username);
-        editTextPassword = findViewById(R.id.password);
-        editTextEmail = findViewById(R.id.email);
+        final EditText username = (EditText)findViewById(R.id.userRegist);
+        final EditText password = (EditText)findViewById(R.id.passRegist);
+        final EditText passrep = (EditText)findViewById(R.id.passRepeat);
+        final Button regist = (Button)findViewById(R.id.buttonRegister);
+        final Button login = (Button)findViewById(R.id.buttonToLogin);
 
-        buttonRegister = findViewById(R.id.buttonRegister);
+        login.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent toLogin = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(toLogin);
+            }
+        });
 
-        progressDialog = new ProgressDialog(this);
+        regist.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (password.getText().toString().equals(passrep.getText().toString())) {
+                    JSONObject jObj = null;
 
-        buttonRegister.setOnClickListener(this);
+                    try {
+                        jObj = new JSONObject()
+                                .put("username", username.getText())
+                                .put("password", password.getText());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
-        toLogin = findViewById(R.id.buttonToLogin);
-        toLogin.setOnClickListener(this);
+                    jObj.toString();
+                    final JSONObject finalJObj = jObj;
+                    Thread e = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            NetworkThread(finalJObj);
+                        }
+                    });
+                    e.start();
+                } else {
+                    Toast.makeText(getApplicationContext(), "De ingevoerde wachtwoorden zijn niet hetzelfde.",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
-    public void toLogin() {
-        Intent intent0 = new Intent(getApplicationContext(), MainActivity.class);
-        intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+    public void NetworkThread(JSONObject json) {
+        HttpURLConnection urlConnection = null;
+        try{
+            URL url = new URL("http://192.168.178.18/register");
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.setDoInput(true);
+            urlConnection.setDoOutput(true);
+            urlConnection.connect();
+            System.out.println("Connected.");
 
-        startActivity(intent0);
-    }
+            msg = "Account aangemaakt";
 
-    @Override
-    public void onClick(View view) {
-        if (view == toLogin) {
-            toLogin();
+            switch(urlConnection.getResponseCode()){
+                case 200:
+                    break;
+
+                default:
+                    return;
+            }
+
+            Toast.makeText(getApplicationContext(), msg,Toast.LENGTH_SHORT).show();
+
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (urlConnection != null)
+                urlConnection.disconnect();
         }
     }
 }
