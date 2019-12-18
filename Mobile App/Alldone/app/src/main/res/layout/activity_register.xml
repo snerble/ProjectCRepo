@@ -7,7 +7,7 @@
     tools:context=".Register">
 
     <EditText
-        android:id="@+id/userRegist"
+        android:id="@+id/username"
         android:layout_width="340dp"
         android:layout_height="45dp"
         android:layout_marginTop="80dp"
@@ -19,7 +19,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/passRegist"
+        android:id="@+id/password"
         android:layout_width="340dp"
         android:layout_height="45dp"
         android:layout_marginTop="40dp"
@@ -28,19 +28,19 @@
         android:inputType="textPassword"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/userRegist" />
+        app:layout_constraintTop_toBottomOf="@+id/username" />
 
     <EditText
-        android:id="@+id/passRepeat"
+        android:id="@+id/email"
         android:layout_width="340dp"
         android:layout_height="45dp"
         android:layout_marginTop="40dp"
         android:ems="10"
-        android:hint="Herhaal Wachtwoord"
-        android:inputType="textPassword"
+        android:hint="Email"
+        android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/passRegist" />
+        app:layout_constraintTop_toBottomOf="@+id/password" />
 
     <Button
         android:id="@+id/buttonRegister"
@@ -50,7 +50,7 @@
         android:text="Registreer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/passRepeat" />
+        app:layout_constraintTop_toBottomOf="@+id/email" />
 
     <Button
         android:id="@+id/buttonToLogin"

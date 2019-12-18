@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.alldone">
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <application
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -17,6 +18,14 @@
         <activity android:name=".Groepen" />
         <activity android:name=".Register" />
         <activity android:name=".Takenlijst" />
+        <activity android:name=".Takenlijst1" />
+        <activity android:name=".Takenlijst2" />
+        <activity android:name=".TakenDetails2" />
+        <activity android:name=".DescriptionTab" />
+        <activity android:name=".UsersTab" />
+        <activity android:name=".CommentsTab" />
+        <activity android:name=".BewerkTaak" />
+        <activity android:name=".GroupTasklists" />
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

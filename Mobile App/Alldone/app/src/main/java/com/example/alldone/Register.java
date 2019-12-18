@@ -21,7 +21,14 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class Register extends AppCompatActivity {
+import android.widget.EditText;
+
+public class Register extends AppCompatActivity implements View.OnClickListener {
+
+    private EditText editTextUsername, editTextPassword, editTextEmail;
+    private Button buttonRegister;
+    public Button toLogin;
+    private ProgressDialog progressDialog;
 
     String msg = "";
 
