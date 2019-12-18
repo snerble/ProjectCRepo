@@ -15,7 +15,6 @@ import android.content.Intent;
 import com.google.android.material.navigation.NavigationView;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Toast;
 
 import android.os.AsyncTask;
@@ -63,16 +62,8 @@ public class Takenlijst1 extends AppCompatActivity implements NavigationView.OnN
         navigationView.setNavigationItemSelectedListener(this);
 
         listView = (ListView) findViewById(R.id.listView);
-        //getJSON("http://192.168.188.62/alldone/v1/fetch_data.php");
-        getJSON("http://145.137.120.163/alldone/v1/fetch_data.php");
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                    Intent myIntent = new Intent(view.getContext(), TakenDetails.class);
-                    startActivityForResult(myIntent, 0);
-            }
-        });
+        getJSON("http://192.168.188.62/alldone/v1/fetch_data.php");
+        //getJSON("http://145.137.121.233/aldone/v1/fetch_data.php");
     }
 
 

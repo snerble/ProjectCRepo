@@ -15,7 +15,7 @@
             android:layout_height="wrap_content"
             android:text="TextView" />
 
-        <TextView
+        <!-- <TextView
             android:id="@+id/users"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -23,7 +23,7 @@
             android:layout_alignBottom="@+id/title"
             android:layout_marginTop="28dp"
             android:layout_marginBottom="-47dp"
-            android:text="TextView" />
+            android:text="TextView" /> -->
 
         <TextView
             android:id="@+id/priority"
@@ -35,7 +35,7 @@
             android:layout_toRightOf="@+id/title"
             android:text="TextView" />
 
-        <TextView
+        <!-- <TextView
             android:id="@+id/status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -43,6 +43,6 @@
             android:layout_marginLeft="58dp"
             android:layout_toEndOf="@+id/title"
             android:layout_toRightOf="@+id/title"
-            android:text="TextView" />
+            android:text="TextView" /> -->
     </FrameLayout>
 </RelativeLayout>

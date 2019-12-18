@@ -19,16 +19,18 @@ public class TakenLijstViewAdapter extends RecyclerView.Adapter<TakenLijstViewAd
     private static final String TAG = "TakenLijstViewAdapter";
 
     private ArrayList<String> titleList = new ArrayList<>();
-    private ArrayList<String> usersList = new ArrayList<>();
+    //private ArrayList<String> usersList = new ArrayList<>();
     private ArrayList<String> priorityList = new ArrayList<>();
-    private ArrayList<String> statusList = new ArrayList<>();
+    //private ArrayList<String> statusList = new ArrayList<>();
     private Context mContext;
 
-    public TakenLijstViewAdapter(ArrayList<String> titleList, ArrayList<String> usersList, ArrayList<String> priorityList, ArrayList<String> statusList, Context mContext) {
+    //public TakenLijstViewAdapter(ArrayList<String> titleList, ArrayList<String> usersList, ArrayList<String> priorityList, ArrayList<String> statusList, Context mContext) {
+    public TakenLijstViewAdapter(ArrayList<String> titleList, ArrayList<String> priorityList, Context mContext) {
+
         this.titleList = titleList;
-        this.usersList = usersList;
+        //this.usersList = usersList;
         this.priorityList = priorityList;
-        this.statusList = statusList;
+        //this.statusList = statusList;
         this.mContext = mContext;
     }
 
@@ -45,9 +47,9 @@ public class TakenLijstViewAdapter extends RecyclerView.Adapter<TakenLijstViewAd
         Log.d(TAG, "onBindViewHolder: called.");
 
         holder.title.setText(titleList.get(position));
-        holder.users.setText(usersList.get(position));
+        //holder.users.setText(usersList.get(position));
         holder.priority.setText(priorityList.get(position));
-        holder.status.setText(statusList.get(position));
+        //holder.status.setText(statusList.get(position));
 
         holder.parentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -56,7 +58,7 @@ public class TakenLijstViewAdapter extends RecyclerView.Adapter<TakenLijstViewAd
                 Context context = v.getContext();
                 Intent intent = new Intent(context, TakenDetails.class);
                 intent.putExtra("title", titleList.get(position));
-                intent.putExtra("status", usersList.get(position));
+                //intent.putExtra("status", usersList.get(position));
                 context.startActivity(intent);
             }
         });
@@ -70,17 +72,17 @@ public class TakenLijstViewAdapter extends RecyclerView.Adapter<TakenLijstViewAd
     public class ViewHolder extends RecyclerView.ViewHolder{
 
         TextView title;
-        TextView users;
+        //TextView users;
         TextView priority;
-        TextView status;
+        //TextView status;
         RelativeLayout parentLayout;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.title);
-            users = itemView.findViewById(R.id.users);
-            priority = itemView.findViewById(R.id.priority);
-            status = itemView.findViewById(R.id.status);
+            //users = itemView.findViewById(R.id.users);
+            //priority = itemView.findViewById(R.id.priority);
+            //status = itemView.findViewById(R.id.status);
             parentLayout = itemView.findViewById(R.id.parent_layout);
         }
     }

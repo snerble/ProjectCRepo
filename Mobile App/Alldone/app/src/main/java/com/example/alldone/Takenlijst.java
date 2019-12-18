@@ -1,8 +1,10 @@
 package com.example.alldone;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
@@ -14,6 +16,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 
 public class Takenlijst extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -51,21 +62,79 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
     }
 
     private void initArrays(){
-        titleList.add("Koffiebonen bijvullen");
-        usersList.add("Open voor inschrijving");
-        priorityList.add("");
-        statusList.add("");
-        titleList.add("Bureau repareren");
-        usersList.add("Amy, Daphne");
-        priorityList.add("!!");
-        statusList.add("Bezig");
+        //titleList.add("Koffiebonen bijvullen");
+        //usersList.add("Open voor inschrijving");
+        //priorityList.add("");
+        //statusList.add("");
+        //titleList.add("Bureau repareren");
+        //usersList.add("Amy, Daphne");
+        //priorityList.add("!!");
+        //statusList.add("Bezig");
 
-        initRecyclerView();
+        String ServerURL = "http://192.168.188.62/alldone/v1/fetch_tasks.php";
+        //String ServerURL = "http://145.137.122.231/alldone/v1/fetch_tasks.php";
+        // new updateData().execute(ServerURL);
+        getJSON(ServerURL);
     }
 
-    private void initRecyclerView() {
+    private void getJSON(final String urlWebService) {
+
+        class GetJSON extends AsyncTask<Void, Void, String> {
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
+            protected void onPostExecute(String s) {
+                super.onPostExecute(s);
+
+                try {
+                    loadIntoListView(s);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            protected String doInBackground(Void... voids) {
+                try {
+                    URL url = new URL(urlWebService);
+                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    StringBuilder sb = new StringBuilder();
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                    String json;
+                    while ((json = bufferedReader.readLine()) != null) {
+                        sb.append(json + "\n");
+                    }
+                    return sb.toString().trim();
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        }
+        GetJSON getJSON = new GetJSON();
+        getJSON.execute();
+    }
+
+    private void loadIntoListView(String json) throws JSONException {
+        JSONArray jsonArray1 = new JSONArray(json);
+        ArrayList<String> titles = new ArrayList<>();
+        for (int i = 0; i < jsonArray1.length(); i++) {
+            JSONObject obj = jsonArray1.getJSONObject(i);
+            titles.add(obj.getString("title"));
+        }
+
+        JSONArray jsonArray2 = new JSONArray(json);
+        ArrayList<String> priorities = new ArrayList<>();
+        for (int i = 0; i < jsonArray2.length(); i++) {
+            JSONObject obj = jsonArray2.getJSONObject(i);
+            priorities.add(obj.getString("priority"));
+        }
+
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        TakenLijstViewAdapter adapter = new TakenLijstViewAdapter(titleList, usersList, priorityList, statusList, this);
+        TakenLijstViewAdapter adapter = new TakenLijstViewAdapter(titles, /*, usersList,*/ priorities, /*statusList,*/ this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
