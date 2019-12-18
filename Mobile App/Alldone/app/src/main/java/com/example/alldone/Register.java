@@ -26,11 +26,6 @@ import android.widget.EditText;
 
 public class Register extends AppCompatActivity implements View.OnClickListener {
 
-    private EditText editTextUsername, editTextPassword, editTextEmail;
-    private Button buttonRegister;
-    public Button toLogin;
-    private ProgressDialog progressDialog;
-
     String msg = "";
 
     @Override
