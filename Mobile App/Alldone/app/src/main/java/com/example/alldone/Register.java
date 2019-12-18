@@ -85,7 +85,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     public void NetworkThread(JSONObject json) {
         HttpURLConnection urlConnection = null;
         try{
-            URL url = new URL("http://192.168.178.18/register");
+            URL url = new URL("http://145.137.50.186/register");
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setDoInput(true);

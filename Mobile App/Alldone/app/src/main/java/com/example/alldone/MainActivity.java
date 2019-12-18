@@ -110,11 +110,7 @@ public class MainActivity extends AppCompatActivity {
         this.json = json;
         HttpURLConnection urlConnection = null;
         try{
-            //URL url = new URL("http://145.137.122.181/login");
-            //URL url = new URL("http://145.137.121.146/login");
-            //URL url = new URL("http://145.137.121.58/login");
-            //URL url = new URL("http://145.137.123.185/login");
-            URL url = new URL("http://192.168.188.62/login");
+            URL url = new URL("http://145.137.50.186/login");
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setDoInput(true);
