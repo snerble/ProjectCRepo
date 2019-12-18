@@ -9,15 +9,20 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Text;
+using System.Threading;
 
 namespace API
 {
 	/// <summary>
 	/// A static class containing various static utilities for this project.
 	/// </summary>
-	static class Utils
+	public static class Utils
 	{
+		/// <summary>
+		/// A dictionary containing instances of <see cref="AppDatabase"/> mapped to a <see cref="Thread"/> ID.
+		/// </summary>
+		private static Dictionary<int, AppDatabase> Databases { get; } = new Dictionary<int, AppDatabase>();
+
 		/// <summary>
 		/// Gets an array of all <see cref="RedirectAttribute"/>s listed in the server properties.
 		/// </summary>
@@ -36,39 +41,156 @@ namespace API
 		public static ReadOnlyCollection<ErrorPageAttribute> ErrorPages { get; } = Array.AsReadOnly(
 				Assembly.GetExecutingAssembly().GetCustomAttributes<ErrorPageAttribute>() as ErrorPageAttribute[]
 			);
+		/// <summary>
+		/// Gets an array of all <see cref="RequiresLoginAttribute"/>s listed in the server properties.
+		/// </summary>
+		public static ReadOnlyCollection<RequiresLoginAttribute> LoginRequirements { get; } = Array.AsReadOnly(
+				Assembly.GetExecutingAssembly().GetCustomAttributes<RequiresLoginAttribute>() as RequiresLoginAttribute[]
+			);
 
 		/// <summary>
 		/// Cache of active sessions handled by the server to save on database queries.
 		/// </summary>
 		public static List<Session> Sessions { get; } = new List<Session>();
+		/// <summary>
+		/// A timestamp in unix time marking when the next call to <see cref="GetSession(string)"/>
+		/// should perform a cleanup query.
+		/// </summary>
+		private static DateTime SessionCleanup = DateTime.UnixEpoch;
 
+		/// <summary>
+		/// Returns an <see cref="AppDatabase"/> instance unique to the current calling thread.
+		/// <para>If no <see cref="AppDatabase"/> exist yet for the current thread, a new instance will be created.</para>
+		/// </summary>
+		/// <seealso cref="DisposeDatabases"/>
+		public static AppDatabase GetDatabase()
+		{
+			// Lock the databases property to prevent conflicts from the DisposeDatabases method
+			lock (Databases)
+			{
+				// Get the id of the thread that called this method
+				var threadId = Thread.CurrentThread.ManagedThreadId;
+
+				// Create a new AppDatabase if it doesn't exist yet
+				if (!Databases.ContainsKey(threadId))
+				{
+					Databases.Add(threadId, new AppDatabase());
+					Program.Log.Fine($"Opened connection to '{Databases[threadId].Connection.DataSource}'.");
+				}
+
+				// Return an AppDatabase from the cache
+				return Databases[threadId];
+			}
+		}
+		/// <summary>
+		/// Disposes all cached <see cref="AppDatabase"/>s and clears the cache.
+		/// </summary>
+		public static void DisposeDatabases()
+		{
+			// Lock the databases property to prevent conflicts from the GetDatabase method
+			lock (Databases)
+			{
+				// Close all connections
+				foreach (var database in Databases.Values)
+				{
+					Program.Log.Info($"Closing connection to '{database.Connection.DataSource}'...");
+					lock (database) // Lock each database to ensure a Server instance can complete its task before it is disposed.
+						database.Dispose();
+				}
+				// Clear all elements from the cache
+				Databases.Clear();
+			}
+
+		}
+
+#nullable enable
 		/// <summary>
 		/// Gets a <see cref="Session"/> from the cache or the database.
 		/// </summary>
 		/// <param name="sessionId">The id of the session to get.</param>
-		public static Session GetSession(string sessionId)
+		public static Session? GetSession(string sessionId)
 		{
 			if (sessionId is null) throw new ArgumentNullException(nameof(sessionId));
+
+			// Run cleanup query if the cleanup timestamp has been passed
+			if (SessionCleanup < DateTime.UtcNow)
+			{
+				Program.Log.Fine("Running session cleanup...");
+				Program.Log.Fine("Deleted " +
+					GetDatabase().Delete<Session>("`expires` < UNIX_TIMESTAMP()") +
+					" expired sessions."
+				);
+				// Set the cleanup timestamp 2 hours into the future
+				SessionCleanup = DateTime.UtcNow.AddHours(2);
+			}
 
 			// Get session from cache or database
 			var session = Sessions.FirstOrDefault(x => x.Id == sessionId);
 			if (session == null)
 			{
-				session = Program.Database.Select<Session>($"`id` = '{sessionId}'").FirstOrDefault();
-				if (session == null) return null;
+				session = GetDatabase().Select<Session>($"`id` = '{sessionId}'").FirstOrDefault();
+				if (session == null || session.User == null) return session;
 				Sessions.Add(session);
 			}
 			// Remove session if expired
 			if (DateTimeOffset.FromUnixTimeSeconds(session.Expires) <= DateTime.UtcNow)
 			{
-				Program.Database.Delete(session);
+				GetDatabase().Delete(session);
 				Sessions.Remove(session);
 				return null;
 			}
 			return session;
 		}
+		/// <summary>
+		/// Returns and uploads a new <see cref="Session"/> with an optional attached <see cref="User"/> object.\
+		/// </summary>
+		/// <param name="userId">The user to attach to the new <see cref="Session"/>.</param>
+		/// <remarks>
+		/// It is recommended that this method is called during a database transaction, since the session
+		/// should not be uploaded if it is lost.
+		/// </remarks>
+		public static Session CreateSession(int userId)
+		{
+			// Get the user
+			var user = GetDatabase().Select<User>($"`id` = {userId}").FirstOrDefault();
 
-#nullable enable
+			// Throw exception if the user does not exist
+			if (user == null) throw new ArgumentException("No such user with id " + userId);
+
+			// Invoke overloaded method
+			return CreateSession(user);
+		}
+		/// <summary>
+		/// Returns and uploads a new <see cref="Session"/> with an optional attached <see cref="User"/> object.
+		/// <para>If <paramref name="user"/> is null, the new <see cref="Session"/> will not be cached.</para>
+		/// </summary>
+		/// <param name="user">The user to attach to the new <see cref="Session"/>.</param>
+		/// <remarks>
+		/// It is recommended that this method is called during a database transaction, since the session
+		/// should not be uploaded if it is lost.
+		/// </remarks>
+		public static Session CreateSession(User? user = null)
+		{
+			// Create the session object and give it a new AES key and GUID
+			using var aes = Aes.Create();
+			var session = new Session()
+			{
+				Id = string.Concat(Guid.NewGuid().ToByteArray().Select(x => x.ToString("x2"))),
+				User = user?.Id,
+				Key = aes.Key
+			};
+
+			// Upload the new session
+			GetDatabase().Insert(session);
+
+			// Return the new session
+			return session;
+		}
+		
+		/// <summary>
+		/// Returns whether or not a request is encrypted by looking at it's headers.
+		/// </summary>
+		/// <param name="request">The request to check for encryption.</param>
 		public static bool IsRequestEncrypted(HttpListenerRequest request)
 		{
 			if (request is null) throw new ArgumentNullException(nameof(request));
@@ -86,7 +208,7 @@ namespace API
 		/// <param name="iv">The initalization vector of the encoded message.</param>
 		/// <returns>The decoded message.</returns>
 		public static byte[] AESDecrypt(string sessionId, byte[] encoded, byte[] iv)
-			=> AESDecrypt(GetSession(sessionId), encoded, iv);
+			=> AESDecrypt(GetSession(sessionId) ?? throw new ArgumentException("The specified session Id is invalid."), encoded, iv);
 		/// <summary>
 		/// Uses the <see cref="Aes"/> cipher and decrypts an encoded message from a session
 		/// using the specified initialization vector.
@@ -125,7 +247,7 @@ namespace API
 		/// <param name="iv">A byte array of exactly 32 bytes to which the initialization vector will be copied.</param>
 		/// <returns>The encoded data.</returns>
 		public static byte[] AESEncrypt(string sessionId, byte[] data, out byte[] iv)
-			=> AESEncrypt(GetSession(sessionId), data, out iv);
+			=> AESEncrypt(GetSession(sessionId) ?? throw new ArgumentException("The specified session Id is invalid."), data, out iv);
 		/// <summary>
 		/// Uses the <see cref="Aes"/> cipher and encrypts the data using the specified key.
 		/// </summary>
@@ -194,26 +316,26 @@ namespace API
 		/// </summary>
 		/// <param name="length"></param>
 		/// <param name="decimals">The amount of fractional digits to include in the output</param>
-		/// <param name="asDecimal">If true, formats the size as decimal rather than a power of 2.</param>
-		public static string FormatDataLength(long length, int decimals = 2, bool asDecimal = false)
+		/// <param name="asBinaryUnit">If true, formats the size as a binary unit rather than as an SI unit.</param>
+		public static string FormatDataLength(long length, int decimals = 2, bool asBinaryUnit = true)
 		{
 			var magnitude = 0;
 			for (; magnitude <= 8; magnitude++)
-				if ((asDecimal ? Math.Pow(1000, magnitude + 1) : Math.Pow(2, 10 * (magnitude + 1))) >= length)
+				if ((asBinaryUnit ? Math.Pow(1000, magnitude + 1) : Math.Pow(2, 10 * (magnitude + 1))) >= length)
 					break;
 			var unit = (magnitude) switch
 			{
 				0 => "bytes",
-				1 => asDecimal ? "kB" : "KiB",
-				2 => asDecimal ? "MB" : "MiB",
-				3 => asDecimal ? "GB" : "GiB",
-				4 => asDecimal ? "TB" : "TiB",
-				5 => asDecimal ? "PB" : "PiB",
-				6 => asDecimal ? "EB" : "EiB",
-				7 => asDecimal ? "ZB" : "ZiB",
-				_ => asDecimal ? "YB" : "YiB"
+				1 => asBinaryUnit ? "KiB" : "kB",
+				2 => asBinaryUnit ? "MiB" : "MB",
+				3 => asBinaryUnit ? "GiB" : "GB",
+				4 => asBinaryUnit ? "TiB" : "TB",
+				5 => asBinaryUnit ? "PiB" : "PB",
+				6 => asBinaryUnit ? "EiB" : "EB",
+				7 => asBinaryUnit ? "ZiB" : "ZB",
+				_ => asBinaryUnit ? "YiB" : "YB"
 			};
-			return $"{Math.Round(length / (asDecimal ? Math.Pow(1000, magnitude) : Math.Pow(2, 10 * magnitude)), decimals)} {unit}";
+			return $"{Math.Round(length / (asBinaryUnit ? Math.Pow(2, 10 * magnitude) : Math.Pow(1000, magnitude)), decimals)} {unit}";
 		}
 
 		/// <summary>

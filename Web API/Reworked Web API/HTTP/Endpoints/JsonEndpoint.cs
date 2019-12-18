@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using System.Reflection;
+using API.Database;
+using API.Attributes;
 
 namespace API.HTTP.Endpoints
 {
@@ -24,10 +26,27 @@ namespace API.HTTP.Endpoints
 	public abstract class JsonEndpoint : Endpoint
 	{
 		/// <summary>
+		/// Gets or sets the <see cref="User"/> instance associated with the session that is requesting this endpoint.
+		/// </summary>
+		public User CurrentUser { get; set; }
+		/// <summary>
+		/// Gets or sets the <see cref="Session"/> instance associated with the <see cref="Endpoint.Request"/>.
+		/// </summary>
+		public Session CurrentSession { get; set; }
+		/// <summary>
+		/// Gets the <see cref="AppDatabase"/> of the current thread.
+		/// </summary>
+		protected AppDatabase Database => Utils.GetDatabase();
+
+		/// <summary>
 		/// Extracts the parameters and JSON from the request object and calls the specified HTTP method function.
 		/// </summary>
 		protected override void Main()
 		{
+			// Get the session from the cookies (if it exists)
+			var sessionId = Request.Cookies["session"]?.Value;
+			CurrentSession = sessionId == null ? null : Utils.GetSession(sessionId);
+
 			// Read the inputstream of the request and try to convert it to a JObject
 			JObject content;
 			try
@@ -49,7 +68,6 @@ namespace API.HTTP.Endpoints
 
 						// Get iv and session from request headers and cookies
 						var iv = Convert.FromBase64String(Request.Headers.Get("Content-IV"));
-						var session = Request.Cookies["session"].Value;
 						
 						// Get all bytes from the request body
 						using var mem = new MemoryStream();
@@ -57,7 +75,7 @@ namespace API.HTTP.Endpoints
 						mem.Close();
 
 						// Decrypt the body
-						body = Encoding.UTF8.GetString(Utils.AESDecrypt(session, mem.ToArray(), iv));
+						body = Encoding.UTF8.GetString(Utils.AESDecrypt(CurrentSession, mem.ToArray(), iv));
 					}
 					else
 					{
@@ -76,19 +94,34 @@ namespace API.HTTP.Endpoints
 			}
 			var parameters = SplitQuery(Request);
 
-			// Invoke the right http method function
+			// Get the right method from the endpoint using Reflection
 			var method = GetType().GetMethod(Request.HttpMethod.ToUpper());
-
-			// If the method requires encrypted data but the request is unencrypted, send a 400 Bad Request.
-			if (method.GetCustomAttribute<RequiresEncryptionAttribute>() != null && !Utils.IsRequestEncrypted(Request))
+			if (method == null)
 			{
-				Server.SendError(HttpStatusCode.BadRequest);
-				return;
+				// Send a 501 not implemented if the method does exist
+				Server.SendError(HttpStatusCode.NotImplemented);
 			}
-
-			// Invoke the method, or send a 501 not implemented
-			if (method == null) Server.SendError(HttpStatusCode.NotImplemented);
-			else method.Invoke(this, new object[] { content, parameters });
+			else if (method.GetCustomAttribute<RequiresEncryptionAttribute>() != null && !Utils.IsRequestEncrypted(Request))
+			{
+				// If the method requires encrypted data but the request is unencrypted, send a 400 Bad Request.
+				Server.SendError(HttpStatusCode.BadRequest);
+			}
+			else
+			{
+				// Check if the endpoint requires login info
+				if (GetType().GetCustomAttribute<RequiresLoginAttribute>() != null)
+				{
+					// Get the current user from the property
+					if (CurrentUser == null)
+					{
+						// Send a 401 status code if the login data is missing
+						Server.SendError(HttpStatusCode.Unauthorized);
+						return;
+					}
+				}
+				// Run the requested endpoint method
+				method.Invoke(this, new object[] { content, parameters });
+			}
 		}
 
 		/// <summary>
@@ -143,14 +176,14 @@ namespace API.HTTP.Endpoints
 
 			// Check predicates for every value that isn't missing
 			var invalid = new List<string>();
-			foreach (var (name, predicate) in predicates.Where(x => !missing.Contains(x.Item1)))
+			foreach (var (name, predicate) in predicates.Where(x => x.Item2 != null && !missing.Contains(x.Item1)))
 				if (!predicate(json[name]))
 					invalid.Add(name);
 
 			var outJson = new JObject();
 			if (mode == ValidationMode.Required && missing.Any()) outJson.Add("missing", new JArray(missing));
 			if (mode == ValidationMode.Options && missing.Count == predicates.Count())
-				outJson.Add("missing", new JObject() { "options", new JArray(missing) });
+				outJson.Add("missing", new JObject() { { "options", new JArray(missing) } });
 
 			// Get every param where their predicate returns false
 			var failed = invalid.Where(x => predicates.First(y => x == y.Item1).Item2(json.GetValue(x)));

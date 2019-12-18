@@ -1,4 +1,5 @@
 ﻿using API.Attributes;
+using API.Database;
 using API.HTTP.Endpoints;
 using API.HTTP.Filters;
 using MimeKit;
@@ -9,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 
 namespace API.HTTP
@@ -18,6 +20,31 @@ namespace API.HTTP
 	/// </summary>
 	public sealed class HTMLServer : Server
 	{
+		/// <summary>
+		/// Gets the <see cref="User"/> instance associated with the session that is issuing the request.
+		/// </summary>
+		private User CurrentUser
+		{
+			get
+			{
+				// Skip if the session is null or does not have a userid
+				if (CurrentSession == null || !CurrentSession.User.HasValue) return null;
+				// Set the cache with a user from the database if it isn't already set
+				if (_CurrentUser == null) _CurrentUser = Database.Select<User>($"`id` = {CurrentSession.User}").FirstOrDefault();
+				// Return the cache
+				return _CurrentUser;
+			}
+		}
+		private User _CurrentUser;
+		/// <summary>
+		/// Gets the <see cref="Session"/> instance that is issuing the request.
+		/// </summary>
+		private Session CurrentSession { get; set; }
+		/// <summary>
+		/// Gets the <see cref="AppDatabase"/> of the current thread.
+		/// </summary>
+		private AppDatabase Database => Utils.GetDatabase();
+
 		/// <summary>
 		/// Diagnostics timer for detailed log messages.
 		/// </summary>
@@ -36,7 +63,11 @@ namespace API.HTTP
 			Timer.Restart();
 
 			var url = Request.Url.AbsolutePath.ToLower();
-			
+
+			// Get the session from the cookies (if it exists)
+			var sessionId = Request.Cookies["session"]?.Value;
+			CurrentSession = sessionId == null ? null : Utils.GetSession(sessionId);
+
 			// Apply redirects
 			var redirect = Utils.Redirects.FirstOrDefault(x => (x.ValidOn & ServerAttributeTargets.HTML) != 0 && x.Target == url);
 			if (redirect != null)
@@ -73,6 +104,9 @@ namespace API.HTTP
 		{
 			Response.ContentType = "text/html";
 
+			// Check for login requirement (used later for every case where an endpoint is found)
+			var requiresLogin = Utils.LoginRequirements.FirstOrDefault(x => (x.ValidOn & ServerAttributeTargets.HTML) != 0 && x.Target == url);
+	
 			// Find and invoke all url filters
 			foreach (var filterType in Filter.GetFilters(url))
 			{
@@ -85,8 +119,18 @@ namespace API.HTTP
 			var endpoint = Endpoint.GetEndpoint<HTMLEndpoint>(url);
 			if (endpoint != null)
 			{
+				// Show 401 if login is required
+				if (requiresLogin != null)
+				{
+					SendError(HttpStatusCode.Unauthorized);
+					return;
+				}
+
 				// Create an instance of the endpoint
-				(Activator.CreateInstance(endpoint) as Endpoint).Invoke(Request, Response, this);
+				var endpointInstance = (Activator.CreateInstance(endpoint) as HTMLEndpoint);
+				endpointInstance.CurrentSession = CurrentSession;
+				endpointInstance.CurrentUser = CurrentUser;
+				endpointInstance.Invoke(Request, Response, this);
 				return;
 			}
 
@@ -97,6 +141,13 @@ namespace API.HTTP
 			string file = Program.Config.HTMLSourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file))
 			{
+				// Show 401 if login is required
+				if (requiresLogin != null)
+				{
+					SendError(HttpStatusCode.Unauthorized);
+					return;
+				}
+
 				Response.AddHeader("Date", Utils.FormatTimeStamp(File.GetLastWriteTimeUtc(file)));
 				SendFile(file);
 				return;
@@ -106,6 +157,13 @@ namespace API.HTTP
 			file = Program.Config.ResourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file) && Request.AcceptTypes.Any(x => x.Contains("image/")))
 			{
+				// Show 401 if login is required
+				if (requiresLogin != null)
+				{
+					SendError(HttpStatusCode.Unauthorized);
+					return;
+				}
+
 				Response.AddHeader("Date", Utils.FormatTimeStamp(File.GetLastWriteTimeUtc(file)));
 				ServeImage(Response, url);
 				return;
@@ -216,10 +274,19 @@ namespace API.HTTP
 					base.SendError(statusCode);
 					return;
 				}
+
+				// If it is a redirect, simply send a 302 Redirect status code
+				if (errorPage.IsRedirect)
+				{
+					Response.Redirect(errorPage.Url);
+					SendError(HttpStatusCode.PermanentRedirect);
+					return;
+				}
+
 				// Cache the status code for infinite loop detection
 				PreviousCode = statusCode;
-				// Overrride the next status code and parse the error page url instead and send that endpoint
-				StatusOverride = statusCode;
+				// If specified, overrride the next status code and parse the error page url instead and send that endpoint
+				if (errorPage.KeepStatusCode) StatusOverride = statusCode;
 				try
 				{
 					Main(errorPage.Url);

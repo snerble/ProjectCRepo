@@ -30,9 +30,12 @@ namespace API.HTTP
 		public string Name => thread.Name;
 
 		/// <summary>
-		/// The 
+		/// Gets the <see cref="HttpListenerRequest"/> sent by a client.
 		/// </summary>
 		protected HttpListenerRequest Request { get; private set; }
+		/// <summary>
+		/// Gets the <see cref="HttpListenerResponse"/> directed to a client.
+		/// </summary>
 		protected HttpListenerResponse Response { get; private set; }
 
 		/// <summary>
@@ -143,6 +146,12 @@ namespace API.HTTP
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
 		public virtual void SendJSON(JObject json, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
+			if (json == null)
+			{
+				Send(null, statusCode);
+				return;
+			}
+
 			Response.ContentType = "application/json";
 			var mem = new MemoryStream();
 			using (var writer = new JsonTextWriter(new StreamWriter(mem)))

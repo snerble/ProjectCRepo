@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Config", "Config\Config.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySQL", "MySQL Adapter\MySQL.csproj", "{1F083DAC-C9E3-479F-9FCA-F5715E23BCE4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reworked Web API_Tests", "Reworked Web API_Tests\Reworked Web API_Tests.csproj", "{D8721E6B-1338-412D-843D-A4D817AEBC8F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{1F083DAC-C9E3-479F-9FCA-F5715E23BCE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F083DAC-C9E3-479F-9FCA-F5715E23BCE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1F083DAC-C9E3-479F-9FCA-F5715E23BCE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8721E6B-1338-412D-843D-A4D817AEBC8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8721E6B-1338-412D-843D-A4D817AEBC8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8721E6B-1338-412D-843D-A4D817AEBC8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8721E6B-1338-412D-843D-A4D817AEBC8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

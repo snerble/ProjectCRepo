@@ -1,55 +1,80 @@
-﻿using System;
+﻿using API.Database;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
-using API.Database;
-using Newtonsoft.Json.Linq;
 
 namespace API.HTTP.Endpoints
 {
-    [EndpointUrl("/login")]
-    public sealed class login : JsonEndpoint
-    {
-        public override void GET(JObject json, Dictionary<string, string> parameters)
-            => Server.SendError(HttpStatusCode.NotImplemented);
+	/// <summary>
+	/// Sends a page containing a login form
+	/// </summary>
+	[EndpointUrl("/login")]
+	public sealed class Login : HTMLEndpoint
+	{
+		public override void GET(Dictionary<string, string> parameters)
+			=> Server.SendFile(Program.Config.HTMLSourceDir + "/login.html");
 
-        public override void POST(JObject json, Dictionary<string, string> parameters)
-        {
-            if (!json.TryGetValue("username", out JToken usernameToken))
-            {
-                Server.SendError(HttpStatusCode.BadRequest);
-                return;
-            }
-            if (!json.TryGetValue("password", out JToken passwordToken))
-            {
-                Server.SendError(HttpStatusCode.BadRequest);
-                return;
-            }
+		public override void POST(Dictionary<string, string> parameters)
+		{
+			// Validate parameters (this one only checks if username and password are specified)
+			if (!ValidateParams(parameters,
+					("username", null),
+					("password", null)))
+			{
+				// Send bad request status code if the required parameters are missing
+				Server.SendError(HttpStatusCode.BadRequest);
+				return;
+			}
 
-            string username = usernameToken.Value<string>();
-            string password = passwordToken.Value<string>();
+			// Get required parameters
+			string username = parameters["username"];
+			string password = parameters["password"];
 
-            var user = Program.Database.Select<User>($"username = '{username}' AND password = '{password}'").FirstOrDefault();
-            
-            if (user != null)
-            {
-                // user exist. valid login
-                Server.SendJSON(new JObject
-                {
-                    {"id", user.Id},
-                    {"username", user.Username},
-                    {"password", user.Password},
-                    {"accesslevel", (int)user.AccessLevel}
-                });
-            }
-            else
-            {
-                // invalid login
-                Server.SendError(HttpStatusCode.Unauthorized);
-            }
-            
-            
-        }
-    }
+			// Create a new user object (so we can use the hashing method from the user class)
+			var mockUser = new User() { Username = username, Password = password };
+			// Hash it's password
+			mockUser.Password = mockUser.GetPasswordHash();
+
+			// Try to get the user from database
+			var user = Database.Select<User>($"`username` = '{mockUser.Username}' AND `password` = '{mockUser.Password}'").FirstOrDefault();
+
+			// Login is successfull if the query matched something in the database
+			if (user != null)
+			{
+				// Begin a transaction so that we won't upload the session if SendError threw an exception.
+				var transaction = Database.Connection.BeginTransaction();
+
+				// If the request already had a session, update the userId
+				if (CurrentSession != null)
+				{
+					CurrentSession.User = user.Id;
+					Database.Update(CurrentSession);
+				}
+				else
+				{
+					// Create a new session
+					var session = Utils.CreateSession(user);
+					// Set a new session cookie
+					Utils.AddCookie(Response, "session", session.Id);
+				}
+
+				// Get and unescape the redirect url from the parameters (if present)
+				var redirect = Request.QueryString.AllKeys.Contains("redir") ? Request.QueryString["redir"] : null;
+
+				// Redirect to the url specified in the parameters, or the home page
+				Response.Redirect(redirect ?? "/home_vp.html");
+				Server.SendError(HttpStatusCode.Redirect);
+
+				// Apply changes
+				transaction.Commit();
+			}
+			else
+			{
+				// Redirect to the incorrect login html page if the login data was invalid
+				Response.Redirect("login_wrong.html");
+				Server.SendError(HttpStatusCode.Redirect);
+			}
+		}
+	}
 }

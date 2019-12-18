@@ -10,9 +10,9 @@ namespace API.Database
 		public int? Id { get; set; }
 		public int Group { get; set; }
 		public int Creator { get; set; }
-		public long Creation { get; set; } = DateTimeOffset.Now.ToUnixTimeSeconds();
+		public long Created { get; set; } = DateTimeOffset.Now.ToUnixTimeSeconds();
 		public string Title { get; set; }
 		public string Description { get; set; }
-		public sbyte Priority { get; set; }
+		public sbyte Priority { get; set; } = 0;
 	}
 }

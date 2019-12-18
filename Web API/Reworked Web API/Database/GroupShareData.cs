@@ -8,7 +8,7 @@ namespace API.Database
 	{
 		public int Group { get; set; }
 		public string Code { get; set; }
-		public long Creation { get; set; } = DateTimeOffset.Now.ToUnixTimeSeconds();
+		public long Created { get; set; } = DateTimeOffset.Now.ToUnixTimeSeconds();
 		public int Expiration { get; set; } = 7 * 24 * 60 * 60;
 	}
 }
