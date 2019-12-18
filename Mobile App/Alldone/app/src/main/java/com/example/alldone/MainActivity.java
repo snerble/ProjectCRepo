@@ -27,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
     String msg = "";
+    private JSONObject json;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Response response = Connection.Send("login", "POST", finalJObj.toString());
+                        Connection.session = response.GetJSON().optString("sessionId");
 
                         response.PrettyPrint();
                         if(response.IsSuccessful()) {
@@ -100,7 +102,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void Login() {
+
+    }
+
     public void NetworkingShit(JSONObject json) {
+        this.json = json;
         HttpURLConnection urlConnection = null;
         try{
             //URL url = new URL("http://145.137.122.181/login");
