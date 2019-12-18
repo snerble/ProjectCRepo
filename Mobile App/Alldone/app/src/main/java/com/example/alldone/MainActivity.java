@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     public void NetworkingShit(JSONObject json) {
         HttpURLConnection urlConnection = null;
         try{
-            URL url = new URL("http://192.168.178.18/login");
+            URL url = new URL("http://145.137.50.186/login");
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setDoInput(true);
