@@ -2,6 +2,7 @@ package com.example.alldone;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -37,8 +38,8 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        final EditText username = (EditText)findViewById(R.id.userRegist);
-        final EditText password = (EditText)findViewById(R.id.passRegist);
+        final EditText username = (EditText)findViewById(R.id.username);
+        final EditText password = (EditText)findViewById(R.id.password);
         final EditText passrep = (EditText)findViewById(R.id.passRepeat);
         final Button regist = (Button)findViewById(R.id.buttonRegister);
         final Button login = (Button)findViewById(R.id.buttonToLogin);
@@ -113,5 +114,10 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
             if (urlConnection != null)
                 urlConnection.disconnect();
         }
+    }
+
+    @Override
+    public void onClick(View v) {
+
     }
 }
