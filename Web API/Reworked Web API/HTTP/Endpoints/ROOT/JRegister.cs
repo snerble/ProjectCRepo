@@ -18,6 +18,11 @@ namespace API.HTTP.Endpoints
 		/// Required json arguments for this method are:
 		///		- username [string] : May not be an empty string and may not be longer than 100 chars (limit is specified in the database)
 		///		- password [string] : Must be 128 chars long and must be hashed with SHA512. (See the API.Database.User.GetPasswordHash() for how this must be done)
+		///		
+		/// Responds with:
+		///		- 201 "Created"				 : Sent when the user was successfully created.
+		///		- 409 "Conflict"			 : Sent when the username is already taken.
+		///		- 422 "Unprocessable Entity" : Sent when the arguments failed validation. A JSON with extra info is also sent.
 		/// </summary>
 		public override void POST(JObject json, Dictionary<string, string> parameters)
 		{
