@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
-namespace API.HTTP.Endpoints.ROOT
+namespace API.HTTP.Endpoints
 {
 	[EndpointUrl("/register")]
     public class Register : HTMLEndpoint
