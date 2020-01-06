@@ -69,12 +69,21 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                         Response response = Connection.Send("register", "POST", finalJObj.toString());
 
                             response.PrettyPrint();
-                            if(response.IsSuccessful()) {
-                                msg = "Account aangemaakt.";
+
+                            switch(response.StatusCode){
+                                case 201:
+                                    msg = "Account aangemaakt.";
+                                    break;
+
+                                case 409:
+                                    msg = "Deze gebruikersnaam bestaat al.";
+                                    break;
+
+                                default:
+                                    msg = "Er is iets fout gegaan.";
+                                    break;
                             }
-                            else {
-                                msg = "Er is iets fout gegaan";
-                            }
+
                             Register.this.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
