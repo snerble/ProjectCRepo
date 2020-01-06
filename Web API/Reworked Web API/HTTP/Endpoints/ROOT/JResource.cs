@@ -13,6 +13,8 @@ namespace API.HTTP.Endpoints
 	{
 		public override void GET(JObject json, Dictionary<string, string> parameters)
 		{
+			json = new JObject(parameters);
+
 			// Validate all option parameters
 			if (!ValidateParams(json, ValidationMode.Options,
 					("Id", x => x.Type == JTokenType.Integer),
@@ -29,7 +31,7 @@ namespace API.HTTP.Endpoints
 			if (hash != null) conditionList.Add($"`hash` = '{hash}'");
 
 			// Run query with condition
-			var results = Program.Database.Select<Resource>(string.Join(" AND ", conditionList));
+			var results = Database.Select<Resource>(string.Join(" AND ", conditionList));
 
 			// If none were found, send a 204
 			if (!results.Any())
@@ -80,7 +82,7 @@ namespace API.HTTP.Endpoints
 			var hash = string.Concat(md5.ComputeHash(data).Select(x => x.ToString("x2")));
 
 			// Look for other resources with the same hash and name
-			foreach (var otherResource in Program.Database.Select<Resource>($"`filename` = '{filename}' AND `hash` = '{hash}'"))
+			foreach (var otherResource in Database.Select<Resource>($"`filename` = '{filename}' AND `hash` = '{hash}'"))
 			{
 				// If another resource has exactly the same data, send 208 already reported with the conflicting Id
 				if (otherResource.Data.SequenceEqual(data))
@@ -94,9 +96,9 @@ namespace API.HTTP.Endpoints
 			}
 
 			// Start transaction and only upload when the client received the response with the new Id
-			var transaction = Program.Database.Connection.BeginTransaction();
+			var transaction = Database.Connection.BeginTransaction();
 			// Create and upload the new resource
-			var newId = Program.Database.Insert(new Resource() { Filename = filename, Data = data, Hash = hash });
+			var newId = Database.Insert(new Resource() { Filename = filename, Data = data, Hash = hash });
 			// Send the id back to the client
 			Server.SendJSON(new JObject()
 			{
@@ -117,7 +119,7 @@ namespace API.HTTP.Endpoints
 			var id = json["Id"].Value<long>();
 
 			// Delete the resource from the database
-			var affectedRows = Program.Database.Delete<Resource>("`id` = " + id);
+			var affectedRows = Database.Delete<Resource>("`id` = " + id);
 
 			// Send OK if something was changed, or 208 if the thing was already gone/not present
 			if (affectedRows == 0) Server.SendError(HttpStatusCode.AlreadyReported);

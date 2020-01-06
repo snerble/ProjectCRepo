@@ -12,7 +12,7 @@ namespace API.Config
 	/// Custom class implementing <see cref="ConfigBase"/>.
 	/// Provides the configuration features nescessary for the Web API project.
 	/// </summary>
-	sealed class AppConfig : ConfigBase
+	public sealed class AppConfig : ConfigBase
 	{
 		/// <summary>
 		/// Gets whether this <see cref="AppConfig"/> instance reloads it's content when it's file is changed.
@@ -55,6 +55,9 @@ namespace API.Config
 		/// </remarks>
 		protected override void Setup()
 		{
+			// Clone the content to later check if changes need to be saved
+			var contentCopy = Content.DeepClone();
+
 			// Build database settings
 			TryAddItem(Content, "dbSettings", new JObject());
 			TryAddItem(Content["dbSettings"], "serverAddress", (string)null);
@@ -84,7 +87,9 @@ namespace API.Config
 			TryAddItem(Content["serverSettings"], "resourceDir", "../../../HTML/res");
 			TryAddItem(Content["serverSettings"], "serverAddresses", new JArray() { "localhost" });
 
-			Save();
+			// Save the content if it doesn't equal the initial copy
+			if (!JToken.DeepEquals(contentCopy, Content))
+				Save();
 			Verify();
 		}
 

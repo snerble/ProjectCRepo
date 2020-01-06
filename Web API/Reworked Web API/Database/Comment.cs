@@ -11,7 +11,7 @@ namespace API.Database
 		public int Task { get; set; }
 		public int? Creator { get; set; }
 		public string Message { get; set; }
-		public long Creation { get; set; } = DateTimeOffset.Now.ToUnixTimeSeconds();
+		public long Created { get; set; } = DateTimeOffset.Now.ToUnixTimeSeconds();
 		public long? Edited { get; set; }
 	}
 }

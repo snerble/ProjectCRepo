@@ -16,7 +16,7 @@ using System.Threading;
 
 namespace API
 {
-	class Program
+	public class Program
 	{
 		/// <summary>
 		/// True when the program is running in debug mode. False otherwise.
@@ -30,8 +30,8 @@ namespace API
 			;
 
 		public static Logger Log = new Logger(Level.ALL, "Global Logger", Console.Out) { UseConsoleHighlighting = false };
-		public static AppConfig Config;
 		public static AppDatabase Database;
+		public static AppConfig Config;
 
 		private static readonly List<Server> Servers = new List<Server>();
 		private static Listener listener;
@@ -115,6 +115,9 @@ namespace API
 		/// </summary>
 		static void Setup()
 		{
+			// Dispose existing database connections
+			Utils.DisposeDatabases();
+
 			#region Apply AppSettings
 			dynamic appSettings = Config["appSettings"];
 
@@ -141,8 +144,7 @@ namespace API
 			#endregion
 
 			Log.Config("Creating database connection...");
-			Database = new AppDatabase();
-			Log.Info($"Opened connection to '{Database.Connection.DataSource}'.");
+			Database = Utils.GetDatabase();
 
 			try
 			{
@@ -263,6 +265,7 @@ namespace API
 		{
 			Log.Info("Terminating...");
 			ClearThreads();
+			Utils.DisposeDatabases();
 			Log.Dispose();
 			Console.ResetColor();
 			Environment.Exit(exitCode);

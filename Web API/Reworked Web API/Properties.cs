@@ -26,10 +26,12 @@ using System.Net;
 
 #region Hidden Urls
 [assembly: Alias("/errors/404.html", null, InvalidOn = ServerAttributeTargets.JSON)]
+[assembly: Alias("/unauthorized", null, InvalidOn = ServerAttributeTargets.JSON)]
 #endregion
 
 #region Errorpages
 [assembly: ErrorPage(HttpStatusCode.NotFound, "/errors/404.html")]
+[assembly: ErrorPage(HttpStatusCode.Unauthorized, "/unauthorized", KeepStatusCode = false)]
 #endregion
 
 #nullable disable warnings

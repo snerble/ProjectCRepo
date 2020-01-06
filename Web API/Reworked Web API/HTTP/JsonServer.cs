@@ -1,4 +1,5 @@
 ﻿using API.Attributes;
+using API.Database;
 using API.HTTP.Endpoints;
 using API.HTTP.Filters;
 using Newtonsoft.Json;
@@ -18,6 +19,31 @@ namespace API.HTTP
 	public sealed class JsonServer : Server
 	{
 		/// <summary>
+		/// Gets the <see cref="User"/> instance associated with the session that is issuing the request.
+		/// </summary>
+		private User CurrentUser
+		{
+			get
+			{
+				// Skip if the session is null or does not have a userid
+				if (CurrentSession == null || !CurrentSession.User.HasValue) return null;
+				// Set the cache with a user from the database if it isn't already set
+				if (_CurrentUser == null) _CurrentUser = Database.Select<User>($"`id` = {CurrentSession.User}").FirstOrDefault();
+				// Return the cache
+				return _CurrentUser;
+			}
+		}
+		private User _CurrentUser;
+		/// <summary>
+		/// Gets the <see cref="Session"/> instance that is issuing the request.
+		/// </summary>
+		private Session CurrentSession { get; set; }
+		/// <summary>
+		/// Gets the <see cref="AppDatabase"/> of the current thread.
+		/// </summary>
+		private AppDatabase Database => Utils.GetDatabase();
+
+		/// <summary>
 		/// Diagnostics timer for detailed log messages.
 		/// </summary>
 		private Stopwatch Timer { get; } = new Stopwatch();
@@ -36,6 +62,13 @@ namespace API.HTTP
 
 			Response.ContentType = "application/json";
 			string url = Request.Url.AbsolutePath.ToLower();
+
+			// Get the session from the cookies (if it exists)
+			var sessionId = Request.Cookies["session"]?.Value;
+			CurrentSession = sessionId == null ? null : Utils.GetSession(sessionId);
+
+			// Check for login requirement (used later for every case where an endpoint is found)
+			var requiresLogin = Utils.LoginRequirements.FirstOrDefault(x => (x.ValidOn & ServerAttributeTargets.HTML) != 0 && x.Target == url);
 
 			// Apply redirects
 			var redirect = Utils.Redirects.FirstOrDefault(x => (x.ValidOn & ServerAttributeTargets.JSON) != 0 && x.Target == url);
@@ -73,8 +106,19 @@ namespace API.HTTP
 			var endpoint = Endpoint.GetEndpoint<JsonEndpoint>(url);
 			if (endpoint != null)
 			{
+				// Show 401 if login is required
+				if (requiresLogin != null)
+				{
+					SendError(HttpStatusCode.Unauthorized);
+					return;
+				}
+
 				// Create an instance of the endpoint
-				(Activator.CreateInstance(endpoint) as Endpoint).Invoke(Request, Response, this);
+				var endpointInstance = (Activator.CreateInstance(endpoint) as JsonEndpoint);
+				endpointInstance.CurrentSession = CurrentSession;
+				endpointInstance.CurrentUser = CurrentUser;
+				endpointInstance.Invoke(Request, Response, this);
+
 				// Close the response if the endpoint didn't close it
 				try { Response.Close(); }
 				catch (ObjectDisposedException) { }
@@ -95,7 +139,7 @@ namespace API.HTTP
 		/// </remarks>
 		public override void Send(byte[] data, HttpStatusCode statusCode = HttpStatusCode.OK)
 		{
-			if (Utils.IsRequestEncrypted(Request))
+			if (data != null && Utils.IsRequestEncrypted(Request))
 			{
 				Response.StatusCode = (int)statusCode;
 				Response.ContentType = "application/octet-stream";
