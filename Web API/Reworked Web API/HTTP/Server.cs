@@ -152,12 +152,12 @@ namespace API.HTTP
 				return;
 			}
 
-			Response.ContentType = "application/json";
-			var mem = new MemoryStream();
-			using (var writer = new JsonTextWriter(new StreamWriter(mem)))
-				json.WriteTo(writer);
-			Send(mem.ToArray(), statusCode);
-		}
+            Response.ContentType = "application/json";
+            var mem = new MemoryStream();
+            using (var writer = new JsonTextWriter(new StreamWriter(mem)))
+                json.WriteTo(writer);
+            Send(mem.ToArray(), statusCode);
+        }
 		/// <summary>
 		/// Sends all the data of the specified file and automatically provides the correct MIME type to the client.
 		/// </summary>

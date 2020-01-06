@@ -46,7 +46,6 @@ public class GroupTasklists extends AppCompatActivity {
                     Response response = Connection.Send("tasklist", "GET");
                     response.PrettyPrint();
                     JSONArray yeet = response.GetJSON().getJSONArray("results");
-                    HashMap<String, String> map = new HashMap<String, String>();
 
                     final String[] titles = new String[yeet.length()];
                     for (int i = 0; i < yeet.length(); i++) {
@@ -94,7 +93,7 @@ public class GroupTasklists extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(GroupTasklists.this, position, Toast.LENGTH_SHORT).show();
+                Toast.makeText(GroupTasklists.this, "yeet", Toast.LENGTH_SHORT).show();
             }
         });
     }

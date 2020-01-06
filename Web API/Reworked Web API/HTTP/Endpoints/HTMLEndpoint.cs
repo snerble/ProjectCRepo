@@ -120,9 +120,16 @@ namespace API.HTTP.Endpoints
 					return false;
 			}
 
+			// Local function that runs the predicates and catches any exceptions
+			static bool runPredicate(Func<string, bool> predicate, string arg)
+			{
+				try { return predicate(arg); }
+				catch (Exception) { return false; }
+			}
+
 			// Check predicates for every value that isn't missing
 			foreach (var (name, predicate) in predicates.Where(x => x.Item2 != null && !parameters.ContainsKey(x.Item1)))
-				if (!predicate(parameters[name]))
+				if (!runPredicate(predicate, parameters[name]))
 					return false;
 
 			// Return true to indicate successfull validation

@@ -185,8 +185,15 @@ namespace API.HTTP.Endpoints
 			if (mode == ValidationMode.Options && missing.Count == predicates.Count())
 				outJson.Add("missing", new JObject() { { "options", new JArray(missing) } });
 
+			// Local function that runs the predicates and catches any exceptions
+			static bool runPredicate(Func<JToken, bool> predicate, JToken arg)
+			{
+				try { return predicate(arg); }
+				catch (Exception) { return false; }
+			}
+
 			// Get every param where their predicate returns false
-			var failed = invalid.Where(x => predicates.First(y => x == y.Item1).Item2(json.GetValue(x)));
+			var failed = invalid.Where(x => runPredicate(predicates.First(y => x == y.Item1).Item2, json.GetValue(x)));
 			if (failed.Any()) outJson.Add("invalid", new JArray(failed));
 
 			// Return true if the validation didnt encounter errors

@@ -32,12 +32,24 @@ namespace API.HTTP.Endpoints
             
             if (user != null)
             {
+                // If the request already had a session, update the userId
+                if (CurrentSession != null && CurrentSession.User == null)
+                {
+                    CurrentSession.User = user.Id;
+                    Database.Update(CurrentSession);
+                }
+                else
+                {
+                    // Create a new session
+                    CurrentSession = Utils.CreateSession(user);
+                    // Set a new session cookie
+                    Utils.AddCookie(Response, "session", CurrentSession.Id);
+                }
+
                 // user exist. valid login
                 Server.SendJSON(new JObject
                 {
-                    {"id", user.Id},
-                    {"username", user.Username},
-                    {"password", user.Password},
+                    {"sessionId", CurrentSession.Id },
                     {"accesslevel", (int)user.AccessLevel}
                 });
             }
@@ -46,8 +58,6 @@ namespace API.HTTP.Endpoints
                 // invalid login
                 Server.SendError(HttpStatusCode.Unauthorized);
             }
-            
-            
         }
     }
 }
