@@ -18,7 +18,7 @@ public class Connection {
 	//public static String DOMAIN = "http://145.137.121.146/";
 	//public static String DOMAIN = "http://145.137.121.58/";
 	//public static String DOMAIN = "http://192.168.188.62/";
-	public static String DOMAIN = "http://145.137.121.239/";
+	public static String DOMAIN = "http://192.168.178.18/";
 
 	public static String session;
 	public static byte[] key;

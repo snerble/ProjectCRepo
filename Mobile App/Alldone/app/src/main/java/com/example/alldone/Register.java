@@ -66,7 +66,22 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                     Thread e = new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            NetworkThread(finalJObj);
+                        Response response = Connection.Send("register", "POST", finalJObj.toString());
+
+                            response.PrettyPrint();
+                            if(response.IsSuccessful()) {
+                                msg = "Account aangemaakt.";
+                            }
+                            else {
+                                msg = "Er is iets fout gegaan";
+                            }
+                            Register.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), msg,Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            //NetworkThread(finalJObj);
                         }
                     });
                     e.start();
@@ -80,7 +95,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     public void NetworkThread(JSONObject json) {
         HttpURLConnection urlConnection = null;
         try{
-            URL url = new URL("http://145.137.50.186/register");
+            URL url = new URL("http://192.168.178.18/register");
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setDoInput(true);
@@ -91,7 +106,11 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
             msg = "Account aangemaakt";
 
             switch(urlConnection.getResponseCode()){
-                case 200:
+                case 201:
+                    break;
+
+                case 409:
+                    msg = "Deze gebruikersnaam bestaat al.";
                     break;
 
                 default:
