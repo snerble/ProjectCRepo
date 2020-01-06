@@ -70,31 +70,25 @@ public class MainActivity extends AppCompatActivity {
                 Thread e = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Response response = Connection.Send("login", "POST", finalJObj.toString());
-                        Connection.session = response.GetJSON().optString("sessionId");
-
-                        response.PrettyPrint();
-                        if(response.IsSuccessful()) {
-                            msg = "Je bent ingelogd";
-                            Intent intent0 = new Intent(getApplicationContext(), GroupTasklists.class);
-                            startActivity(intent0);
-                            MainActivity.this.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(getApplicationContext(), msg,Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
-                        else {
-                            msg = "Er is iets fout gegaan";
-                            MainActivity.this.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(getApplicationContext(), msg,Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
-                        //NetworkingShit(finalJObj);
+//                        Response response = Connection.Send("login", "POST", finalJObj.toString());
+//                        Connection.session = response.GetJSON().optString("sessionId");
+//
+//                        response.PrettyPrint();
+//                        if(response.IsSuccessful()) {
+//                            msg = "Je bent ingelogd";
+//                            Intent intent0 = new Intent(getApplicationContext(), GroupTasklists.class);
+//                            startActivity(intent0);
+//                        }
+//                        else {
+//                            msg = "Er is iets fout gegaan";
+//                        }
+//                        MainActivity.this.runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                Toast.makeText(getApplicationContext(), msg,Toast.LENGTH_SHORT).show();
+//                            }
+//                        });
+                        NetworkingShit(finalJObj);
                     }
                 });
                 e.start();
@@ -102,15 +96,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void Login() {
-
-    }
-
     public void NetworkingShit(JSONObject json) {
         this.json = json;
         HttpURLConnection urlConnection = null;
         try{
-            URL url = new URL("http://145.137.50.186/login");
+            URL url = new URL("http://192.168.178.18/jlogin");
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setDoInput(true);

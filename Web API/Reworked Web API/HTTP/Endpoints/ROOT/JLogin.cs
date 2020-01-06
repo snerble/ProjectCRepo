@@ -6,7 +6,7 @@ using System.Net;
 
 namespace API.HTTP.Endpoints
 {
-	[EndpointUrl("/login")]
+	[EndpointUrl("/jlogin")]
     public sealed class JLogin : JsonEndpoint
     {
         public override void GET(JObject json, Dictionary<string, string> parameters)
