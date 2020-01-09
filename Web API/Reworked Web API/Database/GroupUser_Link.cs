@@ -14,6 +14,6 @@ namespace API.Database
 	{
 		public int Group { get; set; }
 		public int User { get; set; }
-		public Rank Rank { get; set; }
+		public Rank Rank { get; set; } = Rank.User;
 	}
 }
