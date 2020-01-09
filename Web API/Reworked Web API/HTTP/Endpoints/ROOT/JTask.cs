@@ -45,8 +45,8 @@ namespace API.HTTP.Endpoints
 
 			// Get parameters
 			var group_id = json["group"].Value<int>();
-			var offset = json["offset"].Value<int?>();
-			var limit = json["limit"].Value<int?>();
+			var offset = json?["offset"]?.Value<int>();
+			var limit = json?["limit"]?.Value<int>();
 
 			// Get tasks belonging to the specified group with a certain limit
 			var results = Database.Select<Task>($"`group` = {group_id} LIMIT {offset ?? 0},{limit ?? long.MaxValue}");
@@ -96,7 +96,7 @@ namespace API.HTTP.Endpoints
 			// Get parameters
 			var group = json["group"].Value<int>();
 			var title = json["title"].Value<string>();
-			var description = json?["description"].Value<string>();
+			var description = json?["description"]?.Value<string>();
 			var priority = json.ContainsKey("priority") ? json["priority"].Value<sbyte>() : (sbyte)0;
 
 			// Create the task
