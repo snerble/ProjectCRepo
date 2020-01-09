@@ -38,14 +38,18 @@ public class GroupTasklists extends AppCompatActivity {
 
         listView = findViewById(R.id.lv);
 
-        class RetrieveTasklists extends AsyncTask<String, String, Void> {
+        class RetrieveTasklists extends AsyncTask<String, Void, Response> {
             private Exception exception;
             ProgressDialog iets;
 
-            protected Void doInBackground(String... url) {
+            @Override
+            protected Response doInBackground(String... url) {
+                return Connection.Send("group", "GET");
+            }
+
+            @Override
+            protected void onPostExecute(Response response) {
                 try {
-                    Response response = Connection.Send("group", "GET");
-                    response.PrettyPrint();
                     JSONArray responseJson = response.GetJSON().getJSONArray("results");
 
                     final JSONObject[] elements = new JSONObject[responseJson.length()];
@@ -53,27 +57,12 @@ public class GroupTasklists extends AppCompatActivity {
                         elements[i] = responseJson.getJSONObject(i);
                     }
 
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            MyAdapter adapter = new MyAdapter(GroupTasklists.this, elements);
-                            listView.setAdapter(adapter);
-                        }
-                    });
-
-                    return null;
-
-                } catch (Exception e) {
-                    this.exception = e;
-                    e.printStackTrace();
-                    System.out.println("Fuck");
-                    return null;
+                    MyAdapter adapter = new MyAdapter(GroupTasklists.this, elements);
+                    listView.setAdapter(adapter);
+                } catch (JSONException e) {
+                    // Won't happen
+                    throw new RuntimeException(e);
                 }
-            }
-
-            protected void onPostExecute(Void jsonObject) {
-                //String oof[] = jsonObject.toString();
-
             }
         }
 
