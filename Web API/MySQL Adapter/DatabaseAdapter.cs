@@ -226,6 +226,10 @@ namespace MySQL
 		/// <typeparam name="T">A subclass of <see cref="ItemAdapter"/>.</typeparam>
 		public IEnumerable<T> Select<T>(string condition = null) where T : ItemAdapter
 		{
+			// Fix condition if it is empty
+			if (!condition.Any())
+				condition = "1";
+
 			using var command = GetSelect<T>(condition);
 			using var reader = command.ExecuteReader();
 
