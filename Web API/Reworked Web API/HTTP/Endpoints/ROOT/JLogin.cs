@@ -28,6 +28,10 @@ namespace API.HTTP.Endpoints
             string username = usernameToken.Value<string>();
             string password = passwordToken.Value<string>();
 
+            // Create user instance to hash the password arguments
+            var mock_user = new User() { Username = username, Password = password };
+            password = mock_user.GetPasswordHash();
+
             var user = Program.Database.Select<User>($"username = '{username}' AND password = '{password}'").FirstOrDefault();
             
             if (user != null)
