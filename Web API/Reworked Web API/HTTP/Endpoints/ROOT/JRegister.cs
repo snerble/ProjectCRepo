@@ -31,8 +31,7 @@ namespace API.HTTP.Endpoints
 					("username", x => x.Value<string>().Any()), // Username may not be empty
 					("password", x => x.Value<string>().Length == 128))) // Password must be 128 characters long (thus must be hashed with sha512)
 			{
-				// Send a 400 Bad Request if any required parameters are missing
-				Server.SendError(HttpStatusCode.BadRequest);
+				// If validate returned false, a response was already sent
 				return;
 			}
 
