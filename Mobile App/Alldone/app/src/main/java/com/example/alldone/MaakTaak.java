@@ -107,7 +107,7 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
             @Override
             protected String doInBackground(String... params) {
                 // The code is being executed in the background (thus doInBackground())
-
+                return null;
             }
 
             @Override
