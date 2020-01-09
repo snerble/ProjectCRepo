@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -45,21 +46,17 @@ public class GroupTasklists extends AppCompatActivity {
                 try {
                     Response response = Connection.Send("group", "GET");
                     response.PrettyPrint();
-                    JSONArray yeet = response.GetJSON().getJSONArray("results");
+                    JSONArray responseJson = response.GetJSON().getJSONArray("results");
 
-                    final String[] titles = new String[yeet.length()];
-                    for (int i = 0; i < yeet.length(); i++) {
-                        titles[i] = yeet.getJSONObject(i).getString("Name");
-                    }
-
-                    for (String title : titles){
-                        System.out.println(title);
+                    final JSONObject[] elements = new JSONObject[responseJson.length()];
+                    for (int i = 0; i < responseJson.length(); i++) {
+                        elements[i] = responseJson.getJSONObject(i);
                     }
 
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            MyAdapter adapter = new MyAdapter(GroupTasklists.this, titles, titles);
+                            MyAdapter adapter = new MyAdapter(GroupTasklists.this, elements);
                             listView.setAdapter(adapter);
                         }
                     });
@@ -98,17 +95,15 @@ public class GroupTasklists extends AppCompatActivity {
         });
     }
 
-    class MyAdapter extends ArrayAdapter<String> {
+    class MyAdapter extends ArrayAdapter<JSONObject> {
 
         Context context;
-        String rTitle[];
-        String rSubtitle[];
+        JSONObject Groups[];
 
-        MyAdapter (Context c, String title[], String subtitle[]) {
-            super(c, R.layout.layout_grouptasklists, R.id.textView1, title);
+        MyAdapter (Context c, JSONObject... groups) {
+            super(c, R.layout.layout_grouptasklists, R.id.textView1, groups);
             this.context = c;
-            this.rTitle = title;
-            this.rSubtitle = subtitle;
+            this.Groups = groups;
         }
 
         @NonNull
@@ -119,8 +114,15 @@ public class GroupTasklists extends AppCompatActivity {
             TextView myTitle = row.findViewById(R.id.textView1);
             TextView mySubtitle = row.findViewById(R.id.textView2);
 
-            myTitle.setText(rTitle[position]);
-            mySubtitle.setText(rSubtitle[position]);
+            JSONObject group = this.Groups[position];
+            try {
+                myTitle.setText(group.getString("Name"));
+                String description = group.optString("Description");
+                mySubtitle.setText(description == null ? "" : description);
+            } catch (JSONException e) {
+                // Won't happen
+                throw new RuntimeException(e);
+            }
 
             return row;
         }
