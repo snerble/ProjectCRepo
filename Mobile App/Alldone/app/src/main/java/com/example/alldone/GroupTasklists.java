@@ -43,7 +43,7 @@ public class GroupTasklists extends AppCompatActivity {
 
             protected Void doInBackground(String... url) {
                 try {
-                    Response response = Connection.Send("tasklist", "GET");
+                    Response response = Connection.Send("group", "GET");
                     response.PrettyPrint();
                     JSONArray yeet = response.GetJSON().getJSONArray("results");
 
