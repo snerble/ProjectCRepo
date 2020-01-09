@@ -30,9 +30,20 @@ namespace API.HTTP.Endpoints.ROOT
 			// Get all groups the current user created or has joined
             var results = Program.Database.Select<Group>("`creator` = " + CurrentUser.Id + condition);
 
+			// Create and fill a result JArray
+			var resultArray = new JArray();
+			foreach (var group in results)
+			{
+				var entry = (JObject)group;
+				// remove the description if it is null
+				if (group.Description == null)
+					entry.Remove("Description");
+				resultArray.Add(entry);
+			}
+
 			// Send json containing the results
             Server.SendJSON(new JObject() {
-                {"results", new JArray(results.Select(x => (JObject)x)) }
+                {"results", resultArray }
             });
         }
 
