@@ -82,7 +82,7 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
 
                 GetData();
                 if(titleString.matches("") || descString.matches("")) {
-                    Toast.makeText(getApplicationContext(), "Please insert some data",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Geen data ingevoerd.",Toast.LENGTH_SHORT).show();
                 } // If the new task has no title and/or description, the data will not be inserted. Priority has default value 0 thus doesn't get compared.
                 else {
                     InsertData(titleString, descString, priorityString);
@@ -107,35 +107,6 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
             @Override
             protected String doInBackground(String... params) {
                 // The code is being executed in the background (thus doInBackground())
-
-                String TitleHolder = title;
-                String DescriptionHolder = description;
-                String PriorityHolder = priority;
-
-                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(); // Making an list for the to be inserted data.
-
-                nameValuePairs.add(new BasicNameValuePair("title", TitleHolder));
-                nameValuePairs.add(new BasicNameValuePair("description", DescriptionHolder));
-                nameValuePairs.add(new BasicNameValuePair("priority", PriorityHolder));
-                // Matching the values (chosen title, description & priority) with the keys from the table (title, description & priority).
-
-                try { // Try so we can test for errors
-                    HttpClient httpClient = new DefaultHttpClient();
-
-                    HttpPost httpPost = new HttpPost(ServerURL);
-
-                    httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-                    HttpResponse httpResponse = httpClient.execute(httpPost);
-
-                    HttpEntity httpEntity = httpResponse.getEntity();
-                }
-                catch (Exception e) {
-                    System.out.println("Exception was thrown");
-                    e.printStackTrace();
-                } // Error message if something went wrong
-
-                return "Taak aangemaakt";
 
             }
 
