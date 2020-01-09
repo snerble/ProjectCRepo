@@ -77,22 +77,39 @@ public class GroupTasklists extends AppCompatActivity {
             }
         }
 
-        System.out.println("Yeeting tasklist from server");
-        RetrieveTasklists eh = new RetrieveTasklists();
-        eh.execute();
-        //Log.d("yeet", yeet.toString());
-//
-//        MyAdapter adapter = new MyAdapter(this, mTitle, sTitle);
-//        listView.setAdapter(adapter);
-
-       // 145.137.121.58
+        System.out.println("Getting tasklists from server");
+        new RetrieveTasklists().execute();
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(GroupTasklists.this, "yeet", Toast.LENGTH_SHORT).show();
+                new OpenTasklist_Task().execute(((MyAdapter)parent.getAdapter()).Groups[position]);
             }
         });
+    }
+
+    class OpenTasklist_Task extends AsyncTask<JSONObject, Float, Response> {
+        @Override
+        protected Response doInBackground(JSONObject... jsonObjects) {
+            if (jsonObjects.length < 1)
+                throw new IllegalArgumentException("At least one JSONObject must be passed as an argument.");
+
+            JSONObject group = jsonObjects[0];
+            try {
+                JSONObject json = new JSONObject()
+                        .put("group", group.getInt("Id"));
+                return Connection.Send("task", "GET", json.toString());
+            } catch (JSONException e) {
+                // Won't happen
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Response response) {
+            response.PrettyPrint();
+            Toast.makeText(GroupTasklists.this, response.toString(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     class MyAdapter extends ArrayAdapter<JSONObject> {
