@@ -1,14 +1,8 @@
 package com.example.alldone;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,18 +12,17 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Iterator;
-
 public class GroupTasklists extends AppCompatActivity {
 
     ListView listView;
-    String mTitle[] = {"test", "yeet"};
-    String sTitle[] = {"oop", "oof"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,9 +32,6 @@ public class GroupTasklists extends AppCompatActivity {
         listView = findViewById(R.id.lv);
 
         class RetrieveTasklists extends AsyncTask<String, Void, Response> {
-            private Exception exception;
-            ProgressDialog iets;
-
             @Override
             protected Response doInBackground(String... url) {
                 return Connection.Send("group", "GET");
@@ -97,6 +87,7 @@ public class GroupTasklists extends AppCompatActivity {
         @Override
         protected void onPostExecute(Response response) {
             response.PrettyPrint();
+
             Toast.makeText(GroupTasklists.this, response.toString(), Toast.LENGTH_SHORT).show();
         }
     }
