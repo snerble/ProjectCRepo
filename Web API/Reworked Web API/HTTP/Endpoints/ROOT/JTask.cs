@@ -10,7 +10,7 @@ namespace API.HTTP.Endpoints
 {
 	[RequiresLogin]
 	[EndpointUrl("/task")]
-	public class JTask : JsonEndpoint
+	public sealed class JTask : JsonEndpoint
 	{
 		/// <summary>
 		/// Sends a list of <see cref="Task"/>s based on the specified group.
