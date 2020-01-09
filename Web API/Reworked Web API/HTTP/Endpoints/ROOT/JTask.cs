@@ -96,7 +96,7 @@ namespace API.HTTP.Endpoints
 			// Get parameters
 			var group = json["group"].Value<int>();
 			var title = json["title"].Value<string>();
-			var description = json["description"].Value<string>();
+			var description = json?["description"].Value<string>();
 			var priority = json.ContainsKey("priority") ? json["priority"].Value<sbyte>() : (sbyte)0;
 
 			// Create the task
