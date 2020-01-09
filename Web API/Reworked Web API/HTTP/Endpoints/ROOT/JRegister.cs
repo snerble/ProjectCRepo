@@ -17,7 +17,7 @@ namespace API.HTTP.Endpoints
 		/// <summary>
 		/// Required json arguments for this method are:
 		///		- username [string] : May not be an empty string and may not be longer than 100 chars (limit is specified in the database)
-		///		- password [string] : Must be 128 chars long and must be hashed with SHA512. (See the API.Database.User.GetPasswordHash() for how this must be done)
+		///		- password [string] : May not be an empty string.
 		///		
 		/// Responds with:
 		///		- 201 "Created"				 : Sent when the user was successfully created.
@@ -29,7 +29,7 @@ namespace API.HTTP.Endpoints
 			// Validate the presence of all required parameters
 			if (!ValidateParams(json,
 					("username", x => x.Value<string>().Any()), // Username may not be empty
-					("password", x => x.Value<string>().Length == 128))) // Password must be 128 characters long (thus must be hashed with sha512)
+					("password", x => x.Value<string>().Any()))) // Password may not be empty
 			{
 				// If validate returned false, a response was already sent
 				return;
