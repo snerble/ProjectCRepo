@@ -174,17 +174,6 @@ namespace API.HTTP.Endpoints
 				if (!json.ContainsKey(name))
 					missing.Add(name);
 
-			// Check predicates for every value that isn't missing
-			var invalid = new List<string>();
-			foreach (var (name, predicate) in predicates.Where(x => x.Item2 != null && !missing.Contains(x.Item1)))
-				if (!predicate(json[name]))
-					invalid.Add(name);
-
-			var outJson = new JObject();
-			if (mode == ValidationMode.Required && missing.Any()) outJson.Add("missing", new JArray(missing));
-			if (mode == ValidationMode.Options && missing.Count == predicates.Count())
-				outJson.Add("missing", new JObject() { { "options", new JArray(missing) } });
-
 			// Local function that runs the predicates and catches any exceptions
 			static bool runPredicate(Func<JToken, bool> predicate, JToken arg)
 			{
@@ -192,9 +181,19 @@ namespace API.HTTP.Endpoints
 				catch (Exception) { return false; }
 			}
 
-			// Get every param where their predicate returns false
-			var failed = invalid.Where(x => runPredicate(predicates.First(y => x == y.Item1).Item2, json.GetValue(x)));
-			if (failed.Any()) outJson.Add("invalid", new JArray(failed));
+			// Check predicates for every value that isn't missing
+			var invalid = new List<string>();
+			foreach (var (name, predicate) in predicates.Where(x => x.Item2 != null && !missing.Contains(x.Item1)))
+				if (!runPredicate(predicate, json[name]))
+					invalid.Add(name);
+
+			var outJson = new JObject();
+			if (mode == ValidationMode.Required && missing.Any()) outJson.Add("missing", new JArray(missing));
+			if (mode == ValidationMode.Options && missing.Count == predicates.Count())
+				outJson.Add("missing", new JObject() { { "options", new JArray(missing) } });
+
+			// Add invalid things to json
+			if (invalid.Any()) outJson.Add("invalid", new JArray(invalid));
 
 			// Return true if the validation didnt encounter errors
 			if (outJson.Count == 0) return true;
