@@ -10,7 +10,7 @@ namespace API.HTTP.Endpoints.ROOT
 		public override void GET(Dictionary<string, string> parameters)
 		{
 			// Build the new url (if a query string was already present, append with '&', otherwise append with '?')
-			var newUrl = GetUrl<Login>() + '?' + "redir=" + Uri.EscapeDataString(Request.RawUrl);
+			var newUrl = GetUrl<JLogin>() + '?' + "redir=" + Uri.EscapeDataString(Request.RawUrl);
 
 			// Redirect the client to the login page
 			Response.Redirect(newUrl);

@@ -2,6 +2,7 @@ package com.example.alldone;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -21,7 +22,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class Register extends AppCompatActivity {
+import android.widget.EditText;
+
+public class Register extends AppCompatActivity implements View.OnClickListener {
 
     String msg = "";
 
@@ -30,8 +33,8 @@ public class Register extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        final EditText username = (EditText)findViewById(R.id.userRegist);
-        final EditText password = (EditText)findViewById(R.id.passRegist);
+        final EditText username = (EditText)findViewById(R.id.username);
+        final EditText password = (EditText)findViewById(R.id.password);
         final EditText passrep = (EditText)findViewById(R.id.passRepeat);
         final Button regist = (Button)findViewById(R.id.buttonRegister);
         final Button login = (Button)findViewById(R.id.buttonToLogin);
@@ -63,7 +66,31 @@ public class Register extends AppCompatActivity {
                     Thread e = new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            NetworkThread(finalJObj);
+                        Response response = Connection.Send("register", "POST", finalJObj.toString());
+
+                            response.PrettyPrint();
+
+                            switch(response.StatusCode){
+                                case 201:
+                                    msg = "Account aangemaakt.";
+                                    break;
+
+                                case 409:
+                                    msg = "Deze gebruikersnaam bestaat al.";
+                                    break;
+
+                                default:
+                                    msg = "Er is iets fout gegaan.";
+                                    break;
+                            }
+
+                            Register.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), msg,Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            //NetworkThread(finalJObj);
                         }
                     });
                     e.start();
@@ -88,7 +115,11 @@ public class Register extends AppCompatActivity {
             msg = "Account aangemaakt";
 
             switch(urlConnection.getResponseCode()){
-                case 200:
+                case 201:
+                    break;
+
+                case 409:
+                    msg = "Deze gebruikersnaam bestaat al.";
                     break;
 
                 default:
@@ -106,5 +137,10 @@ public class Register extends AppCompatActivity {
             if (urlConnection != null)
                 urlConnection.disconnect();
         }
+    }
+
+    @Override
+    public void onClick(View v) {
+
     }
 }

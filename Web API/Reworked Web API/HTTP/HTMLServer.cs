@@ -58,6 +58,9 @@ namespace API.HTTP
 
 		protected override void Main()
 		{
+            // Reset cached user
+            _CurrentUser = null;
+
 			// Print log and start diagnostics timer
 			Program.Log.Fine($"Processing {Request.HttpMethod} request for '{Request.Url.AbsolutePath}'...");
 			Timer.Restart();

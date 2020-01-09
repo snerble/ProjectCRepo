@@ -22,6 +22,6 @@ namespace API.Database
 		/// <summary>
 		/// Unix timestamp for when a session expires, represented in total seconds.
 		/// </summary>
-		public long Expires { get; set; } = DateTimeOffset.UtcNow.AddMinutes(10).ToUnixTimeSeconds();
+		public long Expires { get; set; } = DateTimeOffset.UtcNow.AddHours(2).ToUnixTimeSeconds();
 	}
 }

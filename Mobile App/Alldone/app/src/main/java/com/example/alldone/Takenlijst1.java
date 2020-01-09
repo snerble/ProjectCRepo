@@ -1,56 +1,55 @@
 package com.example.alldone;
 
-import android.content.Intent;
-import android.os.AsyncTask;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import java.util.ArrayList;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+import android.content.Intent;
+import com.google.android.material.navigation.NavigationView;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
+import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.material.navigation.NavigationView;
-
-import java.util.ArrayList;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import org.json.JSONObject;
+import android.content.Intent;
+import com.google.android.material.navigation.NavigationView;
+import android.view.MenuItem;
+
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-
-public class Takenlijst extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class Takenlijst1 extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
 
-    private static final String TAG = "Takenlijst";
-
-    private String userData;
-
-    private ArrayList<String> titleList = new ArrayList<>();
-    private ArrayList<String> usersList = new ArrayList<>();
-    private ArrayList<String> priorityList = new ArrayList<>();
-    private ArrayList<String> statusList = new ArrayList<>();
+    ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_takenlijst);
-
-        /*if(!SharedPrefManager.getInstance(this).isLoggedIn()){
-            finish();
-            startActivity(new Intent(this, MainActivity.class));
-        } */
-
-        initArrays();
+        setContentView(R.layout.activity_takenlijst1);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         mToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.open, R.string.close);
@@ -61,23 +60,12 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         NavigationView navigationView = (NavigationView) findViewById(R.id.nv1);
         navigationView.setNavigationItemSelectedListener(this);
+
+        listView = (ListView) findViewById(R.id.listView);
+        getJSON("http://192.168.188.62/alldone/v1/fetch_data.php");
+        //getJSON("http://145.137.121.233/aldone/v1/fetch_data.php");
     }
 
-    private void initArrays(){
-        //titleList.add("Koffiebonen bijvullen");
-        //usersList.add("Open voor inschrijving");
-        //priorityList.add("");
-        //statusList.add("");
-        //titleList.add("Bureau repareren");
-        //usersList.add("Amy, Daphne");
-        //priorityList.add("!!");
-        //statusList.add("Bezig");
-
-        String ServerURL = "http://192.168.188.62/alldone/v1/fetch_tasks.php";
-        //String ServerURL = "http://145.137.122.231/alldone/v1/fetch_tasks.php";
-        // new updateData().execute(ServerURL);
-        getJSON(ServerURL);
-    }
 
     private void getJSON(final String urlWebService) {
 
@@ -88,10 +76,11 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
                 super.onPreExecute();
             }
 
+
             @Override
             protected void onPostExecute(String s) {
                 super.onPostExecute(s);
-
+                //Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
                 try {
                     loadIntoListView(s);
                 } catch (JSONException e) {
@@ -121,24 +110,14 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
     }
 
     private void loadIntoListView(String json) throws JSONException {
-        JSONArray jsonArray1 = new JSONArray(json);
-        ArrayList<String> titles = new ArrayList<>();
-        for (int i = 0; i < jsonArray1.length(); i++) {
-            JSONObject obj = jsonArray1.getJSONObject(i);
-            titles.add(obj.getString("title"));
+        JSONArray jsonArray = new JSONArray(json);
+        String[] tasks = new String[jsonArray.length()];
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject obj = jsonArray.getJSONObject(i);
+            tasks[i] = obj.getString("title");
         }
-
-        JSONArray jsonArray2 = new JSONArray(json);
-        ArrayList<String> priorities = new ArrayList<>();
-        for (int i = 0; i < jsonArray2.length(); i++) {
-            JSONObject obj = jsonArray2.getJSONObject(i);
-            priorities.add(obj.getString("priority"));
-        }
-
-        RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        TakenLijstViewAdapter adapter = new TakenLijstViewAdapter(titles, /*, usersList,*/ priorities, /*statusList,*/ this);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tasks);
+        listView.setAdapter(arrayAdapter);
     }
 
     @Override
@@ -160,7 +139,6 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
                 break;
             case (R.id.new_task):
                 Intent intent2 = new Intent(getApplicationContext(), MaakTaak.class);
-                intent2.putExtra("userdata", userData);
                 startActivity(intent2);
                 break;
             case (R.id.task_list):
@@ -169,7 +147,6 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
                 break;
             case (R.id.profile):
                 Intent intent4 = new Intent(getApplicationContext(), Profiel.class);
-                intent4.putExtra("userdata", userData);
                 startActivity(intent4);
                 break;
             case(R.id.log_out):

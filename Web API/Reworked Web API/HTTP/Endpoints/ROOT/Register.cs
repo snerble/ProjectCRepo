@@ -44,7 +44,7 @@ namespace API.HTTP.Endpoints.ROOT
 			Database.Insert(user);
 
 			// Redirect the client to the login
-			Response.Redirect(GetUrl<Login>());
+			Response.Redirect(GetUrl<JLogin>());
 			Server.SendError(HttpStatusCode.Redirect);
         }
     }

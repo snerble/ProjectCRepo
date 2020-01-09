@@ -2,34 +2,40 @@ package com.example.alldone;
 
 import android.content.Intent;
 import android.os.Bundle;
+import androidx.appcompat.widget.Toolbar;
 import android.view.MenuItem;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.Toast;
-
-import com.google.android.material.navigation.NavigationView;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.google.android.material.navigation.NavigationView;
 
+import com.example.alldone.Downloader;
 
-public class Profiel extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class Takenlijst2 extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
 
-    private String name;
-    private String job;
-    private String userData;
+    public Toolbar toolbar;
+
+    //String ServerURL = "http://145.137.123.23/alldone/v1/get_tasks.php";
+    //String ServerURL = "http://145.137.121.233/alldone/v1/get_tasks.php";
+    //String ServerURL = "http://145.137.121.231/alldone/v1/get_tasks.php";
+    //String ServerURL = "http://145.137.122.181/alldone/v1/get_tasks.php";
+    String ServerURL = "http://145.137.121.58/alldone/v1/get_tasks.php";
+    //String ServerURL = "http://192.168.188.62/alldone/v1/get_tasks.php";
+
+    // Getting the query to fetch data, ! IP address differs from location :)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profiel);
+        setContentView(R.layout.layout_takenlijst2);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         mToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.open, R.string.close);
@@ -41,36 +47,16 @@ public class Profiel extends AppCompatActivity implements NavigationView.OnNavig
         NavigationView navigationView = (NavigationView) findViewById(R.id.nv1);
         navigationView.setNavigationItemSelectedListener(this);
 
-        Intent intent=getIntent();
-
-        userData = intent.getStringExtra("userdata");
-
-        int jobNr = 0;
-        try {
-            JSONObject reader = new JSONObject(userData);
-            name = reader.getString("username");
-            jobNr = reader.getInt("accesslevel");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        switch (jobNr) {
-            case 2:
-                job = "Administrator";
-                break;
-
-            default:
-                job = "Technische staff";
-                break;
-        }
-        TextView nameText = findViewById(R.id.name);
-        TextView jobText = findViewById(R.id.job);
-
-        ImageView img= (ImageView) findViewById(R.id.profilePic);
-        img.setImageResource(R.drawable.no_user);
-
-        nameText.setText(name);
-        jobText.setText(job);
+        final ListView lv = (ListView) findViewById(R.id.lv);
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String text = lv.getItemAtPosition(position).toString();
+                Toast.makeText(Takenlijst2.this,""+text, Toast.LENGTH_SHORT).show();
+            }
+        });
+        Downloader d = new Downloader(Takenlijst2.this,ServerURL,lv);
+        d.execute();
     }
 
     @Override
@@ -92,16 +78,15 @@ public class Profiel extends AppCompatActivity implements NavigationView.OnNavig
                 break;
             case (R.id.new_task):
                 Intent intent2 = new Intent(getApplicationContext(), MaakTaak.class);
-                intent2.putExtra("userdata", userData);
                 startActivity(intent2);
                 break;
             case (R.id.task_list):
-                Intent intent3 = new Intent(getApplicationContext(), Takenlijst2.class);
-                startActivity(intent3);
+                //Intent intent3 = new Intent(getApplicationContext(), Takenlijst.class);
+                //startActivity(intent3);
                 break;
             case (R.id.profile):
-                //Intent intent4 = new Intent(getApplicationContext(), Profiel.class);
-                //startActivity(intent4);
+                Intent intent4 = new Intent(getApplicationContext(), Profiel.class);
+                startActivity(intent4);
                 break;
             case(R.id.log_out):
                 Toast.makeText(getApplicationContext(), "Je bent uitgelogd",Toast.LENGTH_SHORT).show();
