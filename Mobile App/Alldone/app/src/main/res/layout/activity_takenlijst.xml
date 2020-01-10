@@ -6,32 +6,31 @@
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Takenlijst">
+    tools:context=".Takenlijst2">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".Takenlijst">
+        android:orientation="vertical"
+        tools:context=".Takenlijst2">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view"
-            android:layout_width="409dp"
-            android:layout_height="729dp"
-            tools:layout_editor_absoluteX="1dp"
-            tools:layout_editor_absoluteY="1dp" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/lv"
+            >
+        </ListView>
 
-    <com.google.android.material.navigation.NavigationView
+    </LinearLayout>
 
-        android:id="@+id/nv1"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:menu="@menu/navigation_menu"
-        android:fitsSystemWindows="true">
-    </com.google.android.material.navigation.NavigationView>
+<com.google.android.material.navigation.NavigationView
 
-</androidx.drawerlayout.widget.DrawerLayout>
+android:id="@+id/nv1"
+android:layout_width="wrap_content"
+android:layout_height="match_parent"
+android:layout_gravity="start"
+app:menu="@menu/navigation_menu"
+android:fitsSystemWindows="true">
+</com.google.android.material.navigation.NavigationView>
+
+    </androidx.drawerlayout.widget.DrawerLayout>

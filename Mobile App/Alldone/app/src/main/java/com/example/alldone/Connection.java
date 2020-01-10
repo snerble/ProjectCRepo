@@ -17,8 +17,9 @@ import org.json.JSONObject;
 public class Connection {
 	//public static String DOMAIN = "http://145.137.121.146/";
 	//public static String DOMAIN = "http://145.137.121.58/";
-	//public static String DOMAIN = "http://192.168.188.62/";
-	public static String DOMAIN = "http://77.172.16.237/";
+	public static String DOMAIN = "http://145.137.55.46/";
+//	public static String DOMAIN = "http://77.172.16.237/";
+//	public static String DOMAIN = "http://145.137.121.123/";
 
 	public static String session;
 	public static byte[] key;

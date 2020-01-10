@@ -135,10 +135,10 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
             priorities.add(obj.getString("priority"));
         }
 
-        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        //RecyclerView recyclerView = findViewById(R.id.recycler_view);
         TakenLijstViewAdapter adapter = new TakenLijstViewAdapter(titles, /*, usersList,*/ priorities, /*statusList,*/ this);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        //recyclerView.setAdapter(adapter);
+        //recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
     @Override
