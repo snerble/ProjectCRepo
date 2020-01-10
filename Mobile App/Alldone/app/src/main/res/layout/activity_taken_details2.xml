@@ -6,12 +6,12 @@
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".TakenDetails2">
+    tools:context=".TakenDetails">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".TakenDetails2">
+        tools:context=".TakenDetails">
 
         <TextView
             android:id="@+id/titleTxt"

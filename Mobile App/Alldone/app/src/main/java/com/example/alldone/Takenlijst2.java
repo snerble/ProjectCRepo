@@ -7,7 +7,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
 
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -24,8 +23,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.navigation.NavigationView;
-
-import com.example.alldone.Downloader;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -132,7 +129,7 @@ public class Takenlijst2 extends AppCompatActivity implements NavigationView.OnN
             Toast.makeText(Takenlijst2.this, response.toString(), Toast.LENGTH_SHORT).show();
 
             Context context = Takenlijst2.this;
-            Intent intent = new Intent(context , TakenDetails2.class);
+            Intent intent = new Intent(context , TakenDetails.class);
             intent.putExtra("id", group_id);
             intent.putExtra("tasks", response.Data);
             context.startActivity(intent);
