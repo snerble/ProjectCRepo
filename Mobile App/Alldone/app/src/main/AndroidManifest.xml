@@ -18,9 +18,6 @@
         <activity android:name=".Groepen" />
         <activity android:name=".Register" />
         <activity android:name=".Takenlijst" />
-        <activity android:name=".Takenlijst1" />
-        <activity android:name=".Takenlijst2" />
-        <activity android:name=".TakenDetails" />
         <activity android:name=".DescriptionTab" />
         <activity android:name=".UsersTab" />
         <activity android:name=".CommentsTab" />

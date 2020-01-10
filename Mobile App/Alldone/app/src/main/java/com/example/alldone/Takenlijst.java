@@ -28,7 +28,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Takenlijst2 extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class Takenlijst extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
 
@@ -76,7 +76,7 @@ public class Takenlijst2 extends AppCompatActivity implements NavigationView.OnN
                         elements[i] = responseJson.getJSONObject(i);
                     }
 
-                    MyAdapter adapter = new MyAdapter(Takenlijst2.this, elements);
+                    MyAdapter adapter = new MyAdapter(Takenlijst.this, elements);
                     listView.setAdapter(adapter);
                 } catch (JSONException e) {
                     // Won't happen
@@ -126,9 +126,9 @@ public class Takenlijst2 extends AppCompatActivity implements NavigationView.OnN
         protected void onPostExecute(Response response) {
             response.PrettyPrint();
 
-            Toast.makeText(Takenlijst2.this, response.toString(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(Takenlijst.this, response.toString(), Toast.LENGTH_SHORT).show();
 
-            Context context = Takenlijst2.this;
+            Context context = Takenlijst.this;
             Intent intent = new Intent(context , TakenDetails.class);
             intent.putExtra("id", group_id);
             intent.putExtra("tasks", response.Data);

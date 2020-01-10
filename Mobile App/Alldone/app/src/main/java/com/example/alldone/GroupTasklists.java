@@ -11,7 +11,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -101,7 +100,7 @@ public class GroupTasklists extends AppCompatActivity {
             // Toast.makeText(GroupTasklists.this, response.toString(), Toast.LENGTH_SHORT).show();
 
             Context context = GroupTasklists.this;
-            Intent intent = new Intent(context , Takenlijst2.class);
+            Intent intent = new Intent(context , Takenlijst.class);
             intent.putExtra("id", group_id);
             intent.putExtra("tasks", response.Data);
             context.startActivity(intent);

@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.AsyncTask;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -17,18 +16,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -113,7 +100,7 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
             @Override
             protected void onPostExecute(String result) {
                 Toast.makeText(MaakTaak.this, "Taak aangemaakt!", Toast.LENGTH_LONG).show();
-                Intent intent0 = new Intent(getApplicationContext(), Takenlijst2.class);
+                Intent intent0 = new Intent(getApplicationContext(), Takenlijst.class);
                 intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent0);
@@ -147,7 +134,7 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
                 //startActivity(intent2);
                 break;
             case (R.id.task_list):
-                Intent intent3 = new Intent(getApplicationContext(), Takenlijst2.class);
+                Intent intent3 = new Intent(getApplicationContext(), Takenlijst.class);
                 startActivity(intent3);
                 break;
             case (R.id.profile):
