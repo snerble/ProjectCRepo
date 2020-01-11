@@ -1,4 +1,4 @@
-﻿using MySql.Data.MySqlClient;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -42,7 +42,24 @@ namespace MySQL.Modeling
 			if (obj.GetType() == GetType())
 			{
 				// Checks if a equals b, or if a and b are both null
-				static bool isEqual(object a, object b) => a?.Equals(b) ?? a == b;
+				static bool isEqual(object a, object b)
+				{
+					// Compare sequence if both are an array
+					if (a is Array && b is Array)
+					{
+						var A_array = a as Array;
+						var B_array = b as Array;
+						// Return false if they aren't the same length
+						if (A_array.Length != B_array.Length) return false;
+						// Return false when the elements are not equal
+						for (int i = 0; i < A_array.Length; i++)
+							if (!A_array.GetValue(i).Equals(B_array.GetValue(i)))
+								return false;
+						// All elements are equal
+						return true;
+					}
+					return a?.Equals(b) ?? a == b;
+				}
 				// Check if the columns are equal for both objects
 				return Utils.GetAllColumns(GetType()).All(x => isEqual(x.GetValue(this), x.GetValue(obj)));
 			}
@@ -97,6 +114,21 @@ namespace MySQL.Modeling
 				column.SetValue(clone, column.GetValue(this));
 			// Return this instance since the clone is only used internally
 			return clone;
+		}
+
+		/// <summary>
+		/// Serializes a <see cref="ItemAdapter"/> into a <see cref="JObject"/>.
+		/// </summary>
+		/// <param name="item">The <see cref="ItemAdapter"/> to serialize.</param>
+		public static implicit operator JObject(ItemAdapter item)
+		{
+			if (item == null) return null;
+
+			var @out = new JObject();
+			// Populate JObject with all columns
+			foreach (var column in Utils.GetAllColumns(item.GetType()))
+				@out.Add(column.Name, new JValue(column.GetValue(item)));
+			return @out;
 		}
 
 		/// <summary>

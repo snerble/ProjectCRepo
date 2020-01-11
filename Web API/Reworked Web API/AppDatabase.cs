@@ -37,6 +37,7 @@ namespace API.Database
 			{
 				AllowBatch = true,
 				TreatTinyAsBoolean = true,
+				CharacterSet = "utf8mb4",
 				// Set config settings
 				Server = address.Host,
 				Port = address.Port == -1 ? 3306u : (uint)address.Port,

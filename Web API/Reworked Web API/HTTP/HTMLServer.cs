@@ -1,12 +1,16 @@
 ﻿using API.Attributes;
+using API.Database;
 using API.HTTP.Endpoints;
 using API.HTTP.Filters;
+using MimeKit;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 
 namespace API.HTTP
@@ -17,6 +21,36 @@ namespace API.HTTP
 	public sealed class HTMLServer : Server
 	{
 		/// <summary>
+		/// Gets the <see cref="User"/> instance associated with the session that is issuing the request.
+		/// </summary>
+		private User CurrentUser
+		{
+			get
+			{
+				// Skip if the session is null or does not have a userid
+				if (CurrentSession == null || !CurrentSession.User.HasValue) return null;
+				// Set the cache with a user from the database if it isn't already set
+				if (_CurrentUser == null) _CurrentUser = Database.Select<User>($"`id` = {CurrentSession.User}").FirstOrDefault();
+				// Return the cache
+				return _CurrentUser;
+			}
+		}
+		private User _CurrentUser;
+		/// <summary>
+		/// Gets the <see cref="Session"/> instance that is issuing the request.
+		/// </summary>
+		private Session CurrentSession { get; set; }
+		/// <summary>
+		/// Gets the <see cref="AppDatabase"/> of the current thread.
+		/// </summary>
+		private AppDatabase Database => Utils.GetDatabase();
+
+		/// <summary>
+		/// Diagnostics timer for detailed log messages.
+		/// </summary>
+		private Stopwatch Timer { get; } = new Stopwatch();
+
+		/// <summary>
 		/// Creates a new instance of <see cref="HTMLServer"/>.
 		/// </summary>
 		/// <param name="queue">The source of requests for this <see cref="HTMLServer"/>.</param>
@@ -24,8 +58,19 @@ namespace API.HTTP
 
 		protected override void Main()
 		{
+            // Reset cached user
+            _CurrentUser = null;
+
+			// Print log and start diagnostics timer
+			Program.Log.Fine($"Processing {Request.HttpMethod} request for '{Request.Url.AbsolutePath}'...");
+			Timer.Restart();
+
 			var url = Request.Url.AbsolutePath.ToLower();
-			
+
+			// Get the session from the cookies (if it exists)
+			var sessionId = Request.Cookies["session"]?.Value;
+			CurrentSession = sessionId == null ? null : Utils.GetSession(sessionId);
+
 			// Apply redirects
 			var redirect = Utils.Redirects.FirstOrDefault(x => (x.ValidOn & ServerAttributeTargets.HTML) != 0 && x.Target == url);
 			if (redirect != null)
@@ -62,6 +107,9 @@ namespace API.HTTP
 		{
 			Response.ContentType = "text/html";
 
+			// Check for login requirement (used later for every case where an endpoint is found)
+			var requiresLogin = Utils.LoginRequirements.FirstOrDefault(x => (x.ValidOn & ServerAttributeTargets.HTML) != 0 && x.Target == url);
+	
 			// Find and invoke all url filters
 			foreach (var filterType in Filter.GetFilters(url))
 			{
@@ -74,8 +122,18 @@ namespace API.HTTP
 			var endpoint = Endpoint.GetEndpoint<HTMLEndpoint>(url);
 			if (endpoint != null)
 			{
+				// Show 401 if login is required
+				if (requiresLogin != null)
+				{
+					SendError(HttpStatusCode.Unauthorized);
+					return;
+				}
+
 				// Create an instance of the endpoint
-				(Activator.CreateInstance(endpoint) as Endpoint).Invoke(Request, Response, this);
+				var endpointInstance = (Activator.CreateInstance(endpoint) as HTMLEndpoint);
+				endpointInstance.CurrentSession = CurrentSession;
+				endpointInstance.CurrentUser = CurrentUser;
+				endpointInstance.Invoke(Request, Response, this);
 				return;
 			}
 
@@ -86,6 +144,13 @@ namespace API.HTTP
 			string file = Program.Config.HTMLSourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file))
 			{
+				// Show 401 if login is required
+				if (requiresLogin != null)
+				{
+					SendError(HttpStatusCode.Unauthorized);
+					return;
+				}
+
 				Response.AddHeader("Date", Utils.FormatTimeStamp(File.GetLastWriteTimeUtc(file)));
 				SendFile(file);
 				return;
@@ -95,6 +160,13 @@ namespace API.HTTP
 			file = Program.Config.ResourceDir + Uri.UnescapeDataString(url);
 			if (File.Exists(file) && Request.AcceptTypes.Any(x => x.Contains("image/")))
 			{
+				// Show 401 if login is required
+				if (requiresLogin != null)
+				{
+					SendError(HttpStatusCode.Unauthorized);
+					return;
+				}
+
 				Response.AddHeader("Date", Utils.FormatTimeStamp(File.GetLastWriteTimeUtc(file)));
 				ServeImage(Response, url);
 				return;
@@ -117,23 +189,31 @@ namespace API.HTTP
 				SendText("<html style=\"text-align: center\">" +
 					"<body style=\"background-color: black; margin: 0; padding: 0;\">" +
 					"<video controls style=\"width: 100%; max-height: 100vh;\">" +
-					$"<source src=\"{file}\" type=\"video/{Path.GetExtension(file)[1..]}\">" +
+					$"<source src=\"{file}\" type=\"{MimeTypes.GetMimeType(Path.GetExtension(file))}\">" +
 					"</video>" +
 					"</body>" +
 					"</html>");
 				return;
 			}
-			Send(File.ReadAllBytes(Program.Config.ResourceDir + Uri.UnescapeDataString(file)));
+			SendFile(Program.Config.ResourceDir + Uri.UnescapeDataString(file));
 		}
 
 		#region Overrides
 		/// <summary>
-		/// Writes a byte buffer to the specified <see cref="HttpListenerResponse"/>.
+		/// Writes a byte array to the specified <see cref="HttpListenerResponse"/>.
 		/// </summary>
-		/// <param name="buffer">The array of bytes to send.</param>
+		/// <param name="data">The array of bytes to send.</param>
 		/// <param name="statusCode">The <see cref="HttpStatusCode"/> to send to the client.</param>
-		public override void Send(byte[] buffer, HttpStatusCode statusCode = HttpStatusCode.OK)
-			=> base.Send(buffer, StatusOverride ?? statusCode);
+		public override void Send(byte[] data, HttpStatusCode statusCode = HttpStatusCode.OK)
+		{
+			base.Send(data, StatusOverride ?? statusCode);
+			// Write detailed log about response
+			var logMessage = $"Processed  {Request.HttpMethod} request for '{Request.Url.AbsolutePath}' with status code {(int)statusCode} " +
+					$"in {Utils.FormatTimer(Timer)}{(data == null ? "" : $" and sent {Utils.FormatDataLength(data.Length)}")}.";
+			// Success status codes are seen as less important, thus are trace messages
+			if (((int)statusCode).ToString().StartsWith("2")) Program.Log.Trace(logMessage);
+			else Program.Log.Info(logMessage);
+		}
 		/// <summary>
 		/// Writes plain text to the specified <see cref="HttpListenerResponse"/>.
 		/// </summary>
@@ -197,10 +277,19 @@ namespace API.HTTP
 					base.SendError(statusCode);
 					return;
 				}
+
+				// If it is a redirect, simply send a 302 Redirect status code
+				if (errorPage.IsRedirect)
+				{
+					Response.Redirect(errorPage.Url);
+					SendError(HttpStatusCode.PermanentRedirect);
+					return;
+				}
+
 				// Cache the status code for infinite loop detection
 				PreviousCode = statusCode;
-				// Overrride the next status code and parse the error page url instead and send that endpoint
-				StatusOverride = statusCode;
+				// If specified, overrride the next status code and parse the error page url instead and send that endpoint
+				if (errorPage.KeepStatusCode) StatusOverride = statusCode;
 				try
 				{
 					Main(errorPage.Url);

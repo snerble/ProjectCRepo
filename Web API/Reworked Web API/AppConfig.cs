@@ -4,6 +4,7 @@ using Logging;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Linq;
 
 namespace API.Config
 {
@@ -11,7 +12,7 @@ namespace API.Config
 	/// Custom class implementing <see cref="ConfigBase"/>.
 	/// Provides the configuration features nescessary for the Web API project.
 	/// </summary>
-	sealed class AppConfig : ConfigBase
+	public sealed class AppConfig : ConfigBase
 	{
 		/// <summary>
 		/// Gets whether this <see cref="AppConfig"/> instance reloads it's content when it's file is changed.
@@ -54,6 +55,9 @@ namespace API.Config
 		/// </remarks>
 		protected override void Setup()
 		{
+			// Clone the content to later check if changes need to be saved
+			var contentCopy = Content.DeepClone();
+
 			// Build database settings
 			TryAddItem(Content, "dbSettings", new JObject());
 			TryAddItem(Content["dbSettings"], "serverAddress", (string)null);
@@ -74,6 +78,7 @@ namespace API.Config
 			TryAddItem(Content, "appSettings", new JObject());
 			TryAddItem(Content["appSettings"], "logLevel", Program.DEBUG ? Level.ALL.Name : Level.INFO.Name);
 			TryAddItem(Content["appSettings"], "logDir", "Logs");
+			TryAddItem(Content["appSettings"], "useConsoleColors", true);
 
 			// Build server settings
 			TryAddItem(Content, "serverSettings", new JObject());
@@ -82,7 +87,9 @@ namespace API.Config
 			TryAddItem(Content["serverSettings"], "resourceDir", "../../../HTML/res");
 			TryAddItem(Content["serverSettings"], "serverAddresses", new JArray() { "localhost" });
 
-			Save();
+			// Save the content if it doesn't equal the initial copy
+			if (!JToken.DeepEquals(contentCopy, Content))
+				Save();
 			Verify();
 		}
 
@@ -114,6 +121,10 @@ namespace API.Config
 		}
 
 		/// <summary>
+		/// Invoked whenever the config reloads
+		/// </summary>
+		public event EventHandler<ReloadEventArgs> Reload;
+		/// <summary>
 		/// The function that is called when the config file has been edited by another process.
 		/// </summary>
 		/// <param name="newContent">The content of the new config.</param>
@@ -130,12 +141,13 @@ namespace API.Config
 			}
 			catch (Exception e)
 			{
-				Program.Log.Error($"Reload failed: {e.Message}", e, false);
+				Program.Log.Error($"Reload failed: {e.Message}", e, true);
 				Program.Log.Error($"Restoring previous config...");
 				Content = oldContent;
 				Save();
 				return;
 			}
+			Reload?.Invoke(this, new ReloadEventArgs() { Diff = GetDiff(oldContent, newContent) });
 			Program.Log.Info("Reloaded config.");
 		}
 
@@ -144,30 +156,76 @@ namespace API.Config
 		/// </summary>
 		/// <param name="newContent">A new <see cref="JObject"/> to use for this config.</param>
 		/// <exception cref="ConfigException">Thrown when <paramref name="newContent"/> fails the config validation.</exception>
-		public void Update(JObject newContent)
-		{
-			JObject oldContent = Content;
-			try
-			{
-				Content = newContent;
-				Setup();
-			}
-			catch (Exception e)
-			{
-				Program.Log.Error($"Update failed: {e.Message}", e, false);
-				Program.Log.Error($"Restoring previous config...");
-				Content = oldContent;
-				Save();
-				return;
-			}
-			Program.Log.Info("Updated config.");
-		}
+		public void Update(JObject newContent) => OnReload(newContent);
 
-		// Example of a property that refers directly to a config setting. The setter is optional.
-		/*public string ServerAddress
+		/// <summary>
+		/// Gets the differences between the two JObjects.
+		/// </summary>
+		private static JsonDiff GetDiff(JObject j1, JObject j2)
 		{
-			get { return Program.Config["dbSettings"]["serverAddress"].Value<string>(); }
-			set { Program.Config["dbSettings"]["serverAddress"] = value; Program.Config.Save(); }
-		}*/
+			// Get all child properties of both JObjects
+			var j1props = j1.Properties();
+			var j2props = j2.Properties();
+
+			// Create diff instance and fill with empty JObjects
+			var outDiff = new JsonDiff()
+			{
+				Added = new JObject(),
+				Changed = new JObject(),
+				Removed = new JObject()
+			};
+
+			// fill the added JObject with all properties unique in j2
+			foreach (var prop in j2props.Where(x => j1props.Where(y => x.Name == y.Name).Count() == 0))
+				outDiff.Added.Add(prop.Name, prop.Value);
+
+			// fill the removed JObject with all properties unique to j1
+			foreach (var prop in j1props.Where(x => j2props.Where(y => x.Name == y.Name).Count() == 0))
+				outDiff.Removed.Add(prop.Name, prop.Value);
+			
+			// recursively find all changes between j1 and j2
+			foreach (var prop in j1props)
+			{
+				// Find the equivalent property in j2
+				var other = j2props.FirstOrDefault(x => x.Name == prop.Name);
+				if (other == null) continue;
+
+				if (other.Value.Type != prop.Value.Type)
+				{
+					// If the type of the other property is different, just user the new value
+					outDiff.Changed.Add(prop.Name, other.Value);
+				}
+				else if (other.Value.Type == JTokenType.Object && prop.Value.Type == JTokenType.Object && !JToken.DeepEquals(prop, other))
+				{
+					// If they are both JObjects and not equal, use their diff
+					var diff = GetDiff(prop.Value as JObject, other.Value as JObject);
+					// Add diff to output values if they contain something
+					if (diff.Added.Count != 0) outDiff.Added.Add(prop.Name, diff.Added);
+					if (diff.Changed.Count != 0) outDiff.Changed.Add(prop.Name, diff.Changed);
+					if (diff.Removed.Count != 0) outDiff.Removed.Add(prop.Name, diff.Removed);
+				}
+				else if (!JToken.DeepEquals(other, prop))
+				{
+					// If they are not equal, use the new value
+					outDiff.Changed.Add(prop.Name, other.Value);
+				}
+			}
+			return outDiff;
+		}
+	}
+
+	/// <summary>
+	/// Struct containing JObjects for new, changed and removed elements.
+	/// </summary>
+	public struct JsonDiff
+	{
+		public JObject Added { get; set; }
+		public JObject Changed { get; set; }
+		public JObject Removed { get; set; }
+	}
+
+	public class ReloadEventArgs : EventArgs
+	{
+		public JsonDiff Diff { get; set; }
 	}
 }

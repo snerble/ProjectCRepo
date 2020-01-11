@@ -8,7 +8,7 @@ window.onload = function () {
 	var mode = this.document.getElementById("mode").getAttribute("src").split('/')[3];
 
 	editor = CodeMirror(element, {
-		value: data,
+		value: data.trim(),
 		mode: mode,
 		autocorrect: true,
 		theme: "idea",

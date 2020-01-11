@@ -89,13 +89,21 @@ namespace API.HTTP.Endpoints
 			=> typeof(T).GetCustomAttribute<EndpointUrl>()?.Url;
 
 		/// <summary>
+		/// Directs the request to <paramref name="src"/> to a new instance of the specified type <typeparamref name="T"/>.
+		/// </summary>
+		/// <typeparam name="T">An <see cref="Endpoint"/> subclass to direct the request to.</typeparam>
+		/// <param name="src">The <see cref="Endpoint"/> whose request to redirect to another endpoint.</param>
+		public static void InternalRedirect<T>(Endpoint src) where T : Endpoint
+			=> (Activator.CreateInstance(typeof(T)) as Endpoint).Invoke(src.Request, src.Response, src.Server);
+
+		/// <summary>
 		/// Splits a url query into a dictionary.
 		/// </summary>
 		protected static Dictionary<string, string> SplitQuery(HttpListenerRequest request)
 		{
 			string query;
 			// Post requests keep their query string inside their payload
-			if (request.HttpMethod.ToLower() == "post")
+			if (request.ContentType == "application/x-www-form-urlencoded")
 			{
 				using var reader = new StreamReader(request.InputStream);
 				query = reader.ReadToEnd();
@@ -115,8 +123,8 @@ namespace API.HTTP.Endpoints
 			foreach (var item in items)
 			{
 				// Try to parse every key-value pair
-				var keyValuePair = item.Split('=', 2);
-				outDict[keyValuePair[0]] = string.Join("", keyValuePair[1..]);
+				var keyValuePair = item.Replace("+", " ").Split('=', 2);
+				outDict[Uri.UnescapeDataString(keyValuePair[0])] = Uri.UnescapeDataString(string.Concat(keyValuePair[1..]));
 			}
 			return outDict;
 		}

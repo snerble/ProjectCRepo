@@ -78,11 +78,15 @@ namespace API.HTTP
 			thread.Start();
 		}
 		/// <summary>
-		/// Stops this <see cref="Listener"/>'s underlying <see cref="HttpListener"/>.
+		/// Stops the underlying <see cref="HttpListener"/>.
 		/// </summary>
-		public void Stop()
+		public void Stop() => listener.Stop();
+		/// <summary>
+		/// Closes this <see cref="Listener"/>'s underlying <see cref="HttpListener"/>.
+		/// </summary>
+		public void Close()
 		{
-			listener.Stop();
+			listener.Close();
 			thread.Interrupt();
 		}
 		/// <summary>
@@ -114,10 +118,9 @@ namespace API.HTTP
 					}
 					// Add to the default queue if no custom queue was satisfied
 					if (!foundQueue) Queue.Add(context);
-					Program.Log.Info("Received and enqueued a request.");
 				}
 			}
-			catch (ThreadInterruptedException) { }
+			catch (ThreadInterruptedException) { } // lol if only ;_;
 		}
 	}
 }

@@ -9,6 +9,11 @@
     <AssemblyName>API</AssemblyName>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="HTTP\Endpoints\Login\**" />
+    <EmbeddedResource Remove="HTTP\Endpoints\Login\**" />
+    <None Remove="HTTP\Endpoints\Login\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MimeKit" Version="2.4.1" />

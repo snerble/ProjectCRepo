@@ -1,6 +1,9 @@
 ﻿using MySql.Data.MySqlClient;
 using MySQL.Modeling;
 using System;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace API.Database
 {
@@ -35,7 +38,20 @@ namespace API.Database
 		public int? Id { get; set; }
 		public string Username { get; set; }
 		public string Password { get; set; }
-		public long Token { get; set; } = DateTimeOffset.Now.ToUnixTimeSeconds();
+		public long Created { get; set; } = DateTimeOffset.Now.ToUnixTimeSeconds();
 		public AccessLevel AccessLevel { get; set; } = AccessLevel.User;
+
+		/// <summary>
+		/// Returns a salted <see cref="SHA512"/> password hash using this <see cref="User"/>'s username and password.
+		/// </summary>
+		public string GetPasswordHash()
+		{
+			// Create a sha instance
+			using var sha = SHA512.Create();
+			// Compute the hash
+			var passwordHash = sha.ComputeHash(Encoding.UTF8.GetBytes(Username + "#:#" + Password));
+			// Convert the hash bytes to a hex string and return it
+			return string.Concat(passwordHash.Select(x => x.ToString("x2")));
+		}
 	}
 }
