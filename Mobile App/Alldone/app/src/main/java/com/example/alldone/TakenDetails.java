@@ -28,6 +28,9 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,54 +39,63 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
 
+    public static int id = -1;
     public String title;
-    public String priority;
     public String description;
-    public String id;
+    public int priority;
+
     public Button deleteBtn;
     public Button editBtn;
 
     private TabLayout tabLayout;
     private ViewPager viewpager;
 
-    //String ServerURL = "http://145.137.123.23/alldone/v1/delete_task.php";
-    //String ServerURL = "http://145.137.121.233/alldone/v1/delete_task.php";
-    //String ServerURL = "http://145.137.121.231/alldone/v1/delete_task.php";
-    //String ServerURL = "http://145.137.122.181/alldone/v1/delete_task.php";
-    String ServerURL = "http://145.137.121.58/alldone/v1/delete_task.php";
-    //String ServerURL = "http://192.168.188.62/alldone/v1/delete_task.php";
-
-    // Getting the query to insert data, !IP address differs from location :)
-
+    private UsersTab userFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        GetStatus_Task.view = TakenDetails.this;
+
         setContentView(R.layout.activity_taken_details2);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        mDrawerLayout = findViewById(R.id.drawerLayout);
         mToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.open, R.string.close);
 
         mDrawerLayout.addDrawerListener(mToggle);
         mToggle.syncState();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nv1);
+        NavigationView navigationView = findViewById(R.id.nv1);
         navigationView.setNavigationItemSelectedListener(this);
 
         Intent intent = getIntent();
 
+        id = intent.getIntExtra("id", id);
         title = intent.getStringExtra("title");
-        priority = intent.getStringExtra("priority");
         description = intent.getStringExtra("description");
-        id = intent.getStringExtra("id");
+        priority = intent.getIntExtra("priority", -1);
+
         TextView titleText = findViewById(R.id.titleTxt);
         TextView priorityText = findViewById(R.id.priorityTxt);
-        TextView status = findViewById(R.id.users);
 
         titleText.setText(title);
-        priorityText.setText(priority);
-        status.setText(id);
+        switch (priority) {
+            case 0:
+                priorityText.setText("");
+                break;
+            case 1:
+                priorityText.setText("!");
+                break;
+            case 2:
+                priorityText.setText("!!");
+                break;
+            case 3:
+                priorityText.setText("!!!");
+                break;
+        }
+        // TODO set by using a request getting the enrollments
+//        status.setText(id);
 
         deleteBtn = findViewById(R.id.delete);
         editBtn = findViewById(R.id.edit);
@@ -98,21 +110,101 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
         deleteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DeleteData(id);
+                new DeleteTask().execute();
             }
         });
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Context oof = v.getContext();
-                Intent intent = new Intent(oof, BewerkTaak.class);
+                Context context = v.getContext();
+                Intent intent = new Intent(context, BewerkTaak.class);
                 intent.putExtra("title", title);
                 intent.putExtra("priority", priority);
                 intent.putExtra("description", description);
                 intent.putExtra("id", id);
-                oof.startActivity(intent);
+                context.startActivity(intent);
             }
         });
+    }
+
+    class DeleteTask extends AsyncTask<Void, Void, Response> {
+        @Override
+        protected Response doInBackground(Void... voids) {
+            try {
+                JSONObject json = new JSONObject()
+                        .put("task", id);
+                return Connection.Send("task", "DELETE", json.toString());
+            } catch (JSONException e) {
+                // Won't happen
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Response response) {
+            if (response.IsSuccessful() || response.StatusCode == 400) {
+                Toast.makeText(getApplicationContext(), "Taak verwijderd!", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(getApplicationContext(), Takenlijst.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            } else {
+                if (response.StatusCode == 401) {
+                    Toast.makeText(getApplicationContext(), "Je bent niet bevoegd om deze taak te verwijderen.", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Iets ging verkeerd. Probeer het later nog een keer.", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+    public static class GetStatus_Task extends AsyncTask<Void, Void, Response> {
+        public static TakenDetails view;
+        public UsersTab userFragment;
+
+        @Override
+        protected Response doInBackground(Void... voids) {
+            try {
+                JSONObject json = new JSONObject()
+                        .put("task", view.id);
+                return Connection.Send("taskenroll", "GET", json.toString());
+            } catch (JSONException e) {
+                // WONT HAPPEN GODDAMN
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Response response) {
+            if (response.IsSuccessful()) {
+                TextView status = view.findViewById(R.id.users);
+
+                if (response.StatusCode == 200) {
+                    try {
+                        JSONArray responseJson = response.GetJSON().getJSONArray("results");
+
+                        boolean areAllDone = true;
+                        final JSONObject[] elements = new JSONObject[responseJson.length()];
+                        for (int i = 0; i < responseJson.length(); i++) {
+                            elements[i] = responseJson.getJSONObject(i);
+                            if (!elements[i].has("End"))
+                                areAllDone = false;
+                        }
+
+                        userFragment.UpdateList(elements);
+
+                        if (areAllDone) status.setText("Done");
+                        else status.setText("In progress");
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    status.setText("To-do");
+                }
+            } else {
+                Toast.makeText(view.getApplicationContext(), "Iets ging verkeerd. Probeer het later nog een keer.", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     @Override
@@ -158,66 +250,21 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
 
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
 
-        Bundle bundle = new Bundle();
-        bundle.putString("Description", description);
-        Fragment fragmentDesc = new DescriptionTab();
-        fragmentDesc.setArguments(bundle);
+        Bundle descBundle = new Bundle();
+        descBundle.putString("Description", description);
+        Fragment descFragment = new DescriptionTab();
+        descFragment.setArguments(descBundle);
+        viewPagerAdapter.addFragment(descFragment, "Beschrijving"); //new DescriptionTab(), "Beschrijving"
 
-        viewPagerAdapter.addFragment(fragmentDesc, "Beschrijving"); //new DescriptionTab(), "Beschrijving"
-        viewPagerAdapter.addFragment(new UsersTab(), "Ingeschreven");
-        viewPagerAdapter.addFragment(new CommentsTab(), "Opmerkingen");
+        userFragment = new UsersTab();
+        viewPagerAdapter.addFragment(userFragment, "Ingeschreven");
+
+        GetStatus_Task task = new GetStatus_Task();
+        task.userFragment = userFragment;
+        task.execute();
+
+//        viewPagerAdapter.addFragment(new CommentsTab(), "Opmerkingen");
         viewpager.setAdapter(viewPagerAdapter);
     }
 
-    public void DeleteData(final String id){
-
-        class SendPostReqAsyncTask extends AsyncTask<String, Void, String> {
-            // Using AsyncTask to execute heavier tasks in the background on a dedicated thread
-            // --> the app runs on a single thread, thus executing DeleteData() which takes time to get a responsive could make the app non-responsive.
-
-            @Override
-            protected String doInBackground(String... params) {
-                // The code is being executed in the background (thus doInBackground())
-
-                String IdHolder = id;
-
-                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(); // Making an list for the to be inserted data.
-
-                nameValuePairs.add(new BasicNameValuePair("id", IdHolder));
-                // Matching the value with the key from the table.
-
-                try { // Try so we can test for errors
-                    HttpClient httpClient = new DefaultHttpClient();
-
-                    HttpPost httpPost = new HttpPost(ServerURL);
-
-                    httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-                    HttpResponse httpResponse = httpClient.execute(httpPost);
-
-                    HttpEntity httpEntity = httpResponse.getEntity();
-                }
-                catch (Exception e) {
-                    System.out.println("Exception was thrown");
-                    e.printStackTrace();
-                } // Error message if something went wrong
-
-                return "Taak verwijderd";
-
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                Toast.makeText(TakenDetails.this, "Taak verwijderd!", Toast.LENGTH_LONG).show();
-                Intent intent0 = new Intent(getApplicationContext(), Takenlijst.class);
-                intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent0);
-            }
-        }
-
-        SendPostReqAsyncTask sendPostReqAsyncTask = new SendPostReqAsyncTask();
-
-        sendPostReqAsyncTask.execute(id);
-    }
 }

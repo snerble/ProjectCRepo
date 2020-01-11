@@ -51,9 +51,20 @@ namespace API.HTTP.Endpoints
 			// Get tasks belonging to the specified group with a certain limit
 			var results = Database.Select<Task>($"`group` = {group_id} LIMIT {offset ?? 0},{limit ?? long.MaxValue}");
 
-			// Send 200 "OK" with the results
+			// Create and fill a result JArray
+			var resultArray = new JArray();
+			foreach (var task in results)
+			{
+				var entry = (JObject)task;
+				// remove the description if it is null
+				if (task.Description == null)
+					entry.Remove("Description");
+				resultArray.Add(entry);
+			}
+
+			// Send json containing the results
 			Server.SendJSON(new JObject() {
-				{"results", new JArray(results.Select(x => (JObject)x)) }
+				{"results", resultArray }
 			});
 		}
 
@@ -116,6 +127,59 @@ namespace API.HTTP.Endpoints
 			Server.SendJSON(new JObject() {
 				{"id", task.Id.Value }
 			}, HttpStatusCode.Created);
+		}
+
+		/// <summary>
+		/// Deletes the specified task from the database. Requires admin or creator privileges.
+		/// 
+		/// Required JSON arguments are:
+		///		- task [int] : The id of the group whose tasks we want to get. May not be less than 0 and must be valid.
+		///		
+		/// Responds with:
+		///		- 204 "No Content"			 : Sent to indicate success.
+		///		- 400 "Bad Request"			 : Sent when the task id was invalid.
+		///		- 401 "Unauthorized"		 : Sent when the current user is not the task creator or is not moderator or higher.
+		///		- 422 "Unprocessable Entity" : Sent when the arguments failed validation. A JSON with extra info is also sent.
+		/// </summary>
+		public override void DELETE(JObject json, Dictionary<string, string> parameters)
+		{
+			// Validate required params
+			if (!ValidateParams(json,
+				("task", x => x.Value<int>() >= 0))) // Must be int and may not be less than 0
+				return;
+
+			// Get params
+			var task_id = json["task"].Value<int>();
+
+			// Get the task object
+			var task = Database.Select<Task>($"`id` = {task_id}").FirstOrDefault();
+
+			// Send 400 "Bad Request" if the task is null
+			if (task == null)
+			{
+				Server.SendError(HttpStatusCode.BadRequest);
+				return;
+			}
+
+			// If the current user is not the task creator
+			if (CurrentUser.Id != task.Creator)
+			{
+				// Get the group-user link for the current user
+				var groupUser_link = Database.Select<GroupUser_Link>($"`group` = {task.Group} AND `user` = {CurrentUser.Id}").FirstOrDefault();
+
+				// If the link is null or the rank is User, send 401 "Unauthorized"
+				if (groupUser_link == null || groupUser_link.Rank == Rank.User)
+				{
+					Server.SendError(HttpStatusCode.Unauthorized);
+					return;
+				}
+			}
+
+			// Delete the task
+			Database.Delete(task);
+
+			// Send 204 "No Content" to indicate success with no response body.
+			Server.SendError(HttpStatusCode.NoContent);
 		}
 	}
 }

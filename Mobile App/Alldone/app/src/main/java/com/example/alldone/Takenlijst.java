@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -33,7 +34,7 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
 
-    public int id;
+    public static int id;
 
     ListView listView;
 
@@ -42,14 +43,14 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_takenlijst);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        mDrawerLayout = findViewById(R.id.drawerLayout);
         mToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.open, R.string.close);
 
         mDrawerLayout.addDrawerListener(mToggle);
         mToggle.syncState();
 
         Intent intent = getIntent();
-        id = intent.getIntExtra("id", -1);
+        id = intent.getIntExtra("id", id);
 
         listView = findViewById(R.id.lv);
 
@@ -60,6 +61,14 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
                 Intent makeTask = new Intent(getApplicationContext(), MaakTaak.class);
                 makeTask.putExtra("groupid", id);
                 startActivity(makeTask);
+            }
+        });
+
+        fab.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                new GetShareCode_Task().execute();
+                return true;
             }
         });
 
@@ -100,48 +109,48 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                JSONObject group = ((MyAdapter)parent.getAdapter()).Tasks[position];
+                Context context = Takenlijst.this;
+                JSONObject task = ((MyAdapter)parent.getAdapter()).Tasks[position];
+
                 try {
-                    OpenTasklist_Task task = new OpenTasklist_Task();
-                    task.group_id = group.getInt("Id");
-                    task.execute(group);
+                    Intent intent = new Intent(context , TakenDetails.class);
+                    intent.putExtra("id", task.getInt("Id"));
+                    intent.putExtra("title", task.getString("Title"));
+                    intent.putExtra("description", task.optString("Description"));
+                    intent.putExtra("priority", task.getInt("Priority"));
+                    context.startActivity(intent);
                 } catch (JSONException e) {
+                    // WON'T HAPPEN
                     throw new RuntimeException(e);
                 }
             }
         });
     }
 
-    class OpenTasklist_Task extends AsyncTask<JSONObject, Float, Response> {
-        public int group_id;
-
+    class GetShareCode_Task extends AsyncTask<Void, Void, Response> {
         @Override
-        protected Response doInBackground(JSONObject... jsonObjects) {
-            if (jsonObjects.length < 1)
-                throw new IllegalArgumentException("At least one JSONObject must be passed as an argument.");
-
-            JSONObject group = jsonObjects[0];
+        protected Response doInBackground(Void... voids) {
             try {
                 JSONObject json = new JSONObject()
-                        .put("group", group.getInt("Id"));
-                return Connection.Send("task", "GET", json.toString());
+                        .put("group", id);
+                return Connection.Send("groupsharing", "GET", json.toString());
             } catch (JSONException e) {
-                // Won't happen
                 throw new RuntimeException(e);
             }
         }
 
         @Override
         protected void onPostExecute(Response response) {
-            response.PrettyPrint();
-
-            Toast.makeText(Takenlijst.this, response.toString(), Toast.LENGTH_SHORT).show();
-
-            Context context = Takenlijst.this;
-            Intent intent = new Intent(context , TakenDetails.class);
-            intent.putExtra("id", group_id);
-            intent.putExtra("tasks", response.Data);
-            context.startActivity(intent);
+            if (response.IsSuccessful()) {
+                JSONObject responseJson = response.GetJSON();
+                showMessageBox(responseJson.optString("code"));
+                setClipboard(responseJson.optString("code"));
+                Toast.makeText(getApplicationContext(), "De code is gekopieerd naar het klembord!", Toast.LENGTH_LONG).show();
+            } else if (response.StatusCode == 403) {
+                Toast.makeText(getApplicationContext(), "Je bent niet gemachtigd om dit te doen.", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Iets ging verkeerd. Probeer het later nog een keer.", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -151,7 +160,7 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
         JSONObject Tasks[];
 
         MyAdapter (Context c, JSONObject... tasks) {
-            super(c, R.layout.layout_takenlijst2, R.id.textView1, tasks);
+            super(c, R.layout.layout_takenlijst2, R.id.usernameText, tasks);
             this.context = c;
             this.Tasks = tasks;
         }
@@ -161,7 +170,7 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             LayoutInflater layoutInflater = (LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View row = layoutInflater.inflate(R.layout.layout_takenlijst2, parent, false);
-            TextView myTitle = row.findViewById(R.id.textView1);
+            TextView myTitle = row.findViewById(R.id.usernameText);
             TextView mySubtitle = row.findViewById(R.id.textView2);
 
             JSONObject task = this.Tasks[position];
@@ -215,5 +224,21 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
                 startActivity(intent5);
         }
         return true;
+    }
+
+    private void showMessageBox(String title) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title);
+
+        // Set up the ok button
+        builder.setPositiveButton("OK", null);
+
+        builder.show();
+    }
+
+    private void setClipboard(String text) {
+        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getApplicationContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        android.content.ClipData clip = android.content.ClipData.newPlainText("Copied Text", text);
+        clipboard.setPrimaryClip(clip);
     }
 }
