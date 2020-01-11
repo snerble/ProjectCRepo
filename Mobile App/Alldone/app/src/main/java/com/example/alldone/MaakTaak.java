@@ -26,6 +26,8 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +50,8 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
 
     EditText title, description;
     Button button;
-    String titleString, descString, priorityString;
+    String titleString, descString;
+    int priorityString;
     Spinner priority;
 
     @Override
@@ -95,23 +98,34 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
     public void GetData(){
         titleString = title.getText().toString();
         descString = description.getText().toString();
-        priorityString = priority.getSelectedItem().toString(); // Converting the input in the edittexts and spinner to strings.
+        priorityString = Integer.parseInt(priority.getSelectedItem().toString()); // Converting the input in the edittexts and spinner to strings.
     }
 
-    public void InsertData(final String title, final String description, final String priority){
+    public void InsertData(final String title, final String description, final int priority){
 
-        class SendPostReqAsyncTask extends AsyncTask<String, Void, String> {
+        class SendPostReqAsyncTask extends AsyncTask<Void, Void, Response> {
         // Using AsyncTask to execute heavier tasks in the background on a dedicated thread
         // --> the app runs on a single thread, thus executing InsertData() which takes time to get a responsive could make the app non-responsive.
 
             @Override
-            protected String doInBackground(String... params) {
+            protected Response doInBackground(Void... params) {
                 // The code is being executed in the background (thus doInBackground())
-                return null;
+                GetData();
+                try {
+                    JSONObject json = new JSONObject()
+                            //.put("group", group.getInt("Id")); need group lol
+                            .put("title", titleString)
+                            .put("description", descString)
+                            .put("priority", priorityString);
+                    return Connection.Send("task", "POST", json.toString());
+                } catch (JSONException e) {
+                    // Won't happen
+                    throw new RuntimeException(e);
+                }
             }
 
             @Override
-            protected void onPostExecute(String result) {
+            protected void onPostExecute(Response result) {
                 Toast.makeText(MaakTaak.this, "Taak aangemaakt!", Toast.LENGTH_LONG).show();
                 Intent intent0 = new Intent(getApplicationContext(), Takenlijst2.class);
                 intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -122,7 +136,7 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
 
         SendPostReqAsyncTask sendPostReqAsyncTask = new SendPostReqAsyncTask();
 
-        sendPostReqAsyncTask.execute(title, description, priority);
+        sendPostReqAsyncTask.execute();
     }
 
     @Override
