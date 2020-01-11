@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.AsyncTask;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -157,7 +156,7 @@ public class BewerkTaak extends AppCompatActivity implements NavigationView.OnNa
             @Override
             protected void onPostExecute(String result) {
                 Toast.makeText(BewerkTaak.this, "Taak bewerkt!", Toast.LENGTH_LONG).show();
-                Intent intent0 = new Intent(getApplicationContext(), Takenlijst2.class);
+                Intent intent0 = new Intent(getApplicationContext(), Takenlijst.class);
                 intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent0);
@@ -192,7 +191,7 @@ public class BewerkTaak extends AppCompatActivity implements NavigationView.OnNa
                 intent2.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent2);
             case (R.id.task_list):
-                Intent intent3 = new Intent(getApplicationContext(), Takenlijst2.class);
+                Intent intent3 = new Intent(getApplicationContext(), Takenlijst.class);
                 startActivity(intent3);
                 break;
             case (R.id.profile):

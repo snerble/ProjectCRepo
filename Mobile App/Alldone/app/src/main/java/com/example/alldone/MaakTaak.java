@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.AsyncTask;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -127,7 +126,7 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
             @Override
             protected void onPostExecute(Response result) {
                 Toast.makeText(MaakTaak.this, "Taak aangemaakt!", Toast.LENGTH_LONG).show();
-                Intent intent0 = new Intent(getApplicationContext(), Takenlijst2.class);
+                Intent intent0 = new Intent(getApplicationContext(), Takenlijst.class);
                 intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent0);
@@ -161,7 +160,7 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
                 //startActivity(intent2);
                 break;
             case (R.id.task_list):
-                Intent intent3 = new Intent(getApplicationContext(), Takenlijst2.class);
+                Intent intent3 = new Intent(getApplicationContext(), Takenlijst.class);
                 startActivity(intent3);
                 break;
             case (R.id.profile):

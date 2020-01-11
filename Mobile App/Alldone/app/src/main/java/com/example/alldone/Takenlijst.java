@@ -1,56 +1,46 @@
 package com.example.alldone;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.material.navigation.NavigationView;
-
-import java.util.ArrayList;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import org.json.JSONObject;
+import com.google.android.material.navigation.NavigationView;
+
 import org.json.JSONArray;
 import org.json.JSONException;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
+import org.json.JSONObject;
 
 public class Takenlijst extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
 
-    private static final String TAG = "Takenlijst";
+    public int id;
+    public String tasks;
 
-    private String userData;
-
-    private ArrayList<String> titleList = new ArrayList<>();
-    private ArrayList<String> usersList = new ArrayList<>();
-    private ArrayList<String> priorityList = new ArrayList<>();
-    private ArrayList<String> statusList = new ArrayList<>();
+    ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_takenlijst);
-
-        /*if(!SharedPrefManager.getInstance(this).isLoggedIn()){
-            finish();
-            startActivity(new Intent(this, MainActivity.class));
-        } */
-
-        initArrays();
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         mToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.open, R.string.close);
@@ -58,87 +48,125 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
         mDrawerLayout.addDrawerListener(mToggle);
         mToggle.syncState();
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nv1);
-        navigationView.setNavigationItemSelectedListener(this);
-    }
+        Intent intent = getIntent();
+        id = intent.getIntExtra("id", -1);
+        tasks = intent.getStringExtra("tasks");
 
-    private void initArrays(){
-        //titleList.add("Koffiebonen bijvullen");
-        //usersList.add("Open voor inschrijving");
-        //priorityList.add("");
-        //statusList.add("");
-        //titleList.add("Bureau repareren");
-        //usersList.add("Amy, Daphne");
-        //priorityList.add("!!");
-        //statusList.add("Bezig");
+        listView = findViewById(R.id.lv);
 
-        String ServerURL = "http://192.168.188.62/alldone/v1/fetch_tasks.php";
-        //String ServerURL = "http://145.137.122.231/alldone/v1/fetch_tasks.php";
-        // new updateData().execute(ServerURL);
-        getJSON(ServerURL);
-    }
-
-    private void getJSON(final String urlWebService) {
-
-        class GetJSON extends AsyncTask<Void, Void, String> {
-
+        class RetrieveTasks extends AsyncTask<String, Void, Response> {
             @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-            }
-
-            @Override
-            protected void onPostExecute(String s) {
-                super.onPostExecute(s);
-
+            protected Response doInBackground(String... url) {
                 try {
-                    loadIntoListView(s);
+                    JSONObject json = new JSONObject()
+                            .put("group", id);
+                    return Connection.Send("task", "GET", json.toString());
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             }
 
             @Override
-            protected String doInBackground(Void... voids) {
+            protected void onPostExecute(Response response) {
                 try {
-                    URL url = new URL(urlWebService);
-                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                    StringBuilder sb = new StringBuilder();
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                    String json;
-                    while ((json = bufferedReader.readLine()) != null) {
-                        sb.append(json + "\n");
+                    JSONArray responseJson = response.GetJSON().getJSONArray("results");
+
+                    final JSONObject[] elements = new JSONObject[responseJson.length()];
+                    for (int i = 0; i < responseJson.length(); i++) {
+                        elements[i] = responseJson.getJSONObject(i);
                     }
-                    return sb.toString().trim();
-                } catch (Exception e) {
-                    return null;
+
+                    MyAdapter adapter = new MyAdapter(Takenlijst.this, elements);
+                    listView.setAdapter(adapter);
+                } catch (JSONException e) {
+                    // Won't happen
+                    throw new RuntimeException(e);
                 }
             }
         }
-        GetJSON getJSON = new GetJSON();
-        getJSON.execute();
+
+        System.out.println("Getting tasklists from server");
+        new RetrieveTasks().execute();
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                JSONObject group = ((MyAdapter)parent.getAdapter()).Tasks[position];
+                try {
+                    OpenTasklist_Task task = new OpenTasklist_Task();
+                    task.group_id = group.getInt("Id");
+                    task.execute(group);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
-    private void loadIntoListView(String json) throws JSONException {
-        JSONArray jsonArray1 = new JSONArray(json);
-        ArrayList<String> titles = new ArrayList<>();
-        for (int i = 0; i < jsonArray1.length(); i++) {
-            JSONObject obj = jsonArray1.getJSONObject(i);
-            titles.add(obj.getString("title"));
+    class OpenTasklist_Task extends AsyncTask<JSONObject, Float, Response> {
+        public int group_id;
+
+        @Override
+        protected Response doInBackground(JSONObject... jsonObjects) {
+            if (jsonObjects.length < 1)
+                throw new IllegalArgumentException("At least one JSONObject must be passed as an argument.");
+
+            JSONObject group = jsonObjects[0];
+            try {
+                JSONObject json = new JSONObject()
+                        .put("group", group.getInt("Id"));
+                return Connection.Send("task", "GET", json.toString());
+            } catch (JSONException e) {
+                // Won't happen
+                throw new RuntimeException(e);
+            }
         }
 
-        JSONArray jsonArray2 = new JSONArray(json);
-        ArrayList<String> priorities = new ArrayList<>();
-        for (int i = 0; i < jsonArray2.length(); i++) {
-            JSONObject obj = jsonArray2.getJSONObject(i);
-            priorities.add(obj.getString("priority"));
+        @Override
+        protected void onPostExecute(Response response) {
+            response.PrettyPrint();
+
+            Toast.makeText(Takenlijst.this, response.toString(), Toast.LENGTH_SHORT).show();
+
+            Context context = Takenlijst.this;
+            Intent intent = new Intent(context , TakenDetails.class);
+            intent.putExtra("id", group_id);
+            intent.putExtra("tasks", response.Data);
+            context.startActivity(intent);
+        }
+    }
+
+    class MyAdapter extends ArrayAdapter<JSONObject> {
+
+        Context context;
+        JSONObject Tasks[];
+
+        MyAdapter (Context c, JSONObject... tasks) {
+            super(c, R.layout.layout_takenlijst2, R.id.textView1, tasks);
+            this.context = c;
+            this.Tasks = tasks;
         }
 
-        RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        TakenLijstViewAdapter adapter = new TakenLijstViewAdapter(titles, /*, usersList,*/ priorities, /*statusList,*/ this);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            LayoutInflater layoutInflater = (LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View row = layoutInflater.inflate(R.layout.layout_takenlijst2, parent, false);
+            TextView myTitle = row.findViewById(R.id.textView1);
+            TextView mySubtitle = row.findViewById(R.id.textView2);
+
+            JSONObject task = this.Tasks[position];
+            try {
+                myTitle.setText(task.getString("Title"));
+                String description = task.optString("Description");
+                mySubtitle.setText(description == null ? "" : description);
+            } catch (JSONException e) {
+                // Won't happen
+                throw new RuntimeException(e);
+            }
+
+            return row;
+        }
     }
 
     @Override
@@ -160,7 +188,6 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
                 break;
             case (R.id.new_task):
                 Intent intent2 = new Intent(getApplicationContext(), MaakTaak.class);
-                intent2.putExtra("userdata", userData);
                 startActivity(intent2);
                 break;
             case (R.id.task_list):
@@ -169,7 +196,6 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
                 break;
             case (R.id.profile):
                 Intent intent4 = new Intent(getApplicationContext(), Profiel.class);
-                intent4.putExtra("userdata", userData);
                 startActivity(intent4);
                 break;
             case(R.id.log_out):

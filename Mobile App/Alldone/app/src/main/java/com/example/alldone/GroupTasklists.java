@@ -1,6 +1,7 @@
 package com.example.alldone;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,7 +11,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -62,12 +62,21 @@ public class GroupTasklists extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                new OpenTasklist_Task().execute(((MyAdapter)parent.getAdapter()).Groups[position]);
+                JSONObject group = ((MyAdapter)parent.getAdapter()).Groups[position];
+                try {
+                    OpenTasklist_Task task = new OpenTasklist_Task();
+                    task.group_id = group.getInt("Id");
+                    task.execute(group);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
     }
 
     class OpenTasklist_Task extends AsyncTask<JSONObject, Float, Response> {
+        public int group_id;
+
         @Override
         protected Response doInBackground(JSONObject... jsonObjects) {
             if (jsonObjects.length < 1)
@@ -88,7 +97,13 @@ public class GroupTasklists extends AppCompatActivity {
         protected void onPostExecute(Response response) {
             response.PrettyPrint();
 
-            Toast.makeText(GroupTasklists.this, response.toString(), Toast.LENGTH_SHORT).show();
+            // Toast.makeText(GroupTasklists.this, response.toString(), Toast.LENGTH_SHORT).show();
+
+            Context context = GroupTasklists.this;
+            Intent intent = new Intent(context , Takenlijst.class);
+            intent.putExtra("id", group_id);
+            intent.putExtra("tasks", response.Data);
+            context.startActivity(intent);
         }
     }
 

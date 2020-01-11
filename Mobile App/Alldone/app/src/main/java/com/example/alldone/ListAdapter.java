@@ -2,17 +2,11 @@ package com.example.alldone;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ListView;
-
-import com.example.alldone.R;
-import com.example.alldone.model.Task;
 
 import java.util.ArrayList;
 
@@ -62,7 +56,7 @@ public class ListAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
                 Context yeet = v.getContext();
-                Intent intent = new Intent(yeet, TakenDetails2.class);
+                Intent intent = new Intent(yeet, TakenDetails.class);
                 intent.putExtra("title", tasks.get(position).getTitle());
                 intent.putExtra("priority", tasks.get(position).getPriority());
                 intent.putExtra("description", tasks.get(position).getDescription());
