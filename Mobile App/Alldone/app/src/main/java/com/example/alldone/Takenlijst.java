@@ -22,6 +22,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONArray;
@@ -51,6 +52,16 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
         id = intent.getIntExtra("id", -1);
 
         listView = findViewById(R.id.lv);
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent makeTask = new Intent(getApplicationContext(), MaakTaak.class);
+                makeTask.putExtra("groupid", id);
+                startActivity(makeTask);
+            }
+        });
 
         class RetrieveTasks extends AsyncTask<String, Void, Response> {
             @Override

@@ -52,6 +52,7 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
     String titleString, descString;
     int priorityString;
     Spinner priority;
+    int id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +78,10 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
         title = findViewById(R.id.title);
         description = findViewById(R.id.description);
         button = findViewById(R.id.button);
+
+        Intent intent = getIntent();
+        id = intent.getIntExtra("groupid", -1);
+        System.out.println(id);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -112,7 +117,7 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
                 GetData();
                 try {
                     JSONObject json = new JSONObject()
-                            //.put("group", group.getInt("Id")); need group lol
+                            .put("group", id)
                             .put("title", titleString)
                             .put("description", descString)
                             .put("priority", priorityString);
@@ -125,11 +130,17 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
 
             @Override
             protected void onPostExecute(Response result) {
-                Toast.makeText(MaakTaak.this, "Taak aangemaakt!", Toast.LENGTH_LONG).show();
-                Intent intent0 = new Intent(getApplicationContext(), Takenlijst.class);
-                intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent0);
+                if(id == -1){
+                    Toast.makeText(MaakTaak.this, "Er is iets mis gegaan.", Toast.LENGTH_LONG).show();
+                }
+                else {
+                    Toast.makeText(MaakTaak.this, "Taak aangemaakt!", Toast.LENGTH_LONG).show();
+                    Intent intent0 = new Intent(getApplicationContext(), Takenlijst.class);
+                    intent0.putExtra("id", id);
+                    intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent0);
+                }
             }
         }
 
