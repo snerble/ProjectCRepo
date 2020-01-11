@@ -33,7 +33,6 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
     private ActionBarDrawerToggle mToggle;
 
     public int id;
-    public String tasks;
 
     ListView listView;
 
@@ -50,7 +49,6 @@ public class Takenlijst extends AppCompatActivity implements NavigationView.OnNa
 
         Intent intent = getIntent();
         id = intent.getIntExtra("id", -1);
-        tasks = intent.getStringExtra("tasks");
 
         listView = findViewById(R.id.lv);
 

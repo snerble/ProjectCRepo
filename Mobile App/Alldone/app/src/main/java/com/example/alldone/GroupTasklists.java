@@ -64,47 +64,17 @@ public class GroupTasklists extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 JSONObject group = ((MyAdapter)parent.getAdapter()).Groups[position];
                 try {
-                    OpenTasklist_Task task = new OpenTasklist_Task();
-                    task.group_id = group.getInt("Id");
-                    task.execute(group);
+                    Context context = GroupTasklists.this;
+                    Intent intent = new Intent(context , Takenlijst.class);
+                    intent.putExtra("id", group.getInt("Id"));
+                    context.startActivity(intent);
                 } catch (JSONException e) {
+                    // Won't happen
                     throw new RuntimeException(e);
                 }
+
             }
         });
-    }
-
-    class OpenTasklist_Task extends AsyncTask<JSONObject, Float, Response> {
-        public int group_id;
-
-        @Override
-        protected Response doInBackground(JSONObject... jsonObjects) {
-            if (jsonObjects.length < 1)
-                throw new IllegalArgumentException("At least one JSONObject must be passed as an argument.");
-
-            JSONObject group = jsonObjects[0];
-            try {
-                JSONObject json = new JSONObject()
-                        .put("group", group.getInt("Id"));
-                return Connection.Send("task", "GET", json.toString());
-            } catch (JSONException e) {
-                // Won't happen
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Response response) {
-            response.PrettyPrint();
-
-            // Toast.makeText(GroupTasklists.this, response.toString(), Toast.LENGTH_SHORT).show();
-
-            Context context = GroupTasklists.this;
-            Intent intent = new Intent(context , Takenlijst.class);
-            intent.putExtra("id", group_id);
-            intent.putExtra("tasks", response.Data);
-            context.startActivity(intent);
-        }
     }
 
     class MyAdapter extends ArrayAdapter<JSONObject> {
