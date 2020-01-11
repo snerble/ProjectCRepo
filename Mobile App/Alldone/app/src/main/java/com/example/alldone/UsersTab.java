@@ -59,9 +59,6 @@ public class UsersTab extends Fragment {
         Button enroll = rootView.findViewById(R.id.enrollBtn);
         Button finish = rootView.findViewById(R.id.finishBtn);
 
-        ListView listView = rootView.findViewById(R.id.lv);
-        listView.setAdapter(new MyAdapter(context, new JSONObject[1]));
-
         enroll.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
