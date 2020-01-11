@@ -1,4 +1,5 @@
-﻿using API.Database;
+﻿using API.Attributes;
+using API.Database;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,6 +76,22 @@ namespace API.HTTP.Endpoints
 				Response.Redirect("login_wrong.html");
 				Server.SendError(HttpStatusCode.Redirect);
 			}
+		}
+	}
+
+	[RequiresLogin]
+	[EndpointUrl("/logout")]
+	public sealed class Logout : HTMLEndpoint
+	{
+		public override void GET(Dictionary<string, string> parameters)
+		{
+			// Remove the session from the database and the cache
+			Utils.Sessions.Remove(CurrentSession);
+			Database.Delete(CurrentSession);
+
+			// Redirect to the home page
+			Response.Redirect("/home_vp.html");
+			Server.SendError(HttpStatusCode.Redirect);
 		}
 	}
 }
