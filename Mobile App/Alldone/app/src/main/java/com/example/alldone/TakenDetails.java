@@ -98,7 +98,6 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
 //        status.setText(id);
 
         deleteBtn = findViewById(R.id.delete);
-        editBtn = findViewById(R.id.edit);
 
         tabLayout = findViewById(R.id.takenTabs);
         viewpager = findViewById(R.id.viewpager);

@@ -38,15 +38,6 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
 
-    //String ServerURL = "http://145.137.123.23/alldone/v1/get_data.php";
-    //String ServerURL = "http://145.137.121.233/alldone/v1/get_data.php";
-    //String ServerURL = "http://145.137.121.231/alldone/v1/get_data.php";
-    //String ServerURL = "http://145.137.122.181/alldone/v1/get_data.php";
-    String ServerURL = "http://145.137.121.58/alldone/v1/get_data.php";
-    //String ServerURL = "http://192.168.188.62/alldone/v1/get_data.php";
-
-    // Getting the query to insert data, !IP address differs from location :)
-
     EditText title, description;
     Button button;
     String titleString, descString;
