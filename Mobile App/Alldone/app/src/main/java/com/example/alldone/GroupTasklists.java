@@ -72,7 +72,7 @@ public class GroupTasklists extends AppCompatActivity {
                 msgbox.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        EditText text = (EditText) ((AlertDialog) dialog).findViewById((R.id.titleEditText));
+                        EditText text = ((AlertDialog) dialog).findViewById((R.id.titleEditText));
                         new JoinGroup_Task().execute(text.getText().toString());
                     }
                 });
