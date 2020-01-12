@@ -73,11 +73,6 @@ public class MainActivity extends AppCompatActivity {
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               /* Intent intent0 = new Intent(getApplicationContext(), Takenlijst.class);
-                intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent0.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent0);*/
-
                 JSONObject jObj = null;
                 try {
                     jObj = new JSONObject()
