@@ -220,21 +220,9 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onNavigationItemSelected(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
-            case (R.id.home):
-                //Intent intent1 = new Intent(getApplicationContext(), MainActivity.class);
-                //startActivity(intent1);
-                break;
-            case (R.id.new_task):
-                Intent intent2 = new Intent(getApplicationContext(), MaakTaak.class);
-                startActivity(intent2);
-                break;
             case (R.id.task_list):
                 Intent intent3 = new Intent(getApplicationContext(), Takenlijst.class);
                 startActivity(intent3);
-                break;
-            case (R.id.profile):
-                Intent intent4 = new Intent(getApplicationContext(), Profiel.class);
-                startActivity(intent4);
                 break;
             case(R.id.log_out):
                 Toast.makeText(getApplicationContext(), "Je bent uitgelogd",Toast.LENGTH_SHORT).show();
@@ -254,7 +242,7 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
         descBundle.putString("Description", description);
         Fragment descFragment = new DescriptionTab();
         descFragment.setArguments(descBundle);
-        viewPagerAdapter.addFragment(descFragment, "Beschrijving"); //new DescriptionTab(), "Beschrijving"
+        viewPagerAdapter.addFragment(descFragment, "Beschrijving");
 
         userFragment = new UsersTab();
         viewPagerAdapter.addFragment(userFragment, "Ingeschreven");
@@ -263,7 +251,6 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
         task.userFragment = userFragment;
         task.execute();
 
-//        viewPagerAdapter.addFragment(new CommentsTab(), "Opmerkingen");
         viewpager.setAdapter(viewPagerAdapter);
     }
 
