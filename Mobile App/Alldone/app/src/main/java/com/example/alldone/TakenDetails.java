@@ -112,18 +112,6 @@ public class TakenDetails extends AppCompatActivity implements NavigationView.On
                 new DeleteTask().execute();
             }
         });
-        editBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Context context = v.getContext();
-                Intent intent = new Intent(context, BewerkTaak.class);
-                intent.putExtra("title", title);
-                intent.putExtra("priority", priority);
-                intent.putExtra("description", description);
-                intent.putExtra("id", id);
-                context.startActivity(intent);
-            }
-        });
     }
 
     class DeleteTask extends AsyncTask<Void, Void, Response> {

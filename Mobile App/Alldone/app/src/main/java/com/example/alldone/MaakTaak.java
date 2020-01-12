@@ -56,15 +56,15 @@ public class MaakTaak extends AppCompatActivity implements NavigationView.OnNavi
         mDrawerLayout.addDrawerListener(mToggle);
         mToggle.syncState();
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        NavigationView navigationView = findViewById(R.id.nv1);
+        navigationView.setNavigationItemSelectedListener(this);
+
         priority = findViewById(R.id.spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.priorities, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         priority.setAdapter(adapter); // Priority is chosen from a spinner which contains an array of possible options (0-3).
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        NavigationView navigationView = findViewById(R.id.nv1);
-        navigationView.setNavigationItemSelectedListener(this);
 
         title = findViewById(R.id.title);
         description = findViewById(R.id.description);
